@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-white min-h-screen antialiased;
+  }
+
+  a {
+    @apply text-primary hover:text-primary/80 transition-colors;
+  }
+
+  button {
+    @apply cursor-pointer transition-colors;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-gray-800 rounded-xl p-4 shadow-lg;
+  }
+  
+  .nav-item {
+    @apply flex flex-col items-center justify-center text-gray-400 hover:text-primary transition-colors;
+  }
+  
+  .nav-item.active {
+    @apply text-primary;
+  }
+}
