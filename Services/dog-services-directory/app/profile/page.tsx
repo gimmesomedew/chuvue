@@ -1,3 +1,4 @@
+// Profile Page (app/profile/page.tsx)
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,11 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { User, Settings, MapPin, Calendar, Heart, Briefcase, Shield } from 'lucide-react';
+import { User, Settings, MapPin, Calendar, Heart, Briefcase, Shield, Edit, Mail, Camera, Image } from 'lucide-react';
 import { showToast } from '@/lib/toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
-import { AnimatedCard } from '@/components/ui/AnimatedCard';
+import { PageTransition } from '@/components/ui/PageTransition';
+import { supabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
   const { user, userRole, isLoading, signOut } = useAuth();
@@ -32,510 +34,420 @@ export default function ProfilePage() {
     const loadingToast = showToast.loading('Loading your profile...');
     
     try {
-      // This would typically fetch data from Supabase based on the user's role
-      // For now, we'll use mock data
-      setTimeout(() => {
-        const mockData = {
-          admin: {
-            name: 'Admin User',
-            email: user?.email,
-            role: 'Administrator',
-            joinDate: 'May 15, 2025',
-            managedServices: 48,
-            activeUsers: 156
-          },
-          reviewer: {
-            name: 'Reviewer',
-            email: user?.email,
-            role: 'Content Reviewer',
-            joinDate: 'May 10, 2025',
-            reviewedServices: 37,
-            pendingReviews: 8,
-            rejectedSubmissions: 12
-          },
-          service_provider: {
-            name: 'Service Provider',
-            email: user?.email,
-            role: 'Service Provider',
-            joinDate: 'April 3, 2025',
-            businessName: 'Happy Paws Grooming',
-            location: 'Indianapolis, IN',
-            services: ['Grooming', 'Nail Trimming', 'Bathing'],
-            bookings: 12
-          },
-          pet_owner: {
-            name: 'Pet Owner',
-            email: user?.email,
-            role: 'Pet Owner',
-            joinDate: 'March 22, 2025',
-            pets: [
-              { name: 'Max', breed: 'Golden Retriever', age: 3 },
-              { name: 'Bella', breed: 'Beagle', age: 2 }
-            ],
-            upcomingBookings: 2,
-            favoriteServices: 5
-          },
-          guest: {
-            name: 'Guest User',
-            email: 'Not signed in',
-            role: 'Guest'
-          }
-        };
+      // Fetch actual profile data from the profiles table
+      if (user) {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
         
-        setProfileData(mockData[userRole]);
-        setLoadingProfile(false);
-        showToast.dismiss(loadingToast);
+        if (error) {
+          console.error('Error fetching profile:', error);
+          throw error;
+        }
         
-        // Get user's name or first part of email for personalized welcome
-        const userName = user?.user_metadata?.pet_name || 
-                        (user?.email ? user.email.split('@')[0] : 'there');
-        showToast.success(`Welcome back, ${userName}!`);
-      }, 1000);
+        if (profileData) {
+          console.log('Profile data from database:', profileData);
+          
+          // Format the data for display
+          const formattedProfile = {
+            id: profileData.id,
+            pet_name: profileData.pet_name || 'My Pet',
+            email: profileData.email || user.email,
+            bio: profileData.bio || 'No bio added yet',
+            pet_breed: profileData.pet_breed || 'Not specified',
+            pet_favorite_tricks: profileData.pet_favorite_tricks || [],
+            location: profileData.city && profileData.state ? `${profileData.city}, ${profileData.state}` : 'Location not set',
+            zip_code: profileData.zip_code,
+            profile_photo: profileData.profile_photo,
+            pet_photos: profileData.pet_photos || [],
+            role: userRole,
+            joinDate: new Date(profileData.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            favoriteServices: 0 // Placeholder for now
+          };
+          
+          setProfileData(formattedProfile);
+          setLoadingProfile(false);
+          showToast.dismiss(loadingToast);
+          
+          // Get user's name for personalized welcome
+          const userName = profileData.pet_name || 
+                          (user.email ? user.email.split('@')[0] : 'there');
+          showToast.success(`Welcome back, ${userName}!`);
+          return;
+        }
+      }
+      
+      // Fallback to mock data if no profile found
+      const mockProfile = {
+        id: user?.id,
+        pet_name: 'Shannon',
+        email: user?.email,
+        bio: 'No bio added yet',
+        pet_breed: 'Not specified',
+        pet_favorite_tricks: [],
+        location: 'Location not set',
+        zip_code: null,
+        profile_photo: null,
+        pet_photos: [],
+        role: userRole,
+        joinDate: 'May 2025',
+        favoriteServices: 0
+      };
+      
+      setProfileData(mockProfile);
+      setLoadingProfile(false);
+      showToast.dismiss(loadingToast);
+      
+      // Get user's name or first part of email for personalized welcome
+      const userName = user?.email ? user.email.split('@')[0] : 'there';
+      showToast.success(`Welcome back, ${userName}!`);
     } catch (error) {
       console.error('Error fetching profile data:', error);
       showToast.dismiss(loadingToast);
-      showToast.error('Error loading profile data. Please try again.');
+      showToast.error('Failed to load profile data');
       setLoadingProfile(false);
     }
   };
 
   const handleSignOut = async () => {
-    const loadingToast = showToast.loading('Signing out...');
     try {
       await signOut();
-      showToast.dismiss(loadingToast);
-      showToast.success('Successfully signed out');
-      router.push('/');
+      showToast.success('Signed out successfully');
+      router.push('/auth/login');
     } catch (error) {
-      console.error('Sign out error:', error);
-      showToast.dismiss(loadingToast);
-      showToast.error('Error signing out. Please try again.');
+      console.error('Error signing out:', error);
+      showToast.error('Failed to sign out');
     }
   };
 
-  if (isLoading || loadingProfile) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <MotionWrapper
-          variant="fadeIn"
-          className="container mx-auto px-4 py-8"
-        >
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-gray-900 mb-8"
-          >
-            My Profile
-          </motion.h1>
-          
-          {isLoading || loadingProfile ? (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex justify-center items-center h-64"
-            >
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                className="rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"
-              ></motion.div>
-            </motion.div>
-          ) : (
-            <div>
-              <div className="pt-16 pb-24">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="bg-white rounded-lg shadow overflow-hidden">
-                    {/* Profile Header */}
-                    <div className="bg-emerald-600 p-6">
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                        <div className="flex items-center">
-                          <div className="bg-white p-3 rounded-full">
-                            <User className="h-10 w-10 text-emerald-600" />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <PageTransition>
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-5xl mx-auto">
+            {loadingProfile ? (
+              <MotionWrapper
+                variant="fadeIn"
+                className="flex justify-center items-center min-h-[60vh]"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <h2 className="text-xl font-medium text-gray-700">Loading profile...</h2>
+                </div>
+              </MotionWrapper>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+                  {/* Profile Header */}
+                  <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-20 -mr-20"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -mb-20 -ml-20"></div>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center relative z-10">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="flex-shrink-0 mb-6 md:mb-0 md:mr-8"
+                      >
+                        <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center text-emerald-500 shadow-lg ring-4 ring-white/30 overflow-hidden">
+                          {profileData?.profile_photo ? (
+                            <img 
+                              src={profileData.profile_photo} 
+                              alt="Profile" 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-14 w-14" />
+                          )}
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                        className="flex-1"
+                      >
+                        <h1 className="text-4xl font-bold">{profileData?.pet_name}</h1>
+                        <div className="flex flex-wrap items-center gap-4 mt-3">
+                          <div className="flex items-center">
+                            <Mail className="h-4 w-4 mr-2 opacity-80" />
+                            <p className="text-sm">{profileData?.email}</p>
                           </div>
-                          <div className="ml-4 text-white">
-                            <h1 className="text-2xl font-bold">{profileData?.name}</h1>
-                            <p className="opacity-90">{profileData?.email}</p>
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-2 opacity-80" />
+                            <p className="text-sm">Joined {profileData?.joinDate}</p>
+                          </div>
+                          <div className="flex items-center">
+                            <Shield className="h-4 w-4 mr-2 opacity-80" />
+                            <p className="text-sm capitalize">{profileData?.role?.replace('_', ' ')}</p>
                           </div>
                         </div>
-                        <div className="mt-4 md:mt-0">
-                          <Button 
-                            onClick={handleSignOut}
-                            variant="outline" 
-                            className="bg-white text-emerald-600 hover:bg-gray-100"
-                          >
-                            Sign Out
-                          </Button>
-                        </div>
-                      </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="mt-6 md:mt-0"
+                      >
+                        <Button 
+                          variant="outline" 
+                          className="bg-white/10 text-white hover:bg-white/20 border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
+                          onClick={handleSignOut}
+                        >
+                          Sign Out
+                        </Button>
+                      </motion.div>
                     </div>
-                    
-                    {/* Role Badge */}
-                    <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
-                      <div className="flex items-center">
-                        {userRole === 'admin' && <Shield className="h-5 w-5 text-emerald-600 mr-2" />}
-                        {userRole === 'service_provider' && <Briefcase className="h-5 w-5 text-emerald-600 mr-2" />}
-                        {userRole === 'pet_owner' && <Heart className="h-5 w-5 text-emerald-600 mr-2" />}
-                        <span className="font-medium text-gray-700">{profileData?.role}</span>
-                        <span className="ml-2 text-sm text-gray-500">• Joined {profileData?.joinDate}</span>
-                      </div>
-                    </div>
-                    
-                    {/* Profile Content - Admin */}
-                    {userRole === 'admin' && (
-                      <div className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">Admin Dashboard Overview</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="flex items-center">
-                              <div className="bg-emerald-100 p-3 rounded-full">
-                                <Briefcase className="h-6 w-6 text-emerald-600" />
-                              </div>
-                              <div className="ml-4">
-                                <h3 className="text-lg font-medium">Managed Services</h3>
-                                <p className="text-3xl font-bold text-emerald-600">{profileData?.managedServices}</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="flex items-center">
-                              <div className="bg-emerald-100 p-3 rounded-full">
-                                <User className="h-6 w-6 text-emerald-600" />
-                              </div>
-                              <div className="ml-4">
-                                <h3 className="text-lg font-medium">Active Users</h3>
-                                <p className="text-3xl font-bold text-emerald-600">{profileData?.activeUsers}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-6">
-                          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            <Settings className="h-4 w-4 mr-2" />
-                            Admin Settings
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Profile Content - Service Provider */}
+                  </div>
+                  
+                  {/* Profile Content - Conditional based on role */}
+                  <AnimatePresence mode="wait">
                     {userRole === 'service_provider' && (
-                      <div className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">Business Profile</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-500">BUSINESS NAME</h3>
-                              <p className="mt-1 text-lg">{profileData?.businessName}</p>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">Service Provider Dashboard</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            onClick={() => router.push('/services/my-services')}
+                          >
+                            <div className="bg-emerald-100 p-4 rounded-full w-fit mb-4">
+                              <Briefcase className="h-8 w-8 text-emerald-600" />
                             </div>
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-500">LOCATION</h3>
-                              <div className="mt-1 flex items-center">
-                                <MapPin className="h-5 w-5 text-gray-400 mr-1" />
-                                <span>{profileData?.location}</span>
-                              </div>
+                            <h3 className="text-xl font-semibold mb-2">My Services</h3>
+                            <p className="text-gray-600">Manage your service listings</p>
+                          </motion.div>
+                          
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            onClick={() => router.push('/settings')}
+                          >
+                            <div className="bg-emerald-100 p-4 rounded-full w-fit mb-4">
+                              <Settings className="h-8 w-8 text-emerald-600" />
                             </div>
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-500">SERVICES OFFERED</h3>
-                              <div className="mt-2 flex flex-wrap gap-2">
-                                {profileData?.services.map((service: string) => (
-                                  <span key={service} className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded">
-                                    {service}
-                                  </span>
-                                ))}
-                              </div>
+                            <h3 className="text-xl font-semibold mb-2">Account Settings</h3>
+                            <p className="text-gray-600">Update your account information</p>
+                          </motion.div>
+                          
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            onClick={() => router.push(`/profile/${user?.id}`)}
+                          >
+                            <div className="bg-emerald-100 p-4 rounded-full w-fit mb-4">
+                              <User className="h-8 w-8 text-emerald-600" />
                             </div>
-                          </div>
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <div className="flex items-center">
-                              <div className="bg-emerald-100 p-3 rounded-full">
-                                <Calendar className="h-6 w-6 text-emerald-600" />
-                              </div>
-                              <div className="ml-4">
-                                <h3 className="text-lg font-medium">Current Bookings</h3>
-                                <p className="text-3xl font-bold text-emerald-600">{profileData?.bookings}</p>
-                              </div>
-                            </div>
-                            <div className="mt-4">
-                              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                                Manage Bookings
-                              </Button>
-                            </div>
-                          </div>
+                            <h3 className="text-xl font-semibold mb-2">Public Profile</h3>
+                            <p className="text-gray-600">View your public profile</p>
+                          </motion.div>
                         </div>
-                        <div className="mt-6 flex space-x-4">
-                          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            Edit Business Profile
-                          </Button>
-                          <Button variant="outline" className="border-emerald-500 text-emerald-500 hover:bg-emerald-50">
-                            Add New Service
-                          </Button>
-                        </div>
-                      </div>
+                      </motion.div>
                     )}
                     
-                    {/* Profile Content - Pet Owner */}
-                    {userRole === 'pet_owner' && (
-                      <div className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">My Pets</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {profileData?.pets.map((pet: any) => (
-                            <div key={pet.name} className="bg-gray-50 p-4 rounded-lg">
-                              <div className="flex items-center">
-                                <div className="bg-emerald-100 p-3 rounded-full">
-                                  <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017a2 2 0 01-1.789-2.894l3.5-7A2 2 0 0114 10zm-3-9v9m-9 3h7m3-3h7" />
-                                  </svg>
-                                </div>
-                                <div className="ml-4">
-                                  <h3 className="text-lg font-medium">{pet.name}</h3>
-                                  <p className="text-gray-600">{pet.breed}, {pet.age} years old</p>
-                                </div>
-                              </div>
+                    {userRole === 'admin' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            onClick={() => router.push('/admin/services')}
+                          >
+                            <div className="bg-emerald-100 p-4 rounded-full w-fit mb-4">
+                              <Briefcase className="h-8 w-8 text-emerald-600" />
                             </div>
-                          ))}
+                            <h3 className="text-xl font-semibold mb-2">Manage Services</h3>
+                            <p className="text-gray-600">Review and approve service listings</p>
+                          </motion.div>
+                          
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            onClick={() => router.push('/admin/users')}
+                          >
+                            <div className="bg-emerald-100 p-4 rounded-full w-fit mb-4">
+                              <User className="h-8 w-8 text-emerald-600" />
+                            </div>
+                            <h3 className="text-xl font-semibold mb-2">Manage Users</h3>
+                            <p className="text-gray-600">View and edit user accounts</p>
+                          </motion.div>
+                          
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            onClick={() => router.push('/admin/settings')}
+                          >
+                            <div className="bg-emerald-100 p-4 rounded-full w-fit mb-4">
+                              <Settings className="h-8 w-8 text-emerald-600" />
+                            </div>
+                            <h3 className="text-xl font-semibold mb-2">Site Settings</h3>
+                            <p className="text-gray-600">Configure application settings</p>
+                          </motion.div>
                         </div>
-                        <div className="mt-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-gray-50 p-4 rounded-lg">
+                      </motion.div>
+                    )}
+                    
+                    {userRole === 'pet_owner' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="p-8"
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {/* Pet Information */}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                            className="space-y-6"
+                          >
+                            <div className="bg-gray-50 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                              <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-3">About</h3>
+                              <p className="text-lg text-gray-700">{profileData?.bio || 'No bio added yet'}</p>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                              <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-3">Pet Breed</h3>
+                              <p className="text-lg text-gray-700">{profileData?.pet_breed || 'Not specified'}</p>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                              <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-3">Location</h3>
                               <div className="flex items-center">
-                                <div className="bg-emerald-100 p-3 rounded-full">
-                                  <Calendar className="h-6 w-6 text-emerald-600" />
-                                </div>
-                                <div className="ml-4">
-                                  <h3 className="text-lg font-medium">Upcoming Bookings</h3>
-                                  <p className="text-3xl font-bold text-emerald-600">{profileData?.upcomingBookings}</p>
-                                </div>
+                                <MapPin className="h-5 w-5 text-emerald-500 mr-2" />
+                                <span className="text-lg text-gray-700">{profileData?.location || 'Location not set'}</span>
                               </div>
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-lg">
+                            
+                            {profileData?.pet_favorite_tricks && profileData.pet_favorite_tricks.length > 0 && (
+                              <div className="bg-gray-50 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                                <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wider mb-3">Favorite Tricks</h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {profileData.pet_favorite_tricks.map((trick: string, index: number) => (
+                                    <motion.span 
+                                      key={trick} 
+                                      initial={{ opacity: 0, scale: 0.8 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      transition={{ delay: 0.3 + (index * 0.1) }}
+                                      className="bg-emerald-100 text-emerald-800 text-sm px-3 py-1 rounded-full font-medium"
+                                    >
+                                      {trick}
+                                    </motion.span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </motion.div>
+                          
+                          {/* Pet Photos */}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4, duration: 0.5 }}
+                            className="space-y-6"
+                          >
+                            <div className="bg-gray-50 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                              <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-sm font-semibold text-emerald-700 uppercase tracking-wider">Pet Photos</h3>
+                                <Camera className="h-5 w-5 text-emerald-500" />
+                              </div>
+                              
+                              {profileData?.pet_photos && profileData.pet_photos.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-3">
+                                  {profileData.pet_photos.map((photo: string, index: number) => (
+                                    <motion.div 
+                                      key={index} 
+                                      initial={{ opacity: 0, y: 10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ delay: 0.4 + (index * 0.1) }}
+                                      className="aspect-square rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:scale-105 cursor-pointer"
+                                    >
+                                      <img 
+                                        src={photo} 
+                                        alt={`Pet photo ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </motion.div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="bg-white rounded-lg p-8 text-center border border-dashed border-gray-300">
+                                  <Image className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                                  <p className="text-gray-500">No pet photos added yet</p>
+                                  <p className="text-sm text-gray-400 mt-1">Add photos in the edit profile section</p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
                               <div className="flex items-center">
-                                <div className="bg-emerald-100 p-3 rounded-full">
+                                <div className="bg-emerald-200 p-4 rounded-full">
                                   <Heart className="h-6 w-6 text-emerald-600" />
                                 </div>
-                                <div className="ml-4">
-                                  <h3 className="text-lg font-medium">Favorite Services</h3>
-                                  <p className="text-3xl font-bold text-emerald-600">{profileData?.favoriteServices}</p>
+                                <div className="ml-5">
+                                  <h3 className="text-lg font-semibold text-gray-800">Favorite Services</h3>
+                                  <p className="text-4xl font-bold text-emerald-600 mt-1">{profileData?.favoriteServices || 0}</p>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </motion.div>
                         </div>
-                        <div className="mt-6 flex space-x-4">
-                          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            Add New Pet
+                        
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6, duration: 0.5 }}
+                          className="mt-8 flex justify-center"
+                        >
+                          <Button 
+                            onClick={() => router.push('/profile/edit')}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-6 text-lg transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                          >
+                            <Edit className="h-5 w-5 mr-2" />
+                            Edit Profile
                           </Button>
-                          <Button variant="outline" className="border-emerald-500 text-emerald-500 hover:bg-emerald-50">
-                            View Bookings
-                          </Button>
-                        </div>
-                      </div>
+                        </motion.div>
+                      </motion.div>
                     )}
-                  </div>
+                  </AnimatePresence>
                 </div>
-              </div>
-            </div>
-          )}
-        </MotionWrapper>
-      </div>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="pt-16 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            {/* Profile Header */}
-            <div className="bg-emerald-600 p-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div className="flex items-center">
-                  <div className="bg-white p-3 rounded-full">
-                    <User className="h-10 w-10 text-emerald-600" />
-                  </div>
-                  <div className="ml-4 text-white">
-                    <h1 className="text-2xl font-bold">{profileData?.name}</h1>
-                    <p className="opacity-90">{profileData?.email}</p>
-                  </div>
-                </div>
-                <div className="mt-4 md:mt-0">
-                  <Button 
-                    onClick={handleSignOut}
-                    variant="outline" 
-                    className="bg-white text-emerald-600 hover:bg-gray-100"
-                  >
-                    Sign Out
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Role Badge */}
-            <div className="border-b border-gray-200 bg-gray-50 px-6 py-3">
-              <div className="flex items-center">
-                {userRole === 'admin' && <Shield className="h-5 w-5 text-emerald-600 mr-2" />}
-                {userRole === 'service_provider' && <Briefcase className="h-5 w-5 text-emerald-600 mr-2" />}
-                {userRole === 'pet_owner' && <Heart className="h-5 w-5 text-emerald-600 mr-2" />}
-                <span className="font-medium text-gray-700">{profileData?.role}</span>
-                <span className="ml-2 text-sm text-gray-500">• Joined {profileData?.joinDate}</span>
-              </div>
-            </div>
-            
-            {/* Profile Content - Admin */}
-            {userRole === 'admin' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Admin Dashboard Overview</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="bg-emerald-100 p-3 rounded-full">
-                        <Briefcase className="h-6 w-6 text-emerald-600" />
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium">Managed Services</h3>
-                        <p className="text-3xl font-bold text-emerald-600">{profileData?.managedServices}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="bg-emerald-100 p-3 rounded-full">
-                        <User className="h-6 w-6 text-emerald-600" />
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium">Active Users</h3>
-                        <p className="text-3xl font-bold text-emerald-600">{profileData?.activeUsers}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Admin Settings
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {/* Profile Content - Service Provider */}
-            {userRole === 'service_provider' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Business Profile</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">BUSINESS NAME</h3>
-                      <p className="mt-1 text-lg">{profileData?.businessName}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">LOCATION</h3>
-                      <div className="mt-1 flex items-center">
-                        <MapPin className="h-5 w-5 text-gray-400 mr-1" />
-                        <span>{profileData?.location}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">SERVICES OFFERED</h3>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {profileData?.services.map((service: string) => (
-                          <span key={service} className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded">
-                            {service}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="bg-emerald-100 p-3 rounded-full">
-                        <Calendar className="h-6 w-6 text-emerald-600" />
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium">Current Bookings</h3>
-                        <p className="text-3xl font-bold text-emerald-600">{profileData?.bookings}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                        Manage Bookings
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 flex space-x-4">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Edit Business Profile
-                  </Button>
-                  <Button variant="outline" className="border-emerald-500 text-emerald-500 hover:bg-emerald-50">
-                    Add New Service
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {/* Profile Content - Pet Owner */}
-            {userRole === 'pet_owner' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">My Pets</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {profileData?.pets.map((pet: any) => (
-                    <div key={pet.name} className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center">
-                        <div className="bg-emerald-100 p-3 rounded-full">
-                          <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017a2 2 0 01-1.789-2.894l3.5-7A2 2 0 0114 10zm-3-9v9m-9 3h7m3-3h7" />
-                          </svg>
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-medium">{pet.name}</h3>
-                          <p className="text-gray-600">{pet.breed}, {pet.age} years old</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center">
-                        <div className="bg-emerald-100 p-3 rounded-full">
-                          <Calendar className="h-6 w-6 text-emerald-600" />
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-medium">Upcoming Bookings</h3>
-                          <p className="text-3xl font-bold text-emerald-600">{profileData?.upcomingBookings}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center">
-                        <div className="bg-emerald-100 p-3 rounded-full">
-                          <Heart className="h-6 w-6 text-emerald-600" />
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-medium">Favorite Services</h3>
-                          <p className="text-3xl font-bold text-emerald-600">{profileData?.favoriteServices}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 flex space-x-4">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Add New Pet
-                  </Button>
-                  <Button variant="outline" className="border-emerald-500 text-emerald-500 hover:bg-emerald-50">
-                    View Bookings
-                  </Button>
-                </div>
-              </div>
+              </motion.div>
             )}
           </div>
-        </div>
-      </div>
-    </main>
+        </main>
+      </PageTransition>
+    </div>
   );
 }
