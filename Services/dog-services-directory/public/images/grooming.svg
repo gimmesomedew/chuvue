@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#f5f5f5"/>
+  <!-- Grooming table -->
+  <rect x="200" y="300" width="400" height="20" fill="#666"/>
+  <rect x="220" y="320" width="360" height="150" fill="#e0e0e0"/>
+  <rect x="230" y="320" width="340" height="10" fill="#ccc"/>
+  <rect x="250" y="470" width="40" height="80" fill="#666"/>
+  <rect x="510" y="470" width="40" height="80" fill="#666"/>
+  
+  <!-- Dog silhouette -->
+  <ellipse cx="400" cy="300" rx="120" ry="70" fill="#d2b48c"/>
+  <circle cx="300" cy="270" r="40" fill="#d2b48c"/>
+  <ellipse cx="280" cy="270" rx="10" ry="15" fill="#a52a2a"/>
+  <circle cx="290" cy="260" r="5" fill="#000"/>
+  <ellipse cx="295" cy="280" rx="15" ry="5" fill="#000"/>
+  
+  <!-- Groomer silhouette -->
+  <rect x="500" y="150" width="80" height="150" fill="#4682b4"/>
+  <circle cx="540" cy="120" r="40" fill="#ffdab9"/>
+  <rect x="510" y="300" width="20" height="80" fill="#ffdab9"/>
+  <rect x="550" y="300" width="20" height="80" fill="#ffdab9"/>
+  
+  <!-- Scissors -->
+  <line x1="450" y1="200" x2="500" y2="150" stroke="#c0c0c0" stroke-width="8"/>
+  <line x1="460" y1="190" x2="510" y2="140" stroke="#c0c0c0" stroke-width="8"/>
+  <circle cx="450" cy="200" r="10" fill="#c0c0c0"/>
+  <circle cx="500" cy="150" r="10" fill="#c0c0c0"/>
+  <circle cx="460" cy="190" r="10" fill="#c0c0c0"/>
+  <circle cx="510" cy="140" r="10" fill="#c0c0c0"/>
+</svg>

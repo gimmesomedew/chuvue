@@ -1,0 +1,5 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#f0f9f4"/>
+  <text x="400" y="300" font-family="Arial" font-size="32" text-anchor="middle" fill="#22c55e">Dog Service Image</text>
+  <path d="M400,200 C420,180 450,180 470,200 C490,220 490,250 470,270 L450,290 C440,300 440,310 450,320 L470,340 C490,360 490,390 470,410 C450,430 420,430 400,410 C380,430 350,430 330,410 C310,390 310,360 330,340 L350,320 C360,310 360,300 350,290 L330,270 C310,250 310,220 330,200 C350,180 380,180 400,200 Z" fill="none" stroke="#22c55e" stroke-width="8"/>
+</svg>
