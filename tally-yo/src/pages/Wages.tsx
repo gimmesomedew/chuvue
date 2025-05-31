@@ -5,6 +5,7 @@ import { useWages } from '../hooks/useWages';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { PlusCircleIcon, TagIcon, PencilIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import StatCard from '../components/ui/StatCard';
 
 export default function Wages() {
   const navigate = useNavigate();
@@ -43,22 +44,19 @@ export default function Wages() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6 relative">
+      <div className="flex justify-center items-center mb-6 relative">
         <h1 className="text-2xl font-bold text-white">Wages</h1>
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <img src="/Tally-Yo.png" alt="Tally-Yo" className="h-8" />
-        </div>
         <div className="w-[88px]"></div> {/* Spacer to balance the title */}
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card
+      <div className="flex flex-wrap justify-center gap-8 mb-8">
+        <StatCard
           title="Total Revenue"
           value={yearToDate}
           subtitle="Year To Date"
         />
-        <Card
+        <StatCard
           title="This Month"
           value={monthlyTotal}
           subtitle={new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}

@@ -13,20 +13,22 @@ interface Wage {
   amount: number;
   date: string;
   description: string;
-  wage_type_id: string;
   wage_type: WageType;
   notes?: string;
 }
 
-interface WageType {
+// Define an interface for the data shape returned directly from the Supabase query with the join
+interface DatabaseWageWithJoinedType {
   id: string;
-  name: string;
+  amount: number;
+  date: string;
   description: string;
+  notes?: string;
+  wage_type: WageType[]; // Supabase seems to return joined data as an array
 }
 
 export function useWages(user: User | null, page: number = 1, pageSize: number = 5, searchQuery: string = '') {
   const [wages, setWages] = useState<Wage[]>([]);
-  const [wageTypes, setWageTypes] = useState<WageType[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [yearToDate, setYearToDate] = useState(0);
@@ -45,24 +47,23 @@ export function useWages(user: User | null, page: number = 1, pageSize: number =
       }
       try {
         setIsLoading(true);
-        
+
         // Get current month and year
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const firstDayOfYear = new Date(now.getFullYear(), 0, 1).toISOString();
 
-        // Fetch paginated wages with wage types
-        // First get the wage types for reference
-        const { data: wageTypesData, error: typesError } = await supabase
-          .from('wage_types')
-          .select('*');
-
-        if (typesError) throw typesError;
-
-        // Then fetch wages with wage type info
-        const { data: wagesData, error: wagesError, count } = await supabase
+        // Fetch paginated wages with joined wage types
+        const { data, error: wagesError, count } = await supabase
           .from('wages')
-          .select('id, amount, date, description, wage_type_id, notes', { count: 'exact' })
+          .select(`
+            id,
+            amount,
+            date,
+            description,
+            notes,
+            wage_type:wage_types!inner(id, name, description)
+          `, { count: 'exact' })
           .eq('user_id', user.id)
           .ilike('description', `%${searchQuery}%`)
           .order('date', { ascending: false })
@@ -70,16 +71,16 @@ export function useWages(user: User | null, page: number = 1, pageSize: number =
 
         if (wagesError) throw wagesError;
 
-        // Map wage types to wages
-        const transformedWages = wagesData?.map(wage => {
-          const wageType = wageTypesData?.find(type => type.id === wage.wage_type_id);
-          return {
-            ...wage,
-            wage_type: wageType || { id: '', name: 'Unknown', description: '' }
-          };
-        }) || [];
-
-
+        // Transform the fetched data to match the Wage interface
+        // Access the first element of the wage_type array returned by Supabase
+        const transformedWages: Wage[] = (data as DatabaseWageWithJoinedType[] | null)?.map(wage => ({
+          id: wage.id,
+          amount: wage.amount,
+          date: wage.date,
+          description: wage.description,
+          notes: wage.notes,
+          wage_type: wage.wage_type?.[0] || { id: '', name: 'Unknown', description: '' } // Access the first element
+        })) || [];
 
         // Calculate monthly total
         const { data: monthData, error: monthError } = await supabase
@@ -100,7 +101,6 @@ export function useWages(user: User | null, page: number = 1, pageSize: number =
         if (yearError) throw yearError;
 
         setWages(transformedWages);
-        setWageTypes(wageTypesData || []);
         setTotalCount(count || 0);
         setMonthlyTotal(monthData?.reduce((sum, wage) => sum + wage.amount, 0) || 0);
         setYearToDate(yearData?.reduce((sum, wage) => sum + wage.amount, 0) || 0);
@@ -113,11 +113,10 @@ export function useWages(user: User | null, page: number = 1, pageSize: number =
     }
 
     fetchWages();
-  }, [user, page, pageSize]);
+  }, [user, page, pageSize, searchQuery]);
 
   return {
     wages,
-    wageTypes,
     totalCount,
     monthlyTotal,
     yearToDate,

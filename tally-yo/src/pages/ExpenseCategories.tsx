@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import IconPicker from '../components/ui/IconPicker';
 import toast from 'react-hot-toast';
 import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ExpenseCategory {
   id: string;
@@ -17,6 +17,7 @@ interface ExpenseCategory {
 
 export default function ExpenseCategories() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -184,16 +185,17 @@ export default function ExpenseCategories() {
     <div className="min-h-screen bg-gray-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="mb-8">
-          <Link
-            to="/expenses"
+          <button
+            onClick={() => navigate(-1)}
             className="flex items-center text-sm text-gray-400 hover:text-white transition-colors"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Expenses
-          </Link>
+            Back
+          </button>
         </nav>
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-center items-center mb-8">
           <h1 className="text-3xl font-bold text-white">Expense Categories</h1>
+          <div className="w-[88px]"></div>
           <button
             onClick={() => setIsFormVisible(true)}
             className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"

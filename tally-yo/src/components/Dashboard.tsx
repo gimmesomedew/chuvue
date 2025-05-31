@@ -1,9 +1,7 @@
 import { LineChart, Line, PieChart, Pie, ResponsiveContainer, Cell, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { useFinancialData } from '../hooks/useFinancialData';
-import { useProfile } from '../hooks/useProfile';
 import StatCard from './ui/StatCard';
-import UserMenu from './ui/UserMenu';
 import LoadingSpinner from './ui/LoadingSpinner';
 
 const lineChartData = [
@@ -24,13 +22,12 @@ const COLORS = ['#A689FA', '#33C3F0', '#6366F1'];
 export default function Dashboard() {
   const { user } = useAuth();
   const { totalWages, totalExpenses, isLoading: isFinancialLoading } = useFinancialData(user);
-  const { profile, isLoading: isProfileLoading } = useProfile(user);
+
   return (
     <div className="p-4 lg:p-8 max-w-screen-2xl mx-auto">
       {/* Header - Hidden on desktop as it's in the sidebar */}
-      <div className="flex justify-between items-center mb-6 lg:hidden">
+      <div className="flex justify-center items-center mb-6 lg:hidden">
         <h1 className="text-2xl font-bold">My Dashboard</h1>
-        {isProfileLoading ? <LoadingSpinner /> : <UserMenu fullName={profile?.full_name} />}
       </div>
 
       {/* Welcome Section - Visible only on desktop */}
@@ -45,15 +42,11 @@ export default function Dashboard() {
           <LoadingSpinner />
         </div>
       ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="flex flex-wrap justify-center gap-4 mb-8">
         <StatCard title="Wages (YTD)" value={totalWages} className="text-primary" />
         <StatCard title="Expenses (YTD)" value={totalExpenses} className="text-secondary" />
-        <div className="hidden md:block">
-          <StatCard title="Net Savings" value={totalWages - totalExpenses} className="text-green-500" />
-        </div>
-        <div className="hidden md:block">
-          <StatCard title="Budget Status" value={85} className="text-yellow-500" />
-        </div>
+        <StatCard title="Net Savings" value={totalWages - totalExpenses} className="text-green-500" />
+        <StatCard title="Budget Status" value={85} className="text-yellow-500" />
       </div>
       )}
 
@@ -69,7 +62,7 @@ export default function Dashboard() {
                 <XAxis dataKey="month" stroke="#9CA3AF" />
                 <YAxis stroke="#9CA3AF" />
                 <Tooltip 
-                  contentStyle={{ 
+                  contentStyle={{
                     backgroundColor: '#1F2937',
                     border: 'none',
                     borderRadius: '0.5rem',
@@ -112,7 +105,7 @@ export default function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ 
+                  contentStyle={{
                     backgroundColor: '#1F2937',
                     border: 'none',
                     borderRadius: '0.5rem',

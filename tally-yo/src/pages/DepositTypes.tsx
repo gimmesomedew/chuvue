@@ -3,6 +3,8 @@ import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outli
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 import Breadcrumb from '../components/ui/Breadcrumb';
 
 interface DepositType {
@@ -15,6 +17,7 @@ interface DepositType {
 
 export default function DepositTypes() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [types, setTypes] = useState<DepositType[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -104,7 +107,7 @@ export default function DepositTypes() {
         .from('wage_types')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', user!.id);
 
       if (error) throw error;
       toast.success('Deposit type deleted');
@@ -131,14 +134,18 @@ export default function DepositTypes() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <Breadcrumb
-        items={[
-          { name: 'Wages', href: '/wages' },
-          { name: 'Deposit Types' }
-        ]}
-      />
-      <div className="flex justify-between items-center mb-8">
+      <nav className="mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-sm text-gray-400 hover:text-white transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Back
+        </button>
+      </nav>
+      <div className="flex justify-center items-center mb-8">
         <h1 className="text-2xl font-bold text-white">Your Deposit Types</h1>
+        <div className="w-[88px]"></div>
         <button
           onClick={() => {
             setEditingType(null);

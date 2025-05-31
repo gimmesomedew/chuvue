@@ -13,6 +13,7 @@ import Expenses from './pages/Expenses';
 import NewExpense from './pages/NewExpense';
 import ExpenseCategories from './pages/ExpenseCategories';
 import ProtectedRoute from './components/ProtectedRoute';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -37,26 +38,25 @@ function App() {
       />
       <Router>
         <Routes>
+          {/* Public Routes */}
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="/dashboard" replace />} />
+
+          {/* Protected Routes with Layout */}
+          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="wages" element={<Wages />} />
             <Route path="wages/new" element={<NewDeposit />} />
-          <Route path="wages/edit-deposit/:id" element={<NewDeposit />} />
-          <Route path="deposit-types" element={<DepositTypes />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/expenses/new" element={<NewExpense />} />
-          <Route path="/expenses/edit/:id" element={<NewExpense />} />
-          <Route path="/expense-categories" element={<ExpenseCategories />} />
-            <Route path="expenses" element={<div className="p-4">Expenses Page (Coming Soon)</div>} />
-            <Route path="settings" element={<div className="p-4">Settings Page (Coming Soon)</div>} />
+            <Route path="deposit-types" element={<DepositTypes />} />
+            <Route path="expenses" element={<Expenses />} />
+            <Route path="expenses/new" element={<NewExpense />} />
+            <Route path="expense-categories" element={<ExpenseCategories />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
+
+          {/* Fallback for unmatched routes - can redirect to dashboard or a 404 page */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
     </AuthProvider>

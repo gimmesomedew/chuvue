@@ -173,6 +173,7 @@ export default function NewExpense() {
             name="amount"
             step="0.01"
             required
+            placeholder="0.00"
             value={formData.amount}
             onChange={handleInputChange}
             className="mt-1 block w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"

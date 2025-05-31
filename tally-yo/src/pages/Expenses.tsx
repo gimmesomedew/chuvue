@@ -5,7 +5,8 @@ import { useExpenses } from '../hooks/useExpenses';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { PlusCircleIcon, TagIcon, PencilIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { icons } from 'lucide-react';
+import StatCard from '../components/ui/StatCard';
+import ExpenseItem from '../components/ExpenseItem';
 
 export default function Expenses() {
   const navigate = useNavigate();
@@ -44,22 +45,19 @@ export default function Expenses() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6 relative">
+      <div className="flex justify-center items-center mb-6 relative">
         <h1 className="text-2xl font-bold text-white">Expenses</h1>
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <img src="/Tally-Yo.png" alt="Tally-Yo" className="h-8" />
-        </div>
         <div className="w-[88px]"></div> {/* Spacer to balance the title */}
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card
+      <div className="flex flex-nowrap justify-center gap-4 mb-8 pb-2 -mx-4 px-4 overflow-x-auto">
+        <StatCard
           title="Total Expenses"
           value={yearToDate}
           subtitle="Year To Date"
         />
-        <Card
+        <StatCard
           title="This Month"
           value={monthlyTotal}
           subtitle={new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -141,43 +139,7 @@ export default function Expenses() {
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {expenses.map(expense => (
-                  <tr key={expense.id} className="hover:bg-slate-700/50">
-                    <td className="px-6 py-4">
-                      <div className="text-base text-white font-bold">{expense.description || 'No description'}</div>
-                      <div className="text-sm text-slate-300">{new Date(expense.date).toLocaleDateString()}</div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-300">
-                      <div className="flex justify-center">
-                        {(() => {
-                          const IconComponent = icons[expense.expense_category.icon as keyof typeof icons];
-                          return IconComponent ? (
-                            <div title={expense.expense_category.name}>
-                              <IconComponent className="h-5 w-5" />
-                            </div>
-                          ) : (
-                            <span className="text-sm">{expense.expense_category.name}</span>
-                          );
-                        })()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-pre-wrap text-gray-300">
-                      {expense.notes || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-lg font-medium text-emerald-400">
-                        ${expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => navigate(`/expenses/edit/${expense.id}`)}
-                        className="text-gray-400 hover:text-white transition-colors"
-                        title="Edit expense"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                    </td>
-                  </tr>
+                  <ExpenseItem key={expense.id} expense={expense} />
                 ))}
               </tbody>
             </table>

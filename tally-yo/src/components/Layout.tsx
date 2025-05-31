@@ -78,8 +78,13 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 overflow-y-auto pb-16 lg:pb-0">
-        {/* Header with Avatar */}
-        <div className="bg-gray-900 p-4 flex justify-end">
+        {/* Header with Logo on Left, Avatar on Right */}
+        <div className="bg-gray-900 p-4 flex items-center justify-between">
+          {/* Logo */}
+          <div>
+            <img src="/Tally-Yo.png" alt="Tally-Yo" className="h-8" />
+          </div>
+          {/* Avatar */}
           <UserAvatar />
         </div>
         <div className="p-4">
@@ -88,7 +93,7 @@ export default function Layout() {
       </main>
       
       {/* Bottom Navigation Bar for Mobile/Tablet */}
-      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-gray-800 border-t border-gray-700">
+      <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-[#171E2D] border-t border-gray-700">
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="flex justify-around py-3">
             {links.map((link) => {
