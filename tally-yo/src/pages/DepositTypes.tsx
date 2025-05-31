@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import Breadcrumb from '../components/ui/Breadcrumb';
 
 interface DepositType {
   id: string;
@@ -21,7 +20,6 @@ export default function DepositTypes() {
   const [types, setTypes] = useState<DepositType[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [editingType, setEditingType] = useState<DepositType | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -29,29 +27,23 @@ export default function DepositTypes() {
     color: '#3b82f6'
   });
 
-  // Fetch deposit types
-  useEffect(() => {
-    if (user?.id) fetchTypes();
-  }, [user]);
-
   const fetchTypes = async () => {
-    if (!user?.id) return;
-
     try {
       const { data, error } = await supabase
-        .from('wage_types')
+        .from('deposit_types')
         .select('*')
-        .eq('user_id', user.id)
         .order('name');
-
       if (error) throw error;
       setTypes(data || []);
-    } catch (err) {
+    } catch (error) {
+      console.error('Error:', error);
       toast.error('Failed to load deposit types');
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTypes();
+  }, [fetchTypes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +86,8 @@ export default function DepositTypes() {
       setIsAddModalOpen(false);
       setEditingType(null);
       fetchTypes();
-    } catch (err) {
+    } catch (error) {
+      console.error('Error:', error);
       toast.error('Failed to save deposit type');
     }
   };
@@ -112,7 +105,8 @@ export default function DepositTypes() {
       if (error) throw error;
       toast.success('Deposit type deleted');
       fetchTypes();
-    } catch (err) {
+    } catch (error) {
+      console.error('Error:', error);
       toast.error('Failed to delete deposit type');
     }
   };
@@ -169,55 +163,51 @@ export default function DepositTypes() {
         />
       </div>
 
-      {isLoading ? (
-        <div className="text-center text-gray-400">Loading...</div>
-      ) : (
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-900">
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-400">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-400">Description</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-400">Color</th>
-                <th className="px-6 py-3 text-right text-sm font-medium text-gray-400">Actions</th>
+      <div className="bg-gray-800 rounded-lg overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-900">
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-400">Name</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-400">Description</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-400">Color</th>
+              <th className="px-6 py-3 text-right text-sm font-medium text-gray-400">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {filteredTypes.map((type) => (
+              <tr key={type.id} className="hover:bg-gray-700/50">
+                <td className="px-6 py-4 text-sm text-white">{type.name}</td>
+                <td className="px-6 py-4 text-sm text-gray-300">{type.description || '-'}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-6 h-6 rounded-full"
+                      style={{ backgroundColor: type.color }}
+                    />
+                    <span className="text-sm text-gray-300">{type.color}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => handleEdit(type)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(type.id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {filteredTypes.map((type) => (
-                <tr key={type.id} className="hover:bg-gray-700/50">
-                  <td className="px-6 py-4 text-sm text-white">{type.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-300">{type.description || '-'}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-6 h-6 rounded-full"
-                        style={{ backgroundColor: type.color }}
-                      />
-                      <span className="text-sm text-gray-300">{type.color}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-3">
-                      <button
-                        onClick={() => handleEdit(type)}
-                        className="text-gray-400 hover:text-white transition-colors"
-                      >
-                        <PencilSquareIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(type.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Add/Edit Modal */}
       {isAddModalOpen && (

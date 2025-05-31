@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import IconPicker from '../components/ui/IconPicker';
 import toast from 'react-hot-toast';
 import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface ExpenseCategory {
   id: string;
@@ -31,7 +31,7 @@ export default function ExpenseCategories() {
 
   useEffect(() => {
     fetchCategories();
-  }, [user]);
+  }, [fetchCategories]);
 
   async function fetchCategories() {
     if (!user) return;

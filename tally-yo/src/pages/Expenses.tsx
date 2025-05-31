@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useExpenses } from '../hooks/useExpenses';
-import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { PlusCircleIcon, TagIcon, PencilIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PlusCircleIcon, TagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import StatCard from '../components/ui/StatCard';
 import ExpenseItem from '../components/ExpenseItem';
 
