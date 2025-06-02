@@ -14,6 +14,8 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
+  console.log('Enhanced profile page component is rendering');
+
   const { user, userRole, isLoading, signOut } = useAuth();
   const router = useRouter();
   const [profileData, setProfileData] = useState<any>(null);
@@ -26,16 +28,17 @@ export default function ProfilePage() {
     } else if (user) {
       // Fetch profile data based on role
       fetchProfileData();
+      console.log('User authenticated, fetching profile data');
     }
   }, [user, isLoading, router]);
 
   const fetchProfileData = async () => {
     setLoadingProfile(true);
-    const loadingToast = showToast.loading('Loading your profile...');
     
     try {
       // Fetch actual profile data from the profiles table
       if (user) {
+        console.log('Fetching profile data for user:', user.id);
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select('*')
@@ -44,6 +47,50 @@ export default function ProfilePage() {
         
         if (error) {
           console.error('Error fetching profile:', error);
+          // If the profile doesn't exist yet, create one
+          if (error.code === 'PGRST116') {
+            console.log('Profile not found, creating new profile');
+            const newProfile = {
+              id: user.id,
+              email: user.email,
+              pet_name: user.email ? user.email.split('@')[0] : 'My Pet',
+              created_at: new Date().toISOString()
+            };
+            
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert(newProfile);
+              
+            if (insertError) {
+              console.error('Error creating profile:', insertError);
+              throw insertError;
+            }
+            
+            // Use the new profile data
+            const formattedProfile = {
+              id: newProfile.id,
+              pet_name: newProfile.pet_name,
+              email: newProfile.email,
+              bio: 'No bio added yet',
+              pet_breed: 'Not specified',
+              pet_favorite_tricks: [],
+              location: 'Location not set',
+              zip_code: null,
+              profile_photo: null,
+              pet_photos: [],
+              role: userRole,
+              joinDate: new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              favoriteServices: 0
+            };
+            
+            setProfileData(formattedProfile);
+            setLoadingProfile(false);
+            return;
+          }
           throw error;
         }
         
@@ -73,12 +120,6 @@ export default function ProfilePage() {
           
           setProfileData(formattedProfile);
           setLoadingProfile(false);
-          showToast.dismiss(loadingToast);
-          
-          // Get user's name for personalized welcome
-          const userName = profileData.pet_name || 
-                          (user.email ? user.email.split('@')[0] : 'there');
-          showToast.success(`Welcome back, ${userName}!`);
           return;
         }
       }
@@ -86,7 +127,7 @@ export default function ProfilePage() {
       // Fallback to mock data if no profile found
       const mockProfile = {
         id: user?.id,
-        pet_name: 'Shannon',
+        pet_name: user?.email ? user.email.split('@')[0] : 'My Pet',
         email: user?.email,
         bio: 'No bio added yet',
         pet_breed: 'Not specified',
@@ -102,15 +143,8 @@ export default function ProfilePage() {
       
       setProfileData(mockProfile);
       setLoadingProfile(false);
-      showToast.dismiss(loadingToast);
-      
-      // Get user's name or first part of email for personalized welcome
-      const userName = user?.email ? user.email.split('@')[0] : 'there';
-      showToast.success(`Welcome back, ${userName}!`);
     } catch (error) {
       console.error('Error fetching profile data:', error);
-      showToast.dismiss(loadingToast);
-      showToast.error('Failed to load profile data');
       setLoadingProfile(false);
     }
   };
@@ -130,8 +164,8 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <PageTransition>
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-5xl mx-auto">
+        <main className="container mx-auto px-4 py-8 max-w-6xl">
+          <div className="w-full mx-auto">
             {loadingProfile ? (
               <MotionWrapper
                 variant="fadeIn"
@@ -154,7 +188,7 @@ export default function ProfilePage() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-20 -mr-20"></div>
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -mb-20 -ml-20"></div>
                     
-                    <div className="flex flex-col md:flex-row md:items-center relative z-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between relative z-10">
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -162,10 +196,16 @@ export default function ProfilePage() {
                         className="flex-shrink-0 mb-6 md:mb-0 md:mr-8"
                       >
                         <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center text-emerald-500 shadow-lg ring-4 ring-white/30 overflow-hidden">
-                          {profileData?.profile_photo ? (
-                            <img 
-                              src={profileData.profile_photo} 
-                              alt="Profile" 
+                          {profileData?.pet_photos && profileData.pet_photos.length > 0 ? (
+                            <img
+                              src={profileData.pet_photos[0]}
+                              alt="Pet"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : profileData?.profile_photo ? (
+                            <img
+                              src={profileData.profile_photo}
+                              alt="Profile"
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -201,8 +241,16 @@ export default function ProfilePage() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.4, duration: 0.5 }}
-                        className="mt-6 md:mt-0"
+                        className="mt-6 md:mt-0 flex gap-3"
                       >
+                        <Button 
+                          variant="outline" 
+                          className="bg-white/10 text-white hover:bg-white/20 border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
+                          onClick={() => router.push('/profile/edit')}
+                        >
+                          <Edit className="h-5 w-5 mr-2" />
+                          Edit Profile
+                        </Button>
                         <Button 
                           variant="outline" 
                           className="bg-white/10 text-white hover:bg-white/20 border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
@@ -211,6 +259,30 @@ export default function ProfilePage() {
                           Sign Out
                         </Button>
                       </motion.div>
+                    </div>
+                  </div>
+                  
+                  {/* Basic Profile Details - Always visible */}
+                  <div className="bg-white p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center gap-6">
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <span className="font-semibold text-gray-700">Bio:</span>
+                        <span className="ml-2 text-gray-800">{profileData?.bio || 'No bio added yet'}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700">Pet Breed:</span>
+                        <span className="ml-2 text-gray-800">{profileData?.pet_breed || 'Not specified'}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700">Location:</span>
+                        <span className="ml-2 text-gray-800">{profileData?.location || 'Location not set'}</span>
+                      </div>
+                      {profileData?.pet_favorite_tricks && profileData.pet_favorite_tricks.length > 0 && (
+                        <div>
+                          <span className="font-semibold text-gray-700">Favorite Tricks:</span>
+                          <span className="ml-2 text-gray-800">{profileData.pet_favorite_tricks.join(', ')}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   

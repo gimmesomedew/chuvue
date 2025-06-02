@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface PaginationProps {
@@ -22,7 +23,19 @@ export function Pagination({
       <div className="flex space-x-2">
         <Button 
           variant="outline" 
-          onClick={() => handlePageChange(currentPage - 1)}
+          onClick={() => {
+            // Handle page change
+            handlePageChange(currentPage - 1);
+            
+            // Scroll to top of search results
+            const searchResultsElement = document.querySelector('.search-results-container');
+            if (searchResultsElement) {
+              searchResultsElement.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              // Fallback to scrolling to top of page
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           disabled={currentPage === 1 || isSearching}
         >
           Previous
@@ -36,7 +49,19 @@ export function Pagination({
         
         <Button 
           variant="outline" 
-          onClick={() => handlePageChange(currentPage + 1)}
+          onClick={() => {
+            // Handle page change
+            handlePageChange(currentPage + 1);
+            
+            // Scroll to top of search results
+            const searchResultsElement = document.querySelector('.search-results-container');
+            if (searchResultsElement) {
+              searchResultsElement.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              // Fallback to scrolling to top of page
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           disabled={currentPage === totalPages || isSearching}
         >
           Next

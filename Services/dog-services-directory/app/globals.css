@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Custom styles */
+.image-error .hidden.image-error {
+  display: flex !important;
+}
+
 /* Custom CSS */
 body {
   font-family: 'Inter', sans-serif;

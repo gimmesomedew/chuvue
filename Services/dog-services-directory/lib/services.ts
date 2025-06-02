@@ -140,6 +140,30 @@ export async function getAllServices(
 }
 
 /**
+ * Fetches featured services (where featured = 'Y')
+ */
+export async function getFeaturedServices(limit: number = 10): Promise<Service[]> {
+  try {
+    const { data, error } = await supabase
+      .from('services')
+      .select('*')
+      .eq('featured', 'Y')
+      .order('name')
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching featured services:', error);
+      return [];
+    }
+    
+    return data as Service[];
+  } catch (error) {
+    console.error('Error in getFeaturedServices:', error);
+    return [];
+  }
+}
+
+/**
  * Search for services based on service type and state
  * @param serviceTypeSlug The slug of the service type to filter by (optional)
  * @param state The two-letter state code to filter by (optional)
@@ -147,6 +171,77 @@ export async function getAllServices(
  * @param pageSize The number of items per page
  * @returns Object containing services array and pagination info
  */
+/**
+ * Toggle the featured status of a service
+ * @param serviceId The ID of the service to toggle
+ * @returns The updated service or null if there was an error
+ */
+/**
+ * Delete a service from the database
+ * @param serviceId The ID of the service to delete
+ * @returns True if the service was deleted successfully, false otherwise
+ */
+export async function deleteService(serviceId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('services')
+      .delete()
+      .eq('id', serviceId);
+    
+    if (error) {
+      console.error(`Error deleting service with ID ${serviceId}:`, error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error in deleteService for service ${serviceId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Toggle the featured status of a service
+ * @param serviceId The ID of the service to toggle
+ * @returns The updated service or null if there was an error
+ */
+export async function toggleServiceFeatured(serviceId: string): Promise<Service | null> {
+  try {
+    // First, get the current featured status
+    const { data: service, error: getError } = await supabase
+      .from('services')
+      .select('featured')
+      .eq('id', serviceId)
+      .single();
+    
+    if (getError) {
+      console.error(`Error fetching service with ID ${serviceId}:`, getError);
+      return null;
+    }
+    
+    // Toggle the featured status (if it's null, undefined, or not 'Y', set to 'Y', otherwise set to 'N')
+    const newFeaturedStatus = service?.featured === 'Y' ? 'N' : 'Y';
+    
+    // Update the service
+    const { data: updatedService, error: updateError } = await supabase
+      .from('services')
+      .update({ featured: newFeaturedStatus })
+      .eq('id', serviceId)
+      .select()
+      .single();
+    
+    if (updateError) {
+      console.error(`Error updating featured status for service ${serviceId}:`, updateError);
+      return null;
+    }
+    
+    return updatedService as Service;
+  } catch (error) {
+    console.error(`Error in toggleServiceFeatured for service ${serviceId}:`, error);
+    return null;
+  }
+}
+
 export async function searchServices(
   serviceTypeSlug?: string,
   state?: string,
@@ -261,5 +356,76 @@ export async function searchServices(
   } catch (error) {
     console.error('Error in searchServices:', error);
     return { services: [], total: 0, page, totalPages: 0 };
+  }
+}
+
+export async function toggleFavorite(userId: string, serviceId: string): Promise<boolean> {
+  try {
+    // First check if the favorite already exists
+    const { data: existingFavorite } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('service_id', serviceId)
+      .single();
+
+    if (existingFavorite) {
+      // If it exists, remove it
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('id', existingFavorite.id);
+      
+      if (error) throw error;
+      return false; // Return false to indicate it's now unfavorited
+    } else {
+      // If it doesn't exist, add it
+      const { error } = await supabase
+        .from('favorites')
+        .insert([
+          {
+            user_id: userId,
+            service_id: serviceId
+          }
+        ]);
+      
+      if (error) throw error;
+      return true; // Return true to indicate it's now favorited
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    throw error;
+  }
+}
+
+export async function getFavoriteCount(serviceId: string): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('favorites')
+      .select('*', { count: 'exact', head: true })
+      .eq('service_id', serviceId);
+
+    if (error) throw error;
+    return count || 0;
+  } catch (error) {
+    console.error('Error getting favorite count:', error);
+    return 0;
+  }
+}
+
+export async function isServiceFavorited(userId: string, serviceId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('service_id', serviceId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return !!data;
+  } catch (error) {
+    console.error('Error checking if service is favorited:', error);
+    return false;
   }
 }

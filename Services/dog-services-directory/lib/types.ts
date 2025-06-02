@@ -41,6 +41,7 @@ export interface Service {
   rating?: number;
   review_count?: number;
   is_verified?: boolean;
+  featured?: string; // 'Y' for featured, 'N' for not featured
   created_at?: string;
   updated_at?: string;
 }

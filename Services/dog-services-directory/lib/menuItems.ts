@@ -15,10 +15,6 @@ export const staticMenuItems: MenuItem[] = [
     href: '/',
   },
   {
-    label: 'Services',
-    href: '/services',
-  },
-  {
     label: 'Contact',
     href: '/contact',
   },
@@ -35,6 +31,11 @@ export const roleBasedMenuItems: MenuItem[] = [
   {
     label: 'Manage Users',
     href: '/admin/users',
+    roles: ['admin'],
+  },
+  {
+    label: 'Contact Messages',
+    href: '/admin/contact',
     roles: ['admin'],
   },
   {
@@ -60,17 +61,21 @@ export const roleBasedMenuItems: MenuItem[] = [
     roles: ['service_provider', 'admin'],
   },
   
+  // Directory - visible to all logged-in users
+  {
+    label: 'Directory',
+    href: '/directory',
+    roles: ['pet_owner', 'service_provider', 'admin', 'reviewer'],
+  },
+  
+  // Messages - visible to all logged-in users
+  {
+    label: 'Messages',
+    href: '/messages',
+    roles: ['pet_owner', 'service_provider', 'admin', 'reviewer'],
+  },
+  
   // Pet owner items
-  {
-    label: 'My Pets',
-    href: '/owner/pets',
-    roles: ['pet_owner', 'admin'],
-  },
-  {
-    label: 'My Bookings',
-    href: '/owner/bookings',
-    roles: ['pet_owner', 'admin'],
-  },
   {
     label: 'Favorites',
     href: '/owner/favorites',
