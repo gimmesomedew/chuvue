@@ -133,16 +133,18 @@ export function ServiceCard({
           <PawPrint className="h-24 w-24 text-white" />
           <p className="text-white text-sm mt-2">No Image Available</p>
         </div>
-        <motion.button 
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
-          onClick={handleFavoriteClick}
-        >
-          <Heart 
-            className={`h-5 w-5 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} 
-          />
-        </motion.button>
+        {user && (
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+            onClick={handleFavoriteClick}
+          >
+            <Heart 
+              className={`h-5 w-5 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} 
+            />
+          </motion.button>
+        )}
 
         {/* Animated Heart */}
         <AnimatePresence>
