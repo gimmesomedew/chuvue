@@ -101,12 +101,12 @@ export function HamburgerMenu() {
       {/* Hamburger button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+        className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white focus:outline-none border-2 border-white rounded-md"
         aria-label="Toggle menu"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
-        <Menu className="h-6 w-6 text-emerald-600" />
+        <Menu className="h-6 w-6 text-white" />
       </motion.button>
 
       {/* Menu overlay with AnimatePresence for smooth transitions */}
@@ -198,22 +198,29 @@ export function HamburgerMenu() {
                       >
                         {roleBasedMenuItems
                           .filter(item => !item.roles || item.roles.includes(userRole))
-                          .map((item, index) => (
-                            <motion.div
-                              key={item.label}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.4 + (index * 0.05) }}
-                            >
-                              <MenuItem
+                          .map((item, index) => {
+                            // Dynamically set the profile link
+                            let href = item.href;
+                            if (item.label.toLowerCase().includes('profile') && user) {
+                              href = `/profile/${user.id}`;
+                            }
+                            return (
+                              <motion.div
                                 key={item.label}
-                                label={item.label}
-                                href={item.href}
-                                onClick={handleMenuItemClick}
-                                icon={item.label.includes('Settings') ? Settings : undefined}
-                              />
-                            </motion.div>
-                          ))
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 + (index * 0.05) }}
+                              >
+                                <MenuItem
+                                  key={item.label}
+                                  label={item.label}
+                                  href={href}
+                                  onClick={handleMenuItemClick}
+                                  icon={item.label.includes('Settings') ? Settings : undefined}
+                                />
+                              </motion.div>
+                            );
+                          })
                         }
                       </motion.div>
                     </div>
@@ -238,7 +245,7 @@ export function HamburgerMenu() {
                             onClick={() => setIsOpen(false)}
                             asChild
                           >
-                            <Link href="/profile">
+                            <Link href={`/profile/${user.id}`} prefetch={false}>
                               <User className="h-4 w-4 mr-2" />
                               My Profile
                             </Link>
