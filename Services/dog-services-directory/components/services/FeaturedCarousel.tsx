@@ -185,7 +185,7 @@ export function FeaturedCarousel() {
               key={service.id}
               className="flex-none w-full md:w-1/2 lg:w-1/3 px-4 snap-center"
             >
-              <Link href={`/services/${service.id}`}>
+              <Link href={service.service_url || `/services/${service.id}`} target="_blank" rel="noopener noreferrer">
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
