@@ -243,119 +243,52 @@ export async function toggleServiceFeatured(serviceId: string): Promise<Service 
 }
 
 export async function searchServices(
-  serviceTypeSlug?: string,
-  state?: string,
-  page: number = 1,
-  pageSize: number = 15
-): Promise<{ services: Service[], total: number, page: number, totalPages: number }> {
+  serviceType: string,
+  state: string,
+  zipCode: string,
+  page: number,
+  perPage: number
+): Promise<{ services: Service[]; totalPages: number; total: number }> {
   try {
-    // If no filters are provided, return all services
-    if ((!serviceTypeSlug || serviceTypeSlug === '') && (!state || state === '')) {
-      console.log('No filters provided, returning all services');
-      return getAllServices(page, pageSize);
-    }
-    
-    // Calculate range for pagination
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
-    
-    // Start building the query - use a simpler query without joins first
     let query = supabase
       .from('services')
-      .select('*');
-    
-    // Add filters if provided
-    if (serviceTypeSlug && serviceTypeSlug !== '') {
-      // First, get the service type ID from the slug
-      const serviceType = await getServiceDefinitionBySlug(serviceTypeSlug);
-      if (serviceType) {
-        // The service_type column is a custom type that stores the service_value directly
-        query = query.eq('service_type', serviceType.service_value);
-      }
+      .select('*', { count: 'exact' });
+
+    // Apply filters
+    if (serviceType) {
+      query = query.eq('service_type', serviceType);
     }
     
-    if (state && state !== '') {
-      // Use the state abbreviation directly since the database stores two-letter codes
-      query = query.eq('state', state.toUpperCase());
+    if (state) {
+      query = query.eq('state', state);
     }
     
-    // Use a simpler approach for counting total results
-    let totalCount = 0;
-    
-    try {
-      // Build a count query with the same filters
-      let countQuery = supabase
-        .from('services')
-        .select('id', { count: 'exact' });
-      
-      // Apply the same filters
-      if (serviceTypeSlug && serviceTypeSlug !== '') {
-        const serviceType = await getServiceDefinitionBySlug(serviceTypeSlug);
-        if (serviceType) {
-          countQuery = countQuery.eq('service_type', serviceType.service_value);
-        }
-      }
-      
-      if (state && state !== '') {
-        countQuery = countQuery.eq('state', state.toUpperCase());
-      }
-      
-      // Execute the count query
-      const { count, error } = await countQuery;
-      
-      if (error) {
-        console.error('Error counting services:', error);
-      } else {
-        totalCount = count || 0;
-        console.log('Count result:', totalCount);
-      }
-    } catch (countError) {
-      console.error('Exception in count query:', countError);
+    if (zipCode) {
+      query = query.eq('zip_code', zipCode);
     }
-    
-    // Use totalCount instead of count which is out of scope
-    const total = totalCount;
-    const totalPages = Math.ceil(total / pageSize);
-    
-    // Log the query parameters for debugging
-    console.log('Search parameters:', { 
-      serviceTypeSlug, 
-      state, 
-      page, 
-      pageSize,
-      from,
-      to,
-      total,
-      totalPages
-    });
-    
-    // Execute the query with pagination
-    const { data, error } = await query
-      .range(from, to)
-      .order('name');
-    
+
+    // Add pagination
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+
     if (error) {
       console.error('Error searching services:', error);
-      return { services: [], total: 0, page, totalPages: 0 };
+      throw error;
     }
-    
-    // Log the results for debugging
-    console.log(`Search results count: ${data?.length || 0}`);
-    if (data && data.length > 0) {
-      console.log('First result:', data[0]);
-    } else {
-      console.log('No results found');
-    }
-    
-    return { 
-      services: data as Service[], 
-      total, 
-      page, 
-      totalPages 
+
+    const totalPages = count ? Math.ceil(count / perPage) : 0;
+
+    return {
+      services: data || [],
+      totalPages,
+      total: count || 0
     };
   } catch (error) {
     console.error('Error in searchServices:', error);
-    return { services: [], total: 0, page, totalPages: 0 };
+    throw error;
   }
 }
 
