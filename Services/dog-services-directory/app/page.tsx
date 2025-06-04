@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { SearchForm } from '@/components/search/SearchForm';
 import { SearchResults } from '@/components/search/SearchResults';
 import { FeaturedCarousel } from '@/components/services/FeaturedCarousel';
-import { Footer } from '@/components/Footer';
+import { Footer } from '../components/Footer';
 import { getServiceDefinitions, searchServices } from '@/lib/services';
 import { ServiceDefinition, Service } from '@/lib/types';
 import { getSortedStates } from '@/lib/states';
