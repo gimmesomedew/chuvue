@@ -10,6 +10,7 @@ import { Footer } from '../components/Footer';
 import { getServiceDefinitions, searchServices } from '@/lib/services';
 import { ServiceDefinition, Service } from '@/lib/types';
 import { getSortedStates } from '@/lib/states';
+import { SignUpCallout } from '@/components/search/SignUpCallout';
 
 export default function Home() {
   // State for service definitions
@@ -158,6 +159,7 @@ export default function Home() {
       {hasSearched && (
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
+            {searchResults.length > 0 && <SignUpCallout />}
             <SearchResults 
               searchResults={searchResults}
               isSearching={isSearching}
