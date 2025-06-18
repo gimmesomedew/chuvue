@@ -211,10 +211,10 @@ export function ServiceCard({
         <div className="flex justify-center border-t pt-3">
           <Popover>
             <PopoverTrigger asChild>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" className="flex items-center text-gray-700 bg-white hover:bg-gray-100">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full">
+                <Button variant="outline" className="w-full flex items-center justify-center text-white bg-emerald-500 hover:bg-emerald-600 border-emerald-500">
                   <Globe className="h-4 w-4 mr-2" />
-                  View Options
+                  Actions Menu
                 </Button>
               </motion.div>
             </PopoverTrigger>

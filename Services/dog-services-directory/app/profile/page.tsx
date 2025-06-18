@@ -150,13 +150,19 @@ export default function ProfilePage() {
   };
 
   const handleSignOut = async () => {
+    const loadingToast = showToast.loading('Signing out...');
     try {
       await signOut();
+      showToast.dismiss(loadingToast);
       showToast.success('Signed out successfully');
-      router.push('/auth/login');
+      // Force a page reload to ensure clean state
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
+      showToast.dismiss(loadingToast);
       showToast.error('Failed to sign out');
+      // Force a page reload even on error to ensure clean state
+      window.location.href = '/';
     }
   };
 

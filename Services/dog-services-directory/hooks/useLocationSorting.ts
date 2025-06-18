@@ -1,6 +1,7 @@
 import { useReducer, useCallback, useEffect, useMemo } from 'react';
 import { calculateDistance, getUserLocation } from '@/lib/location';
 import { Service, ServiceWithDistance } from '@/lib/types';
+import { logLocationError } from '@/lib/errorLogging';
 
 // Define the state type
 interface LocationState {
@@ -76,8 +77,10 @@ export function useLocationSorting(searchResults: Service[]) {
           dispatch({ type: 'LOADING_END' });
         })
         .catch(error => {
-          dispatch({ type: 'LOCATION_ERROR', payload: error.message || 'Unable to get your location' });
+          const errorMessage = error.message || 'Unable to get your location';
+          dispatch({ type: 'LOCATION_ERROR', payload: errorMessage });
           dispatch({ type: 'LOADING_END' });
+          logLocationError(error, 'Failed to get user location for distance sorting');
         });
     }
   }, [state.sortByDistance, state.userLocation]);
@@ -112,8 +115,8 @@ export function useLocationSorting(searchResults: Service[]) {
       return [...resultsWithDistance].sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
     }
     
-    // Use original order when not sorting by distance
-    return searchResults;
+    // Sort alphabetically by name when not sorting by distance
+    return [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
   }, [searchResults, state.sortByDistance, state.userLocation]);
   
   // Update the state with the memoized results

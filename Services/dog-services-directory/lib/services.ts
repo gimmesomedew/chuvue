@@ -272,6 +272,9 @@ export async function searchServices(
     const to = from + perPage - 1;
     query = query.range(from, to);
 
+    // Sort alphabetically by name
+    query = query.order('name');
+
     const { data, error, count } = await query;
 
     if (error) {

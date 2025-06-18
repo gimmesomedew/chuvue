@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { HamburgerMenu } from "./HamburgerMenu";
 import { Button } from "@/components/ui/button";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getProfileImage } from '@/types/profile';
 
 export function Header() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -50,6 +51,22 @@ export function Header() {
           <div className={user ? 'block' : 'block sm:hidden'}>
             <HamburgerMenu />
           </div>
+          
+          {/* Avatar icon for logged-in users, now to the right of the menu */}
+          {user && (
+            <Link href="/profile/edit" className="ml-2 flex items-center justify-center rounded-full bg-emerald-100 hover:bg-emerald-200 w-10 h-10 border border-emerald-300 transition-colors overflow-hidden">
+              {profile && getProfileImage(profile) ? (
+                <img
+                  src={getProfileImage(profile)!}
+                  alt="Avatar"
+                  className="object-cover w-10 h-10"
+                />
+              ) : (
+                <User className="w-6 h-6 text-emerald-700" />
+              )}
+              <span className="sr-only">Edit Profile</span>
+            </Link>
+          )}
         </div>
       </div>
     </header>

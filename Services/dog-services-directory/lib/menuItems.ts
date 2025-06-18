@@ -24,6 +24,11 @@ export const staticMenuItems: MenuItem[] = [
 export const roleBasedMenuItems: MenuItem[] = [
   // Admin-only items
   {
+    label: 'Admin Dashboard',
+    href: '/admin',
+    roles: ['admin'],
+  },
+  {
     label: 'Dashboard',
     href: '/admin/dashboard',
     roles: ['admin'],

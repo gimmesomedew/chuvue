@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, X, User, Settings, LogOut, LogIn, UserPlus, Home, Info, Phone, Mail } from 'lucide-react';
+import { Menu, X, User, Settings, LogOut, LogIn, UserPlus, Home, Info, Phone, Mail, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { showToast } from '@/lib/toast';
@@ -89,10 +89,14 @@ export function HamburgerMenu() {
       showToast.dismiss(loadingToast);
       showToast.success('Successfully signed out');
       setIsOpen(false);
+      // Force a page reload to ensure clean state
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
       showToast.dismiss(loadingToast);
       showToast.error('Error signing out. Please try again.');
+      // Force a page reload even on error to ensure clean state
+      window.location.href = '/';
     }
   };
 
@@ -170,7 +174,9 @@ export function HamburgerMenu() {
                             href={item.href}
                             onClick={handleMenuItemClick}
                             icon={item.label === 'Home' ? Home : 
-                                 item.label === 'Contact' ? Phone : undefined}
+                                 item.label === 'Contact' ? Phone : 
+                                 item.label === 'Admin Dashboard' ? Shield :
+                                 undefined}
                           />
                         </motion.div>
                       ))}
