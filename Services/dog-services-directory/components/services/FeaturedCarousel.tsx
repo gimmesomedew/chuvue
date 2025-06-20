@@ -200,7 +200,7 @@ export function FeaturedCarousel() {
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         // Set default image on error
-                        (e.target as HTMLImageElement).src = '/images/paw-placeholder.png';
+                        (e.target as HTMLImageElement).src = '/images/paw-placeholder.svg';
                         (e.target as HTMLImageElement).classList.add('image-placeholder');
                       }}
                     />

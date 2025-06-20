@@ -17,68 +17,54 @@ export type UserRole = 'admin' | 'service_provider' | 'pet_owner' | 'guest' | 'r
 
 // Function to get the current user's role
 export async function getUserRole(): Promise<UserRole> {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return 'guest';
-  
-  // First, check if role is in user metadata
-  if (user.user_metadata && user.user_metadata.role) {
-    const metadataRole = user.user_metadata.role as string;
-    if (['admin', 'service_provider', 'pet_owner', 'reviewer'].includes(metadataRole)) {
-      return metadataRole as UserRole;
-    }
-  }
-  
-  // Check if role is in app_metadata (Supabase sometimes stores roles here)
-  if (user.app_metadata && user.app_metadata.role) {
-    const appMetadataRole = user.app_metadata.role as string;
-    if (['admin', 'service_provider', 'pet_owner', 'reviewer'].includes(appMetadataRole)) {
-      return appMetadataRole as UserRole;
-    }
-  }
-  
-  // Try to get role from the public users table (but handle the case where it doesn't exist)
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('role')
+    console.log('Getting user role...');
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.error('Error getting user:', userError);
+      return 'guest';
+    }
+    
+    if (!user) {
+      console.log('No user found, returning guest role');
+      return 'guest';
+    }
+    
+    console.log('User found:', user.email);
+    
+    // Get role from profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, role, pet_photos')
       .eq('id', user.id)
-      .single();
+      .single()
+      .throwOnError();
     
-    if (!error && data?.role) {
-      if (['admin', 'service_provider', 'pet_owner', 'reviewer'].includes(data.role)) {
-        return data.role as UserRole;
+    console.log('Profile query result:', { profile, profileError });
+    
+    if (profileError || !profile) {
+      // Fallback to admin detection for your email
+      if (user.email === 'carykchandler@gmail.com') {
+        console.log('Using fallback admin role for your email');
+        return 'admin';
       }
+      console.log('No profile or error, returning default pet_owner');
+      return 'pet_owner';
     }
+    
+    const dbRole = profile.role as string | null;
+    if (dbRole && ['admin', 'service_provider', 'pet_owner', 'reviewer'].includes(dbRole)) {
+      console.log('Role found in profiles table:', dbRole);
+      return dbRole as UserRole;
+    }
+    
+    console.log('No valid role in profile, returning default pet_owner');
+    return 'pet_owner';
   } catch (error) {
-    // Silently handle error - we'll fall back to email-based detection
-    console.log('Users table may not exist, falling back to email detection');
+    console.error('Error in getUserRole:', error);
+    return 'guest';
   }
-  
-  // Email-based role determination as fallback
-  if (user.email) {
-    // Admin detection
-    if (
-      user.email.includes('admin') || 
-      user.email.endsWith('@dogparkadventures.com') || 
-      user.email === 'admin@example.com'
-    ) {
-      return 'admin';
-    }
-    
-    // Reviewer detection
-    if (user.email.includes('review') || user.email.includes('moderator')) {
-      return 'reviewer';
-    }
-    
-    // Service provider detection
-    if (user.email.includes('provider') || user.email.includes('service')) {
-      return 'service_provider';
-    }
-  }
-  
-  // Default role if no other method works
-  return 'pet_owner';
 }
 
 // Function to check if user has specific role
