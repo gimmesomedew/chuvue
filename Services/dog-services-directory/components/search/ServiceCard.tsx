@@ -14,6 +14,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toggleServiceFeatured, deleteService, toggleFavorite, isServiceFavorited } from '@/lib/services';
 import { showToast } from '@/lib/toast';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Analytics } from '@/lib/analytics';
+import { getServiceBadgeConfig } from '@/lib/serviceBadges';
 
 interface ServiceCardProps {
   service: Service & { distance?: number };
@@ -28,15 +30,30 @@ export function ServiceCard({
   userLocation,
   delay = 0.1 
 }: ServiceCardProps) {
-  const { userRole, user } = useAuth();
+  const { user, userRole } = useAuth();
   const [featured, setFeatured] = useState(service.featured === 'Y');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
-  const isAdminOrReviewer = userRole === 'admin' || userRole === 'reviewer';
+  const [badgeConfig, setBadgeConfig] = useState<any>(null);
   
+  const isAdminOrReviewer = userRole === 'admin' || userRole === 'reviewer';
+
+  // Load badge configuration
+  useEffect(() => {
+    const loadBadgeConfig = async () => {
+      try {
+        const config = await getServiceBadgeConfig(service.service_type);
+        setBadgeConfig(config);
+      } catch (error) {
+        console.error('Error loading badge config:', error);
+      }
+    };
+    loadBadgeConfig();
+  }, [service.service_type]);
+
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (user) {
@@ -90,14 +107,29 @@ export function ServiceCard({
       const newFavoriteStatus = await toggleFavorite(user.id, service.id);
       setIsFavorited(newFavoriteStatus);
       
-      if (newFavoriteStatus) {
-        setShowHeartAnimation(true);
-        setTimeout(() => setShowHeartAnimation(false), 3000);
-      }
+      // Track favorite analytics
+      Analytics.trackFavoriteToggle(service.id, newFavoriteStatus);
+      
+      // Show heart animation
+      setShowHeartAnimation(true);
+      setTimeout(() => setShowHeartAnimation(false), 300);
+      
+      showToast.success(newFavoriteStatus ? 'Added to favorites!' : 'Removed from favorites');
     } catch (error) {
       console.error('Error toggling favorite:', error);
       showToast.error('Failed to update favorite status');
     }
+  };
+
+  const handleWebsiteClick = () => {
+    if (service.website_url) {
+      Analytics.trackWebsiteVisit(service.id, service.website_url);
+      window.open(service.website_url, '_blank');
+    }
+  };
+
+  const handleServiceClick = () => {
+    Analytics.trackServiceClick(service.id, service.name);
   };
 
   // If the service has been deleted, don't render the card
@@ -133,6 +165,22 @@ export function ServiceCard({
           <PawPrint className="h-24 w-24 text-white" />
           <p className="text-white text-sm mt-2">No Image Available</p>
         </div>
+        
+        {/* Service Type Badge */}
+        <div className="absolute top-3 left-3">
+          {badgeConfig && (() => {
+            const Icon = badgeConfig.icon;
+            return (
+              <div className="bg-[#23C55F]/30 backdrop-blur-sm rounded-md p-1">
+                <Badge className={`${badgeConfig.bgColor} ${badgeConfig.hoverColor} text-white border-0 shadow-md`}>
+                  <Icon className="h-3 w-3 mr-1" />
+                  {badgeConfig.label}
+                </Badge>
+              </div>
+            );
+          })()}
+        </div>
+        
         {user && (
           <motion.button 
             whileHover={{ scale: 1.1 }}
@@ -198,9 +246,6 @@ export function ServiceCard({
         </p>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-            {service.service_type}
-          </Badge>
           {service.is_verified && (
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
               Verified
@@ -224,7 +269,7 @@ export function ServiceCard({
                   <Button 
                     variant="ghost" 
                     className="justify-start text-gray-700 hover:bg-emerald-50"
-                    onClick={() => window.open(service.website_url, '_blank')}
+                    onClick={handleWebsiteClick}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     View Website
@@ -234,7 +279,14 @@ export function ServiceCard({
                   <Button 
                     variant="ghost" 
                     className="justify-start text-gray-700 hover:bg-emerald-50"
-                    onClick={() => window.open(service.searchPage_url, '_blank')}
+                    onClick={() => {
+                      Analytics.trackUserInteraction({
+                        interaction_type: 'map_view',
+                        target_id: service.id,
+                        target_type: 'service',
+                      });
+                      window.open(service.searchPage_url, '_blank');
+                    }}
                   >
                     <Map className="h-4 w-4 mr-2" />
                     View Map
@@ -244,7 +296,14 @@ export function ServiceCard({
                   <Button 
                     variant="ghost" 
                     className="justify-start text-gray-700 hover:bg-emerald-50"
-                    onClick={() => window.open(service.service_url, '_blank')}
+                    onClick={() => {
+                      Analytics.trackUserInteraction({
+                        interaction_type: 'click',
+                        target_id: service.id,
+                        target_type: 'service',
+                      });
+                      window.open(service.service_url, '_blank');
+                    }}
                   >
                     <User className="h-4 w-4 mr-2" />
                     View Profile

@@ -12,7 +12,7 @@ import { showToast } from '@/lib/toast';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Save, Upload, X, Camera } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X, Camera, Trash } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type ProfileFormData = {
@@ -43,6 +43,7 @@ export default function ProfileEditPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [newTrick, setNewTrick] = useState('');
 
   useEffect(() => {
@@ -377,16 +378,72 @@ export default function ProfileEditPage() {
                     <Camera className="h-5 w-5 text-emerald-600" />
                   </div>
                   <p className="text-sm text-gray-600 mb-3">Add photos of your pet to personalize your profile.</p>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 transition-all duration-300 hover:scale-105" 
-                    disabled
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Photos
-                  </Button>
-                  <p className="text-xs text-emerald-600 mt-2 italic">Photo upload functionality coming soon!</p>
+                  <input
+                    id="petPhotosInput"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (!user || files.length === 0) return;
+                      setUploading(true);
+                      try {
+                        const uploadedUrls: string[] = [];
+                        for (const file of files) {
+                          const fileExt = file.name.split('.').pop();
+                          const filePath = `${user.id}/${Date.now()}-${file.name}`;
+                          const { error: uploadError } = await supabase.storage
+                            .from('pet_photos')
+                            .upload(filePath, file, { upsert: true });
+                          if (uploadError) throw uploadError;
+                          const { data: publicUrlData } = supabase.storage
+                            .from('pet_photos')
+                            .getPublicUrl(filePath);
+                          if (publicUrlData?.publicUrl) {
+                            uploadedUrls.push(publicUrlData.publicUrl);
+                          }
+                        }
+                        setFormData(prev => ({
+                          ...prev,
+                          pet_photos: [...prev.pet_photos, ...uploadedUrls],
+                        }));
+                        showToast.success('Photos uploaded!');
+                      } catch (err) {
+                        console.error('Photo upload error:', err);
+                        showToast.error('Failed to upload photos');
+                      } finally {
+                        setUploading(false);
+                        // reset input value to allow re-upload same file
+                        (document.getElementById('petPhotosInput') as HTMLInputElement).value = '';
+                      }
+                    }}
+                    className="block w-full text-sm text-gray-900 border border-emerald-300 rounded-md cursor-pointer focus:outline-none p-2 bg-white mb-3"
+                  />
+                  {uploading && (
+                    <p className="text-xs text-gray-500 mb-2">Uploading...</p>
+                  )}
+                  {formData.pet_photos.length > 0 && (
+                    <div className="mt-4 grid grid-cols-3 gap-3">
+                      {formData.pet_photos.map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt={`Pet ${idx}`} className="object-cover w-full h-24 rounded-md" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                pet_photos: prev.pet_photos.filter((u) => u !== url),
+                              }));
+                            }}
+                            className="absolute top-1 right-1 bg-black bg-opacity-50 p-1 rounded-full text-white invisible group-hover:visible"
+                          >
+                            <Trash className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               </div>
               
@@ -407,7 +464,7 @@ export default function ProfileEditPage() {
                 <Button 
                   type="submit" 
                   className="bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
-                  disabled={saving}
+                  disabled={saving || uploading}
                 >
                   {saving ? (
                     <>

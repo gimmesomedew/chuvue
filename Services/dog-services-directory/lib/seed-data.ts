@@ -1,5 +1,69 @@
 import { supabase } from './supabase';
 
+// Sample service definitions data
+const sampleServiceDefinitions = [
+  {
+    service_name: 'Dog Parks',
+    service_value: 'dog_park',
+    service_description: 'Off-leash dog parks and recreational areas for dogs'
+  },
+  {
+    service_name: 'Veterinarians',
+    service_value: 'veterinarian',
+    service_description: 'Veterinary clinics and animal hospitals'
+  },
+  {
+    service_name: 'Grooming',
+    service_value: 'grooming',
+    service_description: 'Dog grooming and pet spa services'
+  },
+  {
+    service_name: 'Boarding',
+    service_value: 'boarding',
+    service_description: 'Dog boarding and kennel services'
+  },
+  {
+    service_name: 'Training',
+    service_value: 'training',
+    service_description: 'Dog training and obedience classes'
+  },
+  {
+    service_name: 'Daycare',
+    service_value: 'daycare',
+    service_description: 'Dog daycare and play facilities'
+  },
+  {
+    service_name: 'Walking',
+    service_value: 'walking',
+    service_description: 'Dog walking services'
+  },
+  {
+    service_name: 'Pet Sitting',
+    service_value: 'sitting',
+    service_description: 'In-home pet sitting services'
+  },
+  {
+    service_name: 'Rescue',
+    service_value: 'rescue',
+    service_description: 'Animal rescue and adoption services'
+  },
+  {
+    service_name: 'Supplies',
+    service_value: 'supplies',
+    service_description: 'Pet supplies and retail stores'
+  },
+  {
+    service_name: 'Photography',
+    service_value: 'photography',
+    service_description: 'Pet photography services'
+  },
+  {
+    service_name: 'Transport',
+    service_value: 'transport',
+    service_description: 'Pet transportation services'
+  }
+];
+
 // Sample service data
 const sampleServices = [
   {
@@ -90,6 +154,45 @@ const sampleServices = [
 ];
 
 /**
+ * Seed the service_definitions table with sample data
+ * @returns Promise<void>
+ */
+export async function seedServiceDefinitions(): Promise<void> {
+  try {
+    console.log('Seeding service_definitions table...');
+    
+    // First, check if service definitions already exist
+    const { count, error: countError } = await supabase
+      .from('service_definitions')
+      .select('*', { count: 'exact', head: true });
+    
+    if (countError) {
+      console.error('Error checking service_definitions count:', countError);
+      return;
+    }
+    
+    if (count && count > 0) {
+      console.log(`Service_definitions table already has ${count} records. Skipping seed.`);
+      return;
+    }
+    
+    // Insert sample service definitions
+    const { data, error } = await supabase
+      .from('service_definitions')
+      .insert(sampleServiceDefinitions);
+    
+    if (error) {
+      console.error('Error seeding service_definitions:', error);
+      return;
+    }
+    
+    console.log(`Successfully seeded ${sampleServiceDefinitions.length} service definitions.`);
+  } catch (error) {
+    console.error('Error in seedServiceDefinitions:', error);
+  }
+}
+
+/**
  * Seed the services table with sample data
  * @returns Promise<void>
  */
@@ -125,5 +228,25 @@ export async function seedServices(): Promise<void> {
     console.log(`Successfully seeded ${sampleServices.length} services.`);
   } catch (error) {
     console.error('Error in seedServices:', error);
+  }
+}
+
+/**
+ * Seed both service_definitions and services tables
+ * @returns Promise<void>
+ */
+export async function seedAllData(): Promise<void> {
+  try {
+    console.log('Seeding all data...');
+    
+    // Seed service definitions first
+    await seedServiceDefinitions();
+    
+    // Then seed services
+    await seedServices();
+    
+    console.log('All data seeded successfully!');
+  } catch (error) {
+    console.error('Error seeding all data:', error);
   }
 }

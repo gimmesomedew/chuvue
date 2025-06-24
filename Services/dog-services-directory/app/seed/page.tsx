@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { seedServices } from '@/lib/seed-data';
+import { seedAllData } from '@/lib/seed-data';
 
 export default function SeedPage() {
   const [isSeeding, setIsSeeding] = useState(false);
@@ -12,7 +12,7 @@ export default function SeedPage() {
     setMessage('Seeding database...');
     
     try {
-      await seedServices();
+      await seedAllData();
       setMessage('Database seeded successfully!');
     } catch (error) {
       console.error('Error seeding database:', error);
@@ -28,7 +28,7 @@ export default function SeedPage() {
         <h1 className="text-2xl font-bold mb-6 text-center">Seed Database</h1>
         
         <p className="mb-6 text-gray-600">
-          This will add sample service data to the database for testing purposes.
+          This will add sample service definitions and service data to the database for testing purposes.
           Only use this if your database is empty or you want to add more sample data.
         </p>
         

@@ -63,6 +63,10 @@ export const getProfileRole = (profile: ProfileData): string => {
 };
 
 export const getProfileImage = (profile: ProfileData): string | null => {
+  if (profile.profile_photo) {
+    return profile.profile_photo;
+  }
+  
   if (profile.pet_photos && profile.pet_photos.length > 0) {
     return profile.pet_photos[0];
   }

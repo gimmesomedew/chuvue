@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, X, User, Settings, LogOut, LogIn, UserPlus, Home, Info, Phone, Mail, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { showToast } from '@/lib/toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { staticMenuItems, roleBasedMenuItems, getMenuItemsByRole } from '@/lib/menuItems';
+import { getSectionedEntries, MenuSection } from '@/lib/menuItems';
 
 // Menu item component
 type MenuItemProps = {
@@ -27,7 +26,7 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
       <Link
         href={href || '#'}
         onClick={onClick}
-        className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+        className="group flex items-center gap-3 px-3 py-2 text-primary-600 hover:bg-gray-100 hover:text-[#D28001] rounded-md transition-colors"
       >
         {Icon && (
           <motion.div
@@ -35,7 +34,7 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
             whileHover={{ rotate: 10, scale: 1.1 }}
             transition={{ duration: 0.2 }}
           >
-            <Icon className="w-5 h-5 text-gray-500" />
+            <Icon className="w-5 h-5 text-primary-500 group-hover:text-[#D28001]" />
           </motion.div>
         )}
         <span>{label}</span>
@@ -46,8 +45,19 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
 
 export function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { user, userRole, signOut } = useAuth();
+  const { userRole, signOut, unreadMessageCount } = useAuth();
+
+  const sectionsOrder: MenuSection[] = ['base', 'review', 'admin', 'account'];
+  const sectionHeadings: Record<MenuSection, string> = {
+    base: '',
+    review: 'Reviewer',
+    admin: 'Admin',
+    account: 'Account',
+  } as const;
+
+  const sectionedEntries = getSectionedEntries(userRole);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -83,6 +93,9 @@ export function HamburgerMenu() {
 
   // Handle sign out
   const handleSignOut = async () => {
+    if (isSigningOut) return; // Prevent duplicate calls
+    
+    setIsSigningOut(true);
     const loadingToast = showToast.loading('Signing out...');
     try {
       await signOut();
@@ -97,6 +110,8 @@ export function HamburgerMenu() {
       showToast.error('Error signing out. Please try again.');
       // Force a page reload even on error to ensure clean state
       window.location.href = '/';
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -152,153 +167,49 @@ export function HamburgerMenu() {
               </div>
 
               <nav className="space-y-6">
-                {/* Static navigation items */}
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
-                      className="space-y-2"
-                    >
-                      {staticMenuItems.map((item, index) => (
-                        <motion.div
-                          key={item.label}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
+                {sectionsOrder.map((sectionKey) => {
+                  const entries = sectionedEntries[sectionKey] || [];
+                  if (entries.length === 0) return null;
+
+                  return (
+                    <div key={sectionKey} className="space-y-4">
+                      {sectionHeadings[sectionKey] && (
+                        <h3
+                          className={
+                            sectionKey === 'admin'
+                              ? 'text-sm font-medium text-purple-700 uppercase tracking-wider'
+                              : 'text-sm font-medium text-gray-500 uppercase tracking-wider'
+                          }
                         >
-                          <MenuItem
-                            key={item.label}
-                            label={item.label}
-                            href={item.href}
-                            onClick={handleMenuItemClick}
-                            icon={item.label === 'Home' ? Home : 
-                                 item.label === 'Contact' ? Phone : 
-                                 item.label === 'Admin Dashboard' ? Shield :
-                                 undefined}
-                          />
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
+                          {sectionHeadings[sectionKey]}
+                        </h3>
+                      )}
 
-                {/* Role-based menu items (if logged in) */}
-                {user && roleBasedMenuItems.filter(item => !item.roles || item.roles.includes(userRole)).length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-4"
-                  >
-                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      {userRole === 'admin' ? 'Admin' : userRole === 'service_provider' ? 'Provider' : 'My Account'}
-                    </h3>
-                    <div className="space-y-2">
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ staggerChildren: 0.1, delayChildren: 0.4 }}
-                        className="space-y-2"
-                      >
-                        {roleBasedMenuItems
-                          .filter(item => !item.roles || item.roles.includes(userRole))
-                          .map((item, index) => {
-                            // Dynamically set the profile link
-                            let href = item.href;
-                            if (item.label.toLowerCase().includes('profile') && user) {
-                              href = `/profile/${user.id}`;
-                            }
-                            return (
-                              <motion.div
-                                key={item.label}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 + (index * 0.05) }}
-                              >
-                                <MenuItem
-                                  key={item.label}
-                                  label={item.label}
-                                  href={href}
-                                  onClick={handleMenuItemClick}
-                                  icon={item.label.includes('Settings') ? Settings : undefined}
-                                />
-                              </motion.div>
-                            );
-                          })
-                        }
-                      </motion.div>
+                      <div className="space-y-2">
+                        {entries.map((entry) => {
+                          // compute label modifications (badge)
+                          let label = entry.label;
+                          if (entry.label === 'Messages' && unreadMessageCount > 0) {
+                            label = `${entry.label} (${unreadMessageCount})`;
+                          }
+
+                          const onClickHandler =
+                            entry.action === 'signout' ? handleSignOut : handleMenuItemClick;
+
+                          return (
+                            <MenuItem
+                              key={entry.label}
+                              label={label}
+                              href={entry.href}
+                              onClick={onClickHandler}
+                              icon={entry.icon}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                  </motion.div>
-                )}
-
-                {/* Authentication buttons */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="space-y-4"
-                >
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Account</h3>
-                  <div className="space-y-4">
-                    {user ? (
-                      <>
-                        <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-center border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white mb-3"
-                            onClick={() => setIsOpen(false)}
-                            asChild
-                          >
-                            <Link href={`/profile/${user.id}`} prefetch={false}>
-                              <User className="h-4 w-4 mr-2" />
-                              My Profile
-                            </Link>
-                          </Button>
-                        </motion.div>
-                        <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-center border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
-                            onClick={handleSignOut}
-                          >
-                            <LogOut className="h-4 w-4 mr-2" />
-                            Sign Out
-                          </Button>
-                        </motion.div>
-                      </>
-                    ) : (
-                      <>
-                        <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-center border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
-                            onClick={() => setIsOpen(false)}
-                            asChild
-                          >
-                            <Link href="/auth/login">
-                              <LogIn className="h-4 w-4 mr-2" />
-                              Sign In
-                            </Link>
-                          </Button>
-                        </motion.div>
-                        <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
-                          <Button
-                            className="w-full justify-center bg-emerald-500 hover:bg-emerald-600 text-white"
-                            onClick={() => setIsOpen(false)}
-                            asChild
-                          >
-                            <Link href="/auth/signup">
-                              <UserPlus className="h-4 w-4 mr-2" />
-                              Sign Up
-                            </Link>
-                          </Button>
-                        </motion.div>
-                      </>
-                    )}
-                  </div>
-                </motion.div>
+                  );
+                })}
 
                 <motion.div
                   initial={{ opacity: 0 }}

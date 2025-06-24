@@ -1,128 +1,222 @@
-import { UserRole } from './supabase';
+// lib/menuItems.ts --- REFACTORED
+// This file now defines a single canonical list of menu entries that is shared
+// by both the desktop header and the mobile hamburger menu.
+// Each entry specifies the roles that should see it and the logical section it
+// belongs to so that consuming components can group / render as they wish.
 
-// Menu item interface
-export interface MenuItem {
+import {
+  Home,
+  Navigation,
+  Mail,
+  Briefcase,
+  Shield,
+  User,
+  Heart,
+  Settings,
+  LogOut,
+  LogIn,
+  UserPlus,
+} from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+
+import type { UserRole } from './supabase';
+
+// Logical groupings so menus can be rendered with headings
+export type MenuSection = 'base' | 'review' | 'admin' | 'account';
+
+export interface MenuEntry {
   label: string;
   href: string;
-  icon?: string;
-  roles?: UserRole[];
+  icon: LucideIcon;
+  roles: UserRole[]; // which roles can see this item
+  section: MenuSection;
+  // Optional flag for items that are actions instead of links (e.g. sign-out)
+  action?: string;
 }
 
-// Static menu items (always visible)
-export const staticMenuItems: MenuItem[] = [
+// ---------------------------------------------------------------------------
+// Canonical list of ALL possible menu entries in the application
+// ---------------------------------------------------------------------------
+export const menuEntries: MenuEntry[] = [
+  // ----- Base (general navigation) -----
   {
     label: 'Home',
     href: '/',
+    icon: Home,
+    roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'base',
   },
-  {
-    label: 'Contact',
-    href: '/contact',
-  },
-];
-
-// Role-based menu items
-export const roleBasedMenuItems: MenuItem[] = [
-  // Admin-only items
-  {
-    label: 'Admin Dashboard',
-    href: '/admin',
-    roles: ['admin'],
-  },
-  {
-    label: 'Dashboard',
-    href: '/admin/dashboard',
-    roles: ['admin'],
-  },
-  {
-    label: 'Manage Users',
-    href: '/admin/users',
-    roles: ['admin'],
-  },
-  {
-    label: 'Contact Messages',
-    href: '/admin/contact',
-    roles: ['admin'],
-  },
-  {
-    label: 'Site Settings',
-    href: '/admin/settings',
-    roles: ['admin'],
-  },
-  
-  // Service provider items
-  {
-    label: 'My Services',
-    href: '/provider/services',
-    roles: ['service_provider', 'admin'],
-  },
-  {
-    label: 'Bookings',
-    href: '/provider/bookings',
-    roles: ['service_provider', 'admin'],
-  },
-  {
-    label: 'Business Profile',
-    href: '/provider/profile',
-    roles: ['service_provider', 'admin'],
-  },
-  
-  // Directory - visible to all logged-in users
   {
     label: 'Directory',
     href: '/directory',
-    roles: ['pet_owner', 'service_provider', 'admin', 'reviewer'],
+    icon: Navigation,
+    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'base',
   },
-  
-  // Messages - visible to all logged-in users
   {
     label: 'Messages',
     href: '/messages',
-    roles: ['pet_owner', 'service_provider', 'admin', 'reviewer'],
+    icon: Mail,
+    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'base',
   },
-  
-  // Pet owner items
+  {
+    label: 'Add Listing',
+    href: '/add-listing',
+    icon: Briefcase,
+    roles: ['guest', 'pet_owner', 'service_provider'],
+    section: 'base',
+  },
+
+  // ----- Guest account actions -----
+  {
+    label: 'Sign In',
+    href: '/auth/login',
+    icon: LogIn,
+    roles: ['guest'],
+    section: 'account',
+  },
+  {
+    label: 'Sign Up',
+    href: '/auth/signup',
+    icon: UserPlus,
+    roles: ['guest'],
+    section: 'account',
+  },
+
+  // ----- Reviewer-only -----
+  {
+    label: 'Pending Submissions',
+    href: '/review/pending',
+    icon: Shield,
+    roles: ['reviewer', 'admin'],
+    section: 'review',
+  },
+  {
+    label: 'Approved Listings',
+    href: '/review/approved',
+    icon: Shield,
+    roles: ['reviewer', 'admin'],
+    section: 'review',
+  },
+  {
+    label: 'Rejected Submissions',
+    href: '/review/rejected',
+    icon: Shield,
+    roles: ['reviewer', 'admin'],
+    section: 'review',
+  },
+  {
+    label: 'Flagged Content',
+    href: '/review/flagged',
+    icon: Shield,
+    roles: ['reviewer', 'admin'],
+    section: 'review',
+  },
+  {
+    label: 'Review Guidelines',
+    href: '/review/guidelines',
+    icon: Shield,
+    roles: ['reviewer', 'admin'],
+    section: 'review',
+  },
+
+  // ----- Admin-only -----
+  {
+    label: 'User Management',
+    href: '/admin/users',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'Service Submissions',
+    href: '/admin/services',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'Site Analytics',
+    href: '/admin/analytics',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'System Settings',
+    href: '/admin/settings',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'Reviewer Management',
+    href: '/admin/reviewers',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'Reports & Exports',
+    href: '/admin/reports',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'Platform Health',
+    href: '/admin/health',
+    icon: Shield,
+    roles: ['admin'],
+    section: 'admin',
+  },
+
+  // ----- Account (logged-in users) -----
+  {
+    label: 'Profile',
+    href: '/profile',
+    icon: User,
+    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'account',
+  },
   {
     label: 'Favorites',
     href: '/owner/favorites',
-    roles: ['pet_owner', 'admin'],
+    icon: Heart,
+    roles: ['pet_owner'],
+    section: 'account',
+  },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: Settings,
+    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'account',
+  },
+  {
+    label: 'Sign Out',
+    href: '#', // special; will be handled as action
+    icon: LogOut,
+    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'account',
+    action: 'signout',
   },
 ];
 
-// Quick links for the menu (visible to all users)
-export const quickLinks: MenuItem[] = [
-  {
-    label: 'Dog Parks',
-    href: '/services/dog-parks',
-  },
-  {
-    label: 'Veterinarians',
-    href: '/services/veterinarians',
-  },
-  {
-    label: 'Groomers',
-    href: '/services/groomers',
-  },
-  {
-    label: 'Pet Stores',
-    href: '/services/pet-stores',
-  },
-  {
-    label: 'Trainers',
-    href: '/services/trainers',
-  },
-  {
-    label: 'Daycare',
-    href: '/services/daycare',
-  },
-];
+// Helper: entries visible to role
+export function getEntriesForRole(role: UserRole) {
+  return menuEntries.filter((e) => e.roles.includes(role));
+}
 
-// Function to get menu items based on user role
-export function getMenuItemsByRole(role: UserRole): MenuItem[] {
-  const items = [...staticMenuItems];
-  
-  const roleItems = roleBasedMenuItems.filter(item => 
-    !item.roles || item.roles.includes(role)
+// Helper: group entries by section for easier rendering
+export function getSectionedEntries(role: UserRole) {
+  return getEntriesForRole(role).reduce<Record<MenuSection, MenuEntry[]>>(
+    (acc, entry) => {
+      if (!acc[entry.section]) acc[entry.section] = [] as MenuEntry[];
+      acc[entry.section].push(entry);
+      return acc;
+    },
+    {} as Record<MenuSection, MenuEntry[]>,
   );
-  
-  return [...items, ...roleItems];
 }

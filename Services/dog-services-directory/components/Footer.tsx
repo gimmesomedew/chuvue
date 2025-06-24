@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export function Footer() {
   return (
-    <footer className="bg-[#1076a2] text-white py-12 mt-auto">
+    <footer className="bg-[rgba(9,46,62,1)] text-white py-12 mt-auto">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <motion.div
@@ -13,7 +13,7 @@ export function Footer() {
             transition={{ duration: 0.5 }}
           >
             <div className="flex items-center mb-4">
-              <img src="/images/DogParkAdventures-Logo.png" alt="Dog Park Adventures Logo" className="h-12 mr-2" />
+              <img src="/images/DPA-white-logo.png" alt="Dog Park Adventures Logo" className="h-12 mr-2" />
             </div>
             <p className="text-white text-sm">Connecting pet owners with trusted local services.</p>
           </motion.div>

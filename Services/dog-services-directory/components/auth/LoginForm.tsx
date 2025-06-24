@@ -19,11 +19,16 @@ export function LoginForm() {
     setIsLoading(true);
     setError(null);
 
+    console.log('Login form submitted for:', email);
+
     // Show loading toast
     const loadingToast = showToast.loading('Signing in...');
 
     try {
+      console.log('Calling signIn function...');
       const { user, userRole } = await signIn(email, password);
+      console.log('SignIn successful, user:', user?.email, 'role:', userRole);
+      
       // Dismiss loading toast
       showToast.dismiss(loadingToast);
       
@@ -40,14 +45,31 @@ export function LoginForm() {
         showToast.success(`Welcome back, ${userName}!`);
       }
       
+      console.log('Redirecting to home page...');
       // Redirect to home page after successful login
       window.location.href = '/';
     } catch (error) {
       console.error('Login error:', error);
       // Dismiss loading toast and show error toast
       showToast.dismiss(loadingToast);
-      showToast.error('Invalid email or password. Please try again.');
-      setError('Invalid email or password. Please try again.');
+      
+      let errorMessage = 'Invalid email or password. Please try again.';
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and confirm your account before signing in.';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Too many login attempts. Please wait a moment before trying again.';
+        } else {
+          errorMessage = `Login failed: ${error.message}`;
+        }
+      }
+      
+      showToast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

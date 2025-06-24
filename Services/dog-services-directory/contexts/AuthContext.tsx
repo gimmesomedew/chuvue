@@ -13,6 +13,8 @@ type AuthContextType = {
   userRole: UserRole;
   isLoading: boolean;
   profile: ProfileData | null;
+  unreadMessageCount: number;
+  notifications: Record<string, number>;
   signIn: (email: string, password: string) => Promise<{ user: User; userRole: UserRole }>;
   signUp: (email: string, password: string) => Promise<{ user: User | null; userRole: UserRole }>;
   signOut: () => Promise<void>;
@@ -26,6 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('guest');
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [notifications, setNotifications] = useState<Record<string, number>>({});
   const [isSigningOut, setIsSigningOut] = useState(false);
   const currentUserId = useRef<string | null>(null);
   const hasInitialized = useRef(false);
@@ -165,6 +169,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
+  /* --------------------------------------------------
+   * Notification / badge counts (messages, review queues, etc.)
+   * -------------------------------------------------- */
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCounts = async () => {
+      try {
+        // Example unread messages count
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('receiver_id', user.id)
+          .is('read', false);
+
+        if (!error) {
+          setUnreadMessageCount(count || 0);
+          setNotifications(prev => ({ ...prev, messages: count || 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching notification counts', err);
+      }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, [user]);
+
   const signIn = async (email: string, password: string) => {
     console.log('Signing in user:', email);
     
@@ -260,6 +293,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userRole,
     isLoading,
     profile,
+    unreadMessageCount,
+    notifications,
     signIn,
     signUp,
     signOut,

@@ -2,6 +2,16 @@ import { supabase } from './supabase';
 import { ServiceDefinition, Service } from './types';
 
 /**
+ * Interface for service definition with count
+ */
+export interface ServiceDefinitionWithCount {
+  service_definition_id: number;
+  service_name: string;
+  service_value: string;
+  services_count: number;
+}
+
+/**
  * Fetches all service definitions from the Supabase database
  * @returns Array of service definitions
  */
@@ -20,6 +30,49 @@ export async function getServiceDefinitions(): Promise<ServiceDefinition[]> {
     return data as ServiceDefinition[];
   } catch (error) {
     console.error('Error in getServiceDefinitions:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetches service definitions with their service counts using the database function
+ * @returns Array of service definitions with counts
+ */
+export async function getServiceDefinitionsWithCounts(): Promise<ServiceDefinitionWithCount[]> {
+  try {
+    // fetch definitions
+    const { data: defs, error: defErr } = await supabase
+      .from('service_definitions')
+      .select('id, service_name, service_value')
+      .order('service_name');
+
+    if (defErr) {
+      console.error('Error fetching definitions:', defErr);
+      return [];
+    }
+
+    // fetch counts grouped by service_value
+    const { data: svc, error: svcErr } = await supabase
+      .from('services')
+      .select('service_type');
+
+    if (svcErr) {
+      console.error('Error fetching services for counts:', svcErr);
+    }
+
+    const countMap: Record<string, number> = {};
+    (svc || []).forEach((s: any) => {
+      countMap[s.service_type] = (countMap[s.service_type] || 0) + 1;
+    });
+
+    return (defs || []).map((d: any) => ({
+      service_definition_id: d.id,
+      service_name: d.service_name,
+      service_value: d.service_value,
+      services_count: countMap[d.service_value] || 0,
+    }));
+  } catch (error) {
+    console.error('Error in getServiceDefinitionsWithCounts:', error);
     return [];
   }
 }
