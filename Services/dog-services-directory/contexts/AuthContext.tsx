@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, UserRole, getUserRole } from '@/lib/supabase';
-import { logLogoutError } from '@/lib/errorLogging';
+import { logLogoutError, logAuthError } from '@/lib/errorLogging';
 import { ProfileData } from '@/types/profile';
 import { useRouter } from 'next/navigation';
 
@@ -206,6 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) {
         console.error('Sign in error:', error);
+        await logAuthError(error instanceof Error ? error : String(error), 'signIn');
         throw error;
       }
       
@@ -220,6 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { user: data.user, userRole: role };
     } catch (error) {
       console.error('Sign in failed:', error);
+      await logAuthError(error instanceof Error ? error : String(error), 'signIn');
       throw error;
     }
   };
@@ -232,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) {
         console.error('Sign up error:', error);
+        await logAuthError(error instanceof Error ? error : String(error), 'signUp');
         throw error;
       }
       
@@ -245,6 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { user: data.user, userRole: defaultRole };
     } catch (error) {
       console.error('Sign up failed:', error);
+      await logAuthError(error instanceof Error ? error : String(error), 'signUp');
       throw error;
     }
   };

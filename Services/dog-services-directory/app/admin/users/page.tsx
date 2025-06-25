@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import UserRowSkeleton from '@/components/admin/UserRowSkeleton';
 
 interface Profile {
   id: string;
@@ -217,7 +218,25 @@ export default function AdminUsersPage() {
       {error && <div className="alert alert-error mb-4">{error}</div>}
 
       {loading ? (
-        <div className="flex justify-center"><span className="loading loading-spinner loading-lg"></span></div>
+        <div className="overflow-x-auto">
+          <table className="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>Avatar</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                <UserRowSkeleton key={i} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="space-y-4">
           <div className="overflow-x-auto">
