@@ -19,7 +19,7 @@ import { supabase } from '@/lib/supabase';
 interface ServiceStats {
   totalServices: number;
   featuredServices: number;
-  verifiedServices: number;
+  pendingSubmissions: number;
 }
 
 export function ServicesManagement() {
@@ -60,26 +60,26 @@ export function ServicesManagement() {
   const loadServiceStats = async () => {
     try {
       // Get total services count
-      const { count: totalServices, error: totalError } = await supabase
+      const { count: totalServices } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true });
 
       // Get featured services count
-      const { count: featuredServices, error: featuredError } = await supabase
+      const { count: featuredServices } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true })
         .eq('featured', 'Y');
 
-      // Get verified services count
-      const { count: verifiedServices, error: verifiedError } = await supabase
-        .from('services')
+      // Get pending submissions count
+      const { count: pendingSubmissions } = await supabase
+        .from('service_submissions')
         .select('*', { count: 'exact', head: true })
-        .eq('is_verified', true);
+        .eq('status', 'pending');
 
       setServiceStats({
         totalServices: totalServices || 0,
         featuredServices: featuredServices || 0,
-        verifiedServices: verifiedServices || 0,
+        pendingSubmissions: pendingSubmissions || 0,
       });
     } catch (error) {
       console.error('Error loading service stats:', error);
@@ -124,13 +124,13 @@ export function ServicesManagement() {
       </div>
 
       {/* Service Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[1fr]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Services</CardTitle>
               <Database className="h-4 w-4 text-blue-500" />
@@ -151,7 +151,7 @@ export function ServicesManagement() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Featured Services</CardTitle>
               <TrendingUp className="h-4 w-4 text-yellow-500" />
@@ -172,17 +172,17 @@ export function ServicesManagement() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Verified Services</CardTitle>
-              <Settings className="h-4 w-4 text-green-500" />
+              <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
+              <Settings className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {serviceStats ? formatNumber(serviceStats.verifiedServices) : '0'}
+                {serviceStats ? formatNumber(serviceStats.pendingSubmissions) : '0'}
               </div>
               <p className="text-xs text-gray-600">
-                Verified providers
+                Awaiting review
               </p>
             </CardContent>
           </Card>
@@ -193,7 +193,7 @@ export function ServicesManagement() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Service Types</CardTitle>
               <BarChart3 className="h-4 w-4 text-purple-500" />
