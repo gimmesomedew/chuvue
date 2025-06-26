@@ -60,7 +60,7 @@ export function Header() {
             {!user && (
               <>
                 {addListingEntry && (
-                  <Button variant="outline" className="border-2 border-[#D28001] text-[#D28001] rounded-[6px]" asChild>
+                  <Button variant="outline" className="border-2 border-[#E91A7E] text-[#E91A7E] rounded-[6px]" asChild>
                     <Link href={addListingEntry.href}>{addListingEntry.label}</Link>
                   </Button>
                 )}
@@ -82,7 +82,7 @@ export function Header() {
               <>
                 {/* Add Listing for regular user */}
                 {addListingEntry && userRole !== 'reviewer' && userRole !== 'admin' && (
-                  <Button variant="outline" className="border-2 border-[#D28001] text-[#D28001] rounded-[6px]" asChild>
+                  <Button variant="outline" className="border-2 border-[#E91A7E] text-[#E91A7E] rounded-[6px]" asChild>
                     <Link href={addListingEntry.href}>{addListingEntry.label}</Link>
                   </Button>
                 )}
