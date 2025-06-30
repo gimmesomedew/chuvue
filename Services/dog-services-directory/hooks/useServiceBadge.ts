@@ -1,27 +1,33 @@
-import { useMemo } from 'react';
+'use client';
 
-type ServiceType = 'Veterinarian' | 'Groomer' | 'Daycare' | 'Trainer' | 'Dog Park' | 'Other';
+import { useState, useEffect } from 'react';
+import { getServiceBadgeConfig } from '@/lib/serviceBadges';
 
 interface ServiceBadgeConfig {
   type: string;
   color: string;
+  bgColor: string;
 }
 
-export function useServiceBadge(serviceType: ServiceType | string): ServiceBadgeConfig {
-  return useMemo(() => {
-    const type = serviceType || 'Other';
-    const badgeConfigs: Record<ServiceType, { color: string }> = {
-      Veterinarian: { color: 'emerald' },
-      Groomer: { color: 'blue' },
-      Daycare: { color: 'purple' },
-      Trainer: { color: 'amber' },
-      'Dog Park': { color: 'rose' },
-      Other: { color: 'emerald' },
-    };
+export function useServiceBadge(serviceType: string): ServiceBadgeConfig {
+  const [badgeConfig, setBadgeConfig] = useState<ServiceBadgeConfig>({
+    type: serviceType || 'Other',
+    color: 'emerald',
+    bgColor: 'bg-emerald-500'
+  });
 
-    return {
-      type,
-      color: (badgeConfigs[type as ServiceType] || badgeConfigs.Other).color,
-    };
+  useEffect(() => {
+    async function fetchBadgeConfig() {
+      const config = await getServiceBadgeConfig(serviceType);
+      setBadgeConfig({
+        type: config.label,
+        color: config.bgColor.replace('bg-', '').replace('-500', ''),
+        bgColor: config.bgColor
+      });
+    }
+
+    fetchBadgeConfig();
   }, [serviceType]);
+
+  return badgeConfig;
 } 

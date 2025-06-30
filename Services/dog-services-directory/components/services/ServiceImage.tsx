@@ -3,15 +3,18 @@
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ServiceTypeBadge } from './ServiceTypeBadge';
 
 interface ServiceImageProps {
   imageUrl: string | null;
   name: string;
   onError?: () => void;
   isFavorited?: boolean;
+  serviceType?: string;
+  badgeColor?: string;
 }
 
-export function ServiceImage({ imageUrl, name, onError, isFavorited }: ServiceImageProps) {
+export function ServiceImage({ imageUrl, name, onError, isFavorited, serviceType, badgeColor }: ServiceImageProps) {
   return (
     <div className="relative aspect-[16/9] bg-[#E91A7E] rounded-t-lg overflow-hidden">
       {imageUrl ? (
@@ -34,6 +37,13 @@ export function ServiceImage({ imageUrl, name, onError, isFavorited }: ServiceIm
             className="opacity-50"
           />
           <span className="mt-2 text-sm font-medium">No Image Available</span>
+        </div>
+      )}
+
+      {/* Service Type Badge */}
+      {serviceType && (
+        <div className="absolute top-2 left-2">
+          <ServiceTypeBadge type={serviceType} bgColor={badgeColor} />
         </div>
       )}
 

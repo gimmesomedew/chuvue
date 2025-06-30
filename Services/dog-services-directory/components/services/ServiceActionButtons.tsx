@@ -1,12 +1,12 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Heart, Globe, MapPin, Star, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { User } from '@supabase/supabase-js';
 import { Analytics } from '@/lib/analytics';
 import { Service } from '@/lib/types';
 import { ServiceAction } from '@/types/service';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ServiceActionButtonsProps {
   service: Service;
@@ -55,90 +55,110 @@ export function ServiceActionButtons({
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {service.website_url && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 min-w-[120px] text-gray-700 hover:text-gray-900"
-          onClick={() => onAction({ type: 'website', serviceId: service.id })}
-          asChild
-        >
-          <a href={service.website_url} target="_blank" rel="noopener noreferrer">
-            <Globe className="h-4 w-4 mr-2 text-gray-500" />
-            Website
-          </a>
-        </Button>
-      )}
+    <TooltipProvider>
+      <div className="flex items-center gap-4 justify-center">
+        {service.website_url && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.a
+                href={service.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => onAction({ type: 'website', serviceId: service.id })}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                <Globe className="h-5 w-5" />
+              </motion.a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Visit Website</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
-      {service.address && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 min-w-[120px] text-gray-700 hover:text-gray-900"
-          onClick={() => onAction({ type: 'map', serviceId: service.id })}
-          asChild
-        >
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              service.address
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-            Map
-          </a>
-        </Button>
-      )}
+        {service.address && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  service.address
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => onAction({ type: 'map', serviceId: service.id })}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                <MapPin className="h-5 w-5" />
+              </motion.a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View on Map</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
-      {user && (
-        <Button
-          variant="outline"
-          size="sm"
-          className={`flex-1 min-w-[120px] ${
-            isFavorited ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : ''
-          }`}
-          onClick={handleFavorite}
-        >
-          <Heart
-            className={`h-4 w-4 mr-2 ${
-              isFavorited ? 'fill-red-500' : 'text-gray-500'
-            }`}
-          />
-          {isFavorited ? 'Favorited' : 'Favorite'}
-        </Button>
-      )}
+        {user && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.button
+                onClick={handleFavorite}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`${
+                  isFavorited ? 'text-red-500' : 'text-gray-500 hover:text-gray-700'
+                } cursor-pointer`}
+              >
+                <Heart className={isFavorited ? 'fill-current' : ''} />
+              </motion.button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
-      {isAdminOrReviewer && (
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            className={`flex-1 min-w-[120px] ${
-              featured === 'Y' ? 'bg-yellow-50 text-yellow-600 border-yellow-200 hover:bg-yellow-100' : ''
-            }`}
-            onClick={() => onAction({ type: 'feature', serviceId: service.id })}
-          >
-            <Star
-              className={`h-4 w-4 mr-2 ${
-                featured === 'Y' ? 'fill-yellow-500' : 'text-gray-500'
-              }`}
-            />
-            {featured === 'Y' ? 'Featured' : 'Feature'}
-          </Button>
+        {isAdminOrReviewer && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={() => onAction({ type: 'feature', serviceId: service.id })}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`${
+                    featured === 'Y' ? 'text-yellow-500' : 'text-gray-500 hover:text-gray-700'
+                  } cursor-pointer`}
+                >
+                  <Star className={featured === 'Y' ? 'fill-current' : ''} />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{featured === 'Y' ? 'Remove from Featured' : 'Mark as Featured'}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 min-w-[120px] text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => onAction({ type: 'delete', serviceId: service.id })}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </>
-      )}
-    </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={() => onAction({ type: 'delete', serviceId: service.id })}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-gray-500 hover:text-red-600 cursor-pointer"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete Service</p>
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
+      </div>
+    </TooltipProvider>
   );
 } 

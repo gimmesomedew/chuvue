@@ -65,6 +65,10 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
   const handleAction = (action: ServiceAction) => {
     if (action.type === 'favorite') {
       toggleFavorite();
+    } else if (action.type === 'delete') {
+      setIsDeleteDialogOpen(true);
+    } else if (action.type === 'feature') {
+      handleToggleFeatured();
     }
     onAction?.(action);
   };
@@ -100,11 +104,8 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
           name={currentService.name}
           onError={handleImageError}
           isFavorited={isFavorited}
-        />
-        
-        <ServiceTypeBadge 
-          type={badgeConfig.type}
-          color={badgeConfig.color}
+          serviceType={badgeConfig.type}
+          badgeColor={badgeConfig.bgColor}
         />
 
         <div className="p-4 flex flex-col flex-1 space-y-4">
