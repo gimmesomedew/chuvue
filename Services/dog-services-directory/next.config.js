@@ -4,7 +4,15 @@ const nextConfig = {
   swcMinify: true,
 
   images: {
-    domains: ['osvfybbvcdokbcfkmafv.supabase.co'],
+    domains: [
+      'osvfybbvcdokbcfkmafv.supabase.co',
+      'lh5.googleusercontent.com',
+      'lh3.googleusercontent.com',
+      'lh4.googleusercontent.com',
+      'lh6.googleusercontent.com',
+      'maps.googleapis.com',
+      'streetviewpixels-pa.googleapis.com'
+    ],
     remotePatterns: [
       {
         protocol: 'https',
@@ -12,6 +20,18 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.googleapis.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 
