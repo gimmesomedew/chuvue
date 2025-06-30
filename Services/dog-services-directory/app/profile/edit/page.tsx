@@ -14,6 +14,7 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, Save, Upload, X, Camera, Trash } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { US_STATES } from '@/lib/states';
 
 type ProfileFormData = {
   pet_name: string;
@@ -96,7 +97,7 @@ export default function ProfileEditPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -318,9 +319,9 @@ export default function ProfileEditPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.6 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  className="grid grid-cols-1 md:grid-cols-6 gap-4"
                 >
-                  <div>
+                  <div className="md:col-span-2">
                     <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
                       City
                     </label>
@@ -334,37 +335,39 @@ export default function ProfileEditPage() {
                     />
                   </div>
                   
-                  <div>
+                  <div className="md:col-span-2">
                     <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
                       State
                     </label>
-                    <Input
+                    <select
                       id="state"
                       name="state"
                       value={formData.state}
                       onChange={handleInputChange}
-                      placeholder="Your state"
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background transition-colors focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Select a state</option>
+                      {US_STATES.map((state) => (
+                        <option key={state.abbreviation} value={state.abbreviation}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700 mb-1">
+                      ZIP Code
+                    </label>
+                    <Input
+                      id="zip_code"
+                      name="zip_code"
+                      value={formData.zip_code}
+                      onChange={handleInputChange}
+                      placeholder="Your ZIP code"
                       className="w-full transition-all duration-300 focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
-                </motion.div>
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.7 }}
-                >
-                  <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700 mb-1">
-                    ZIP Code
-                  </label>
-                  <Input
-                    id="zip_code"
-                    name="zip_code"
-                    value={formData.zip_code}
-                    onChange={handleInputChange}
-                    placeholder="Your ZIP code"
-                    className="w-full transition-all duration-300 focus:ring-2 focus:ring-emerald-500"
-                  />
                 </motion.div>
                 
                 <motion.div

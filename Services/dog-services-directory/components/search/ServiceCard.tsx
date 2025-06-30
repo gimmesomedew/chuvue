@@ -27,9 +27,11 @@ import { ServiceModals } from '@/components/services/ServiceModals';
 import { useServiceState } from '@/hooks/useServiceState';
 import { useServiceBadge } from '@/hooks/useServiceBadge';
 import { useFavoriteStatus } from '@/hooks/useFavoriteStatus';
-import { ServiceCardProps } from '@/types/service';
+import { ServiceCardProps, ServiceAction } from '@/types/service';
 
 export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, onAction }: ServiceCardProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   // Clear badge cache on mount to ensure fresh data
   useEffect(() => {
     clearBadgeCache();
@@ -37,19 +39,13 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
 
   const { 
     service: currentService,
-    featured,
     isDeleted,
     isDeleting,
     isDeleteDialogOpen,
-    isEditModalOpen,
-    handlers: {
-      handleDelete,
-      handleAction,
-      handleUpdate,
-      handleImageError,
-      setIsDeleteDialogOpen,
-      setIsEditModalOpen,
-    }
+    setIsDeleteDialogOpen,
+    handleDelete,
+    handleToggleFeatured,
+    setService
   } = useServiceState(service);
 
   // Get the badge config using service_type
@@ -57,10 +53,26 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
 
   // Get the user and role from auth context
   const { user, userRole } = useAuth();
-  const userId = user?.id;
+  const userId = user?.id || null;
   const isAdminOrReviewer = userRole === 'admin' || userRole === 'reviewer';
 
-  const { isFavorited, showHeartAnimation, handleFavoriteToggle } = useFavoriteStatus(userId, currentService.id);
+  const { isFavorited, isLoading, toggleFavorite } = useFavoriteStatus(userId, currentService.id);
+
+  const handleImageError = () => {
+    // Handle image error
+  };
+
+  const handleAction = (action: ServiceAction) => {
+    if (action.type === 'favorite') {
+      toggleFavorite();
+    }
+    onAction?.(action);
+  };
+
+  const handleUpdate = (updatedService: Service) => {
+    setService(updatedService);
+    setIsEditModalOpen(false);
+  };
 
   if (isDeleted) return null;
 
@@ -84,23 +96,21 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
     >
       <Card className="relative overflow-hidden flex flex-col w-full border-0">
         <ServiceImage 
-          imageUrl={currentService.image_url} 
-          name={currentService.name} 
+          imageUrl={currentService.image_url || null}
+          name={currentService.name}
           onError={handleImageError}
           isFavorited={isFavorited}
         />
         
-        {badgeConfig && (
-          <ServiceTypeBadge 
-            badgeConfig={badgeConfig} 
-            key={`${currentService.id}-${currentService.service_type}`}
-          />
-        )}
+        <ServiceTypeBadge 
+          type={badgeConfig.type}
+          color={badgeConfig.color}
+        />
 
         <div className="p-4 flex flex-col flex-1 space-y-4">
           <ServiceHeader 
             service={currentService}
-            featured={featured}
+            featured={currentService.featured}
             isAdminOrReviewer={isAdminOrReviewer}
             onEdit={() => setIsEditModalOpen(true)}
           />
@@ -117,21 +127,18 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
               user={user}
               isAdminOrReviewer={isAdminOrReviewer}
               isFavorited={isFavorited}
-              featured={featured}
+              featured={currentService.featured}
               onAction={handleAction}
             />
           </div>
         </div>
 
         <ServiceModals 
-          service={currentService}
-          isAdminOrReviewer={isAdminOrReviewer}
           isDeleteDialogOpen={isDeleteDialogOpen}
-          isEditModalOpen={isEditModalOpen}
-          onDeleteClose={() => setIsDeleteDialogOpen(false)}
-          onEditClose={() => setIsEditModalOpen(false)}
-          onDelete={handleDelete}
-          onUpdate={handleUpdate}
+          isDeleting={isDeleting}
+          onDeleteConfirm={handleDelete}
+          onDeleteCancel={() => setIsDeleteDialogOpen(false)}
+          serviceName={currentService.name}
         />
       </Card>
     </motion.div>

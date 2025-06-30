@@ -231,7 +231,7 @@ export function ServicesManagement() {
                 <tr className="border-b">
                   <th className="text-left py-3 px-4 font-medium">ID</th>
                   <th className="text-left py-3 px-4 font-medium">Service Name</th>
-                  <th className="text-left py-3 px-4 font-medium">Service Value</th>
+                  <th className="text-left py-3 px-4 font-medium">Service Type</th>
                   <th className="text-left py-3 px-4 font-medium">Services Count</th>
                   <th className="text-left py-3 px-4 font-medium">Actions</th>
                 </tr>
@@ -241,7 +241,7 @@ export function ServicesManagement() {
                   <tr key={definition.service_definition_id} className="border-b hover:bg-gray-50">
                     <td className="py-3 px-4">{definition.service_definition_id}</td>
                     <td className="py-3 px-4 font-medium">{definition.service_name}</td>
-                    <td className="py-3 px-4 text-gray-600">{definition.service_value}</td>
+                    <td className="py-3 px-4 text-gray-600">{definition.service_type}</td>
                     <td className="py-3 px-4">
                       {formatNumber(definition.services_count)}
                     </td>

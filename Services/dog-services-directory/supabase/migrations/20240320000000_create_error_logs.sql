@@ -73,4 +73,26 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER cleanup_old_logs_trigger
     AFTER INSERT ON error_logs
     FOR EACH STATEMENT
-    EXECUTE FUNCTION trigger_cleanup_old_logs(); 
+    EXECUTE FUNCTION trigger_cleanup_old_logs();
+
+-- Add color field to service_definitions table
+ALTER TABLE service_definitions
+ADD COLUMN badge_color text NOT NULL DEFAULT 'emerald';
+
+-- Update existing service definitions with default colors
+UPDATE service_definitions
+SET badge_color = CASE service_value
+    WHEN 'dog_park' THEN 'emerald'
+    WHEN 'veterinarian' THEN 'blue'
+    WHEN 'grooming' THEN 'purple'
+    WHEN 'boarding' THEN 'orange'
+    WHEN 'training' THEN 'indigo'
+    WHEN 'daycare' THEN 'pink'
+    WHEN 'walking' THEN 'teal'
+    WHEN 'sitting' THEN 'amber'
+    WHEN 'rescue' THEN 'red'
+    WHEN 'supplies' THEN 'gray'
+    WHEN 'photography' THEN 'yellow'
+    WHEN 'transport' THEN 'cyan'
+    ELSE 'emerald'
+END; 

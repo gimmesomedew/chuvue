@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import UserRowSkeleton from '@/components/admin/UserRowSkeleton';
 import ReviewerLayout from '@/components/reviewer/ReviewerLayout';
-import { BadgeCheck, Clock } from 'lucide-react';
+import { BadgeCheck, Clock, ThumbsUp, ThumbsDown, XCircle, MapPin, AlertTriangle } from 'lucide-react';
+import { showToast } from '@/lib/toast';
+import toast from 'react-hot-toast';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +19,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 interface Submission {
   id: string;
@@ -32,6 +35,8 @@ interface Submission {
   contact_phone?: string;
   website_url?: string;
   email?: string;
+  geocoding_status?: string;
+  geocoding_error?: string;
 }
 
 const PAGE_SIZE = 25;
@@ -48,6 +53,7 @@ export default function PendingReviewPage() {
   const [selected, setSelected] = useState<Submission | null>(null);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [processing, setProcessing] = useState<string | null>(null);
 
   // redirect users that are neither reviewer nor admin
   useEffect(() => {
@@ -90,6 +96,65 @@ export default function PendingReviewPage() {
     setPage((p) => Math.min(totalPages - 1, p + 1));
   }
 
+  async function handleApprove(submissionId: string) {
+    try {
+      setProcessing(submissionId);
+      const response = await fetch('/api/review/submissions/approve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ submissionId }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to approve submission');
+      }
+
+      if (data.geocodingError) {
+        toast('Service approved but address geocoding failed. Please review the location details.', {
+          icon: '⚠️',
+          duration: 5000
+        });
+      } else {
+        showToast.success('Service approved successfully');
+      }
+      
+      fetchSubmissions(); // Refresh the list
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : 'Failed to approve submission');
+    } finally {
+      setProcessing(null);
+    }
+  }
+
+  async function handleReject(submissionId: string) {
+    try {
+      setProcessing(submissionId);
+      const response = await fetch('/api/review/submissions/reject', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ submissionId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject submission');
+      }
+
+      showToast.success('Submission rejected successfully');
+      fetchSubmissions(); // Refresh the list
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : 'Failed to reject submission');
+    } finally {
+      setProcessing(null);
+    }
+  }
+
   return (
     <ReviewerLayout>
       <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
@@ -105,6 +170,7 @@ export default function PendingReviewPage() {
                   <th>Location</th>
                   <th>Submitted</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -125,6 +191,7 @@ export default function PendingReviewPage() {
                     <th>Location</th>
                     <th>Submitted</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -139,14 +206,58 @@ export default function PendingReviewPage() {
                         </button>
                       </td>
                       <td className="capitalize">{s.service_type.replace('_', ' ')}</td>
-                      <td>{s.city}, {s.state}</td>
+                      <td>
+                        <div className="flex items-center">
+                          {s.city}, {s.state}
+                          {s.geocoding_status === 'failed' && (
+                            <span className="ml-2 text-amber-500 flex items-center" title={s.geocoding_error}>
+                              <AlertTriangle className="h-4 w-4" />
+                            </span>
+                          )}
+                          {s.geocoding_status === 'success' && (
+                            <span className="ml-2 text-emerald-500">
+                              <MapPin className="h-4 w-4" />
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td>{new Date(s.created_at).toLocaleDateString()}</td>
                       <td>
                         {s.status === 'approved' ? (
-                          <span className="flex items-center text-emerald-600"><BadgeCheck className="h-4 w-4 mr-1"/>Approved</span>
+                          <span className="flex items-center text-emerald-600">
+                            <BadgeCheck className="h-4 w-4 mr-1"/>Approved
+                          </span>
+                        ) : s.status === 'rejected' ? (
+                          <span className="flex items-center text-red-600">
+                            <XCircle className="h-4 w-4 mr-1"/>Rejected
+                          </span>
                         ) : (
-                          <span className="flex items-center text-yellow-600"><Clock className="h-4 w-4 mr-1"/>Pending</span>
+                          <span className="flex items-center text-yellow-600">
+                            <Clock className="h-4 w-4 mr-1"/>Pending
+                          </span>
                         )}
+                      </td>
+                      <td>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                            onClick={() => handleApprove(s.id)}
+                            disabled={processing === s.id || s.status !== 'pending'}
+                          >
+                            <ThumbsUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleReject(s.id)}
+                            disabled={processing === s.id || s.status !== 'pending'}
+                          >
+                            <ThumbsDown className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

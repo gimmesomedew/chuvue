@@ -82,7 +82,7 @@ export default function DirectoryPage() {
             <span className="text-gray-700 text-sm">Directory</span>
           </div>
           
-          <h1 className="text-3xl font-bold mb-6">Pet Owner Directory</h1>
+          <h1 className="text-3xl font-bold mb-6">Member Directory</h1>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array(8).fill(0).map((_, i) => (
@@ -137,7 +137,7 @@ export default function DirectoryPage() {
             id="directory-title" 
             className="text-3xl font-bold mb-6"
           >
-            Pet Owner Directory
+            Member Directory
           </h1>
           
           {/* Search and Filters */}

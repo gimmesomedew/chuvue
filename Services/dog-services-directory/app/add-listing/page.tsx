@@ -8,18 +8,13 @@ import { Label } from '@/components/ui/label';
 import { showToast } from '@/lib/toast';
 import { US_STATES } from '@/lib/states';
 import { useRouter } from 'next/navigation';
-
-const serviceTypes = [
-  { value: 'dog_park', label: 'Dog Park' },
-  { value: 'groomer', label: 'Groomer' },
-  { value: 'trainer', label: 'Trainer' },
-  { value: 'veterinarian', label: 'Veterinarian' },
-  { value: 'daycare', label: 'Daycare' },
-];
+import { getServiceDefinitions } from '@/lib/services';
+import type { ServiceDefinition } from '@/lib/types';
 
 export default function AddListingPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [serviceDefinitions, setServiceDefinitions] = useState<ServiceDefinition[]>([]);
   const [form, setForm] = useState({
     service_type: '',
     name: '',
@@ -40,6 +35,23 @@ export default function AddListingPage() {
     pet_description: '',
   });
   const [loading, setLoading] = useState(false);
+  const [isLoadingDefinitions, setIsLoadingDefinitions] = useState(true);
+
+  // Fetch service definitions
+  useEffect(() => {
+    async function loadServiceDefinitions() {
+      try {
+        const definitions = await getServiceDefinitions();
+        setServiceDefinitions(definitions);
+      } catch (error) {
+        console.error('Error loading service definitions:', error);
+        showToast.error('Failed to load service types. Please try again later.');
+      } finally {
+        setIsLoadingDefinitions(false);
+      }
+    }
+    loadServiceDefinitions();
+  }, []);
 
   // Auto geocode
   useEffect(() => {
@@ -105,12 +117,24 @@ export default function AddListingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
                 <Label>Service Type</Label>
-                <select name="service_type" value={form.service_type} onChange={handleChange} className="select select-bordered w-full" required>
+                <select 
+                  name="service_type" 
+                  value={form.service_type} 
+                  onChange={handleChange} 
+                  className="select select-bordered w-full" 
+                  required
+                  disabled={isLoadingDefinitions}
+                >
                   <option value="">Select type</option>
-                  {serviceTypes.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                  {serviceDefinitions.map((def) => (
+                    <option key={def.service_type} value={def.service_type}>
+                      {def.service_name}
+                    </option>
                   ))}
                 </select>
+                {isLoadingDefinitions && (
+                  <p className="text-sm text-gray-500 mt-1">Loading service types...</p>
+                )}
               </div>
               <div className="space-y-2 md:col-span-2"><Label>Business Name</Label><Input name="name" placeholder="e.g., Central Bark Dog Park" value={form.name} onChange={handleChange} required /></div>
               <div className="space-y-2 md:col-span-2"><Label>Description</Label><Textarea name="description" placeholder="Provide a brief description of the service" value={form.description} onChange={handleChange} required /></div>
@@ -169,8 +193,21 @@ export default function AddListingPage() {
             </div>
           </section>
 
-          <div className="flex justify-end">
-            <button className="btn btn-primary" disabled={loading}>{loading ? 'Submitting...' : 'Submit Listing'}</button>
+          <div className="flex justify-end space-x-4">
+            <button 
+              type="button" 
+              className="btn btn-outline" 
+              onClick={() => router.push('/')}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={loading || isLoadingDefinitions}
+            >
+              {loading ? 'Submitting...' : 'Submit Listing'}
+            </button>
           </div>
         </form>
       </div>

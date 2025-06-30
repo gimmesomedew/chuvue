@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { ServiceDefinition, Service } from './types';
+import { logServiceError } from './errorLogging';
 
 /**
  * Interface for service definition with count
@@ -7,8 +8,20 @@ import { ServiceDefinition, Service } from './types';
 export interface ServiceDefinitionWithCount {
   service_definition_id: number;
   service_name: string;
-  service_value: string;
+  service_type: string;
   services_count: number;
+}
+
+/**
+ * Converts a display service type to database format
+ * e.g., "Dog Parks" -> "dog_park"
+ */
+function normalizeServiceType(serviceType: string): string {
+  return serviceType
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    // Remove trailing 's' if present
+    .replace(/s$/, '');
 }
 
 /**
@@ -43,7 +56,7 @@ export async function getServiceDefinitionsWithCounts(): Promise<ServiceDefiniti
     // fetch definitions
     const { data: defs, error: defErr } = await supabase
       .from('service_definitions')
-      .select('id, service_name, service_value')
+      .select('id, service_name, service_type')
       .order('service_name');
 
     if (defErr) {
@@ -51,7 +64,7 @@ export async function getServiceDefinitionsWithCounts(): Promise<ServiceDefiniti
       return [];
     }
 
-    // fetch counts grouped by service_value
+    // fetch counts grouped by service_type
     const { data: svc, error: svcErr } = await supabase
       .from('services')
       .select('service_type');
@@ -68,8 +81,8 @@ export async function getServiceDefinitionsWithCounts(): Promise<ServiceDefiniti
     return (defs || []).map((d: any) => ({
       service_definition_id: d.id,
       service_name: d.service_name,
-      service_value: d.service_value,
-      services_count: countMap[d.service_value] || 0,
+      service_type: d.service_type,
+      services_count: countMap[d.service_type] || 0,
     }));
   } catch (error) {
     console.error('Error in getServiceDefinitionsWithCounts:', error);
@@ -104,7 +117,7 @@ export async function getServiceDefinitionById(id: number): Promise<ServiceDefin
 
 /**
  * Fetches a service definition by slug
- * @param slug Service definition slug (e.g. 'Dog Parks' would match service_value 'dog_park')
+ * @param slug Service definition slug (e.g. 'Dog Parks' would match service_type 'dog_park')
  * @returns Service definition or null if not found
  */
 export async function getServiceDefinitionBySlug(slug: string): Promise<ServiceDefinition | null> {
@@ -116,7 +129,7 @@ export async function getServiceDefinitionBySlug(slug: string): Promise<ServiceD
     const { data, error } = await supabase
       .from('service_definitions')
       .select('*')
-      .eq('service_value', formattedSlug);
+      .eq('service_type', formattedSlug);
     
     if (error) {
       console.error(`Error fetching service definition with slug ${slug}:`, error);
@@ -230,25 +243,52 @@ export async function getFeaturedServices(limit: number = 10): Promise<Service[]
  * @returns The updated service or null if there was an error
  */
 /**
- * Delete a service from the database
+ * Delete a service and its related data from the database
  * @param serviceId The ID of the service to delete
  * @returns True if the service was deleted successfully, false otherwise
  */
 export async function deleteService(serviceId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    // Start a transaction by deleting related data first
+    
+    // Delete favorites
+    const { error: favoritesError } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('service_id', serviceId);
+    
+    if (favoritesError) {
+      console.error(`Error deleting favorites for service ${serviceId}:`, favoritesError);
+      await logServiceError(favoritesError, 'delete_service_favorites', serviceId);
+      return false;
+    }
+
+    // Delete user interaction analytics using RPC
+    const { error: interactionError } = await supabase
+      .rpc('delete_service_analytics', { service_id: serviceId });
+    
+    if (interactionError) {
+      console.error(`Error deleting user interactions for service ${serviceId}:`, interactionError);
+      await logServiceError(interactionError, 'delete_service_interactions', serviceId);
+      return false;
+    }
+
+    // Finally, delete the service itself
+    const { error: serviceError } = await supabase
       .from('services')
       .delete()
       .eq('id', serviceId);
     
-    if (error) {
-      console.error(`Error deleting service with ID ${serviceId}:`, error);
+    if (serviceError) {
+      console.error(`Error deleting service with ID ${serviceId}:`, serviceError);
+      await logServiceError(serviceError, 'delete_service', serviceId);
       return false;
     }
     
     return true;
   } catch (error) {
     console.error(`Error in deleteService for service ${serviceId}:`, error);
+    await logServiceError(error as Error, 'delete_service_unexpected', serviceId);
     return false;
   }
 }
@@ -309,7 +349,8 @@ export async function searchServices(
 
     // Apply filters
     if (serviceType) {
-      query = query.eq('service_type', serviceType);
+      const normalizedType = normalizeServiceType(serviceType);
+      query = query.eq('service_type', normalizedType);
     }
     
     if (state) {
@@ -331,7 +372,6 @@ export async function searchServices(
     const { data, error, count } = await query;
 
     if (error) {
-      console.error('Error searching services:', error);
       throw error;
     }
 
@@ -343,7 +383,6 @@ export async function searchServices(
       total: count || 0
     };
   } catch (error) {
-    console.error('Error in searchServices:', error);
     throw error;
   }
 }

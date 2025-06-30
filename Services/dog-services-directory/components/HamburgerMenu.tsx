@@ -49,12 +49,13 @@ export function HamburgerMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
   const { userRole, signOut, unreadMessageCount } = useAuth();
 
-  const sectionsOrder: MenuSection[] = ['base', 'review', 'admin', 'account'];
+  const sectionsOrder: MenuSection[] = ['base', 'review', 'admin', 'account', 'legal'];
   const sectionHeadings: Record<MenuSection, string> = {
     base: '',
     review: 'Reviewer',
     admin: 'Admin',
     account: 'Account',
+    legal: 'Legal'
   } as const;
 
   const sectionedEntries = getSectionedEntries(userRole);

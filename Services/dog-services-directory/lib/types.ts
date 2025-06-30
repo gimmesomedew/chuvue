@@ -1,11 +1,12 @@
 // Service Types
 export interface ServiceDefinition {
-  id: number;
+  id?: string;
   service_name: string;
-  service_value: string; // Changed from service_slug to service_value
-  service_description?: string;
-  service_icon?: string;
+  service_type: string;
+  service_description: string;
+  badge_color: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface ServiceLocation {
@@ -26,12 +27,12 @@ export interface Service {
   city: string;
   state: string;
   zip_code: string;
-  service_type: string; // Custom type in the database
+  service_type: string; // Field in the services table
   latitude: number;
   longitude: number;
   image_url?: string;
   email?: string;
-  website_url?: string; // Changed from website to website_url per schema
+  website_url?: string;
   facebook_url?: string;
   instagram_url?: string;
   twitter_url?: string;

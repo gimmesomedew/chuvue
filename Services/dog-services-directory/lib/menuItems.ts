@@ -9,6 +9,7 @@ import {
   Navigation,
   Mail,
   Briefcase,
+  Search,
   Shield,
   User,
   Heart,
@@ -16,13 +17,16 @@ import {
   LogOut,
   LogIn,
   UserPlus,
+  Palette,
+  AlertTriangle,
+  FileText,
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 import type { UserRole } from './supabase';
 
 // Logical groupings so menus can be rendered with headings
-export type MenuSection = 'base' | 'review' | 'admin' | 'account';
+export type MenuSection = 'base' | 'review' | 'admin' | 'account' | 'legal';
 
 export interface MenuEntry {
   label: string;
@@ -41,13 +45,20 @@ export const menuEntries: MenuEntry[] = [
   // ----- Base (general navigation) -----
   {
     label: 'Home',
-    href: '/',
+    href: 'https://www.dogparkadventures.com/',
     icon: Home,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
     section: 'base',
   },
   {
-    label: 'Directory',
+    label: 'Services',
+    href: '/',
+    icon: Navigation,
+    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'base',
+  },
+  {
+    label: 'Member Directory',
     href: '/directory',
     icon: Navigation,
     roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
@@ -123,6 +134,20 @@ export const menuEntries: MenuEntry[] = [
     section: 'admin',
   },
   {
+    label: 'Error Logs',
+    href: '/admin/error-logs',
+    icon: AlertTriangle,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
+    label: 'Color Reference',
+    href: '/design/color-reference',
+    icon: Palette,
+    roles: ['admin'],
+    section: 'admin',
+  },
+  {
     label: 'Service Submissions',
     href: '/admin/services',
     icon: Shield,
@@ -194,6 +219,22 @@ export const menuEntries: MenuEntry[] = [
     roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
     section: 'account',
     action: 'signout',
+  },
+
+  // ----- Legal -----
+  {
+    label: 'Terms of Service',
+    href: '/terms',
+    icon: FileText,
+    roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'legal',
+  },
+  {
+    label: 'Privacy Policy',
+    href: '/privacy',
+    icon: FileText,
+    roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
+    section: 'legal',
   },
 ];
 

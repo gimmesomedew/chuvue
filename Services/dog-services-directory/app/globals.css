@@ -2,6 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Service Badge Colors */
+.bg-emerald-500 {
+  background-color: #22c55e;
+}
+.hover\:bg-emerald-600:hover {
+  background-color: #16a34a;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+.hover\:bg-blue-600:hover {
+  background-color: #2563eb;
+}
+
+.bg-purple-500 {
+  background-color: #a855f7;
+}
+.hover\:bg-purple-600:hover {
+  background-color: #9333ea;
+}
+
+.bg-amber-500 {
+  background-color: #f59e0b;
+}
+.hover\:bg-amber-600:hover {
+  background-color: #d97706;
+}
+
+.bg-indigo-500 {
+  background-color: #6366f1;
+}
+.hover\:bg-indigo-600:hover {
+  background-color: #4f46e5;
+}
+
+.bg-pink-500 {
+  background-color: #ec4899;
+}
+.hover\:bg-pink-600:hover {
+  background-color: #db2777;
+}
+
+.bg-green-500 {
+  background-color: #22c55e;
+}
+.hover\:bg-green-600:hover {
+  background-color: #16a34a;
+}
+
+.bg-orange-500 {
+  background-color: #f97316;
+}
+.hover\:bg-orange-600:hover {
+  background-color: #ea580c;
+}
+
+.bg-red-500 {
+  background-color: #ef4444;
+}
+.hover\:bg-red-600:hover {
+  background-color: #dc2626;
+}
+
+.bg-cyan-500 {
+  background-color: #06b6d4;
+}
+.hover\:bg-cyan-600:hover {
+  background-color: #0891b2;
+}
+
+.bg-violet-500 {
+  background-color: #8b5cf6;
+}
+.hover\:bg-violet-600:hover {
+  background-color: #7c3aed;
+}
+
+.bg-teal-500 {
+  background-color: #14b8a6;
+}
+.hover\:bg-teal-600:hover {
+  background-color: #0d9488;
+}
+
+.bg-gray-500 {
+  background-color: #6b7280;
+}
+.hover\:bg-gray-600:hover {
+  background-color: #4b5563;
+}
+
 /* Hide scrollbar for carousel */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */

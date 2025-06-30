@@ -7,6 +7,12 @@ import { LogIn, UserPlus, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProfileImage } from "@/types/profile";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getSectionedEntries } from "@/lib/menuItems";
 
 export function Header() {
@@ -117,13 +123,22 @@ export function Header() {
 
                 {/* Avatar Dropdown */}
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <button className="ml-2 flex items-center justify-center rounded-full bg-emerald-100 hover:bg-emerald-200 w-10 h-10 border border-emerald-300 overflow-hidden">
-                      {profile && getProfileImage(profile) ? (
-                        <img src={getProfileImage(profile)!} alt="Avatar" className="object-cover w-10 h-10" />
-                      ) : <User className="w-6 h-6 text-emerald-700" />}
-                    </button>
-                  </PopoverTrigger>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button className="ml-2 flex items-center justify-center rounded-full bg-emerald-100 hover:bg-emerald-200 w-10 h-10 border border-emerald-300 overflow-hidden">
+                            {profile && getProfileImage(profile) ? (
+                              <img src={getProfileImage(profile)!} alt="Avatar" className="object-cover w-10 h-10" />
+                            ) : <User className="w-6 h-6 text-emerald-700" />}
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{profile?.pet_name || 'My Profile'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <PopoverContent className="w-44 p-2 space-y-1">
                     {accountLinks.filter((e)=>e.label!=='Sign Out').map((entry)=>(
                       <Link key={entry.label} href={entry.href} className="block text-sm hover:bg-gray-100 rounded px-2 py-1">{entry.label}</Link>

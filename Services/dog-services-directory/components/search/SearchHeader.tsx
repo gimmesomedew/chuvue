@@ -55,9 +55,9 @@ export function SearchHeader({
         
         {/* Filter summary */}
         <div className="text-sm text-gray-600">
-          {selectedServiceType && serviceDefinitions.find(d => d.service_value === selectedServiceType) && (
+          {selectedServiceType && serviceDefinitions.find(d => d.service_type === selectedServiceType) && (
             <span className="inline-block bg-emerald-100 text-emerald-800 rounded-full px-3 py-1 mr-2 mb-2">
-              {serviceDefinitions.find(d => d.service_value === selectedServiceType)?.service_name}
+              {serviceDefinitions.find(d => d.service_type === selectedServiceType)?.service_name}
             </span>
           )}
           {selectedState && (

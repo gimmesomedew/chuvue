@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { showToast } from '@/lib/toast';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
@@ -15,6 +15,7 @@ import Link from 'next/link';
 // Import custom components
 import { ProfileHeader, ProfileDetails } from '@/components/profile';
 import { ProfileData, getProfileName } from '@/types/profile';
+import { ProfileDetailsSkeleton } from '@/components/profile/ProfileDetailsSkeleton';
 
 export default function ProfileDetailPage() {
   const { user, isLoading } = useAuth();
@@ -32,12 +33,6 @@ export default function ProfileDetailPage() {
       router.push(`/auth/login?redirect=/profile/${profileId}`);
       showToast.error('You need to be logged in to view profiles');
     } else if (user && profileId) {
-      // If user is viewing their own profile, redirect to the enhanced profile page
-      if (user.id === profileId) {
-        console.log('Redirecting to enhanced profile page');
-        router.push('/profile');
-        return;
-      }
       fetchProfileData(profileId);
     }
   }, [user, isLoading, profileId, router]);
@@ -63,25 +58,7 @@ export default function ProfileDetailPage() {
         console.log('Fetched profile:', data);
         setProfile(data);
       } else {
-        // If no profile found, use mock data
-        const mockProfile: ProfileData = {
-          id,
-          pet_name: 'Buddy',
-          name: 'John Doe',
-          location: 'Indianapolis, IN',
-          bio: 'Dog lover and outdoor enthusiast. I enjoy taking my pets on adventures and meeting other pet owners.',
-          pet_photos: [
-            'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=400&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=400&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1583511655826-05700442982d?q=80&w=400&auto=format&fit=crop'
-          ],
-          pet_breed: 'Golden Retriever',
-          pet_favorite_tricks: 'Fetch, Sit, Stay, Roll Over',
-          role: 'pet_owner',
-          tags: ['Hiking', 'Fetch', 'Swimming'],
-          joined_date: '2025-01-15'
-        };
-        setProfile(mockProfile);
+        throw new Error('Profile not found');
       }
     } catch (err) {
       console.error('Error fetching profile data:', err);
@@ -92,19 +69,21 @@ export default function ProfileDetailPage() {
   };
 
   // Loading state
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <MotionWrapper
-          variant="fadeIn"
-          className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[80vh]"
-        >
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 border-4 border-[#D28000] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <h2 className="text-xl font-medium text-gray-700">Loading profile...</h2>
-          </div>
-        </MotionWrapper>
+        <PageTransition>
+          <main className="container mx-auto px-4 py-8 max-w-5xl">
+            <div className="flex items-center mb-6">
+              <Link href="/directory" className="text-gray-500 hover:text-gray-700 text-sm flex items-center">
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back to Directory
+              </Link>
+            </div>
+            <ProfileDetailsSkeleton />
+          </main>
+        </PageTransition>
       </div>
     );
   }
@@ -161,7 +140,7 @@ export default function ProfileDetailPage() {
       <PageTransition>
         <main className="container mx-auto px-4 py-8 max-w-5xl">
           {/* Profile Header */}
-          <ProfileHeader profileName={getProfileName(profile)} />
+          <ProfileHeader title={getProfileName(profile)} />
           
           {/* Profile Details */}
           <ProfileDetails profile={profile} currentUserId={user?.id} />

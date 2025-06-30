@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { getProfileImage } from '@/types/profile';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, KeyRound } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import UserRowSkeleton from '@/components/admin/UserRowSkeleton';
+import Link from 'next/link';
 
 interface Profile {
   id: string;
@@ -278,6 +279,13 @@ export default function AdminUsersPage() {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
+                        <Link
+                          href={`/admin/users/${p.id}/reset-password`}
+                          className="p-2 rounded-md hover:bg-gray-100 text-blue-600 transition-colors"
+                          title="Reset password"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                        </Link>
                         <button
                           onClick={() => handleDelete(p.id)}
                           className="p-2 rounded-md hover:bg-gray-100 text-red-600 transition-colors"

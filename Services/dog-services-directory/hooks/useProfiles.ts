@@ -43,7 +43,7 @@ export function useProfiles(options: UseProfilesOptions = {}) {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(profile => {
-        const name = (profile.pet_name || profile.name || profile.username || '').toLowerCase();
+        const name = (profile.pet_name || profile.name || '').toLowerCase();
         const location = (profile.location || profile.city || profile.state || '').toLowerCase();
         const bio = (profile.bio || profile.about || '').toLowerCase();
         const breed = (profile.pet_breed || '').toLowerCase();
@@ -57,22 +57,10 @@ export function useProfiles(options: UseProfilesOptions = {}) {
 
     // Apply sorting
     result.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          const nameA = (a.pet_name || a.name || a.username || '').toLowerCase();
-          const nameB = (b.pet_name || b.name || b.username || '').toLowerCase();
-          return nameA.localeCompare(nameB);
-        case 'location':
-          const locationA = (a.location || a.city || '').toLowerCase();
-          const locationB = (b.location || b.city || '').toLowerCase();
-          return locationA.localeCompare(locationB);
-        case 'created_at':
-        default:
-          // Newest first
-          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-          return dateB - dateA;
+      if (sortBy === 'created_at') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
+      return 0;
     });
 
     setFilteredProfiles(result);
@@ -81,50 +69,34 @@ export function useProfiles(options: UseProfilesOptions = {}) {
   }, [profiles, filter, sortBy, searchQuery, page, pageSize]);
 
   // Get paginated profiles
-  const getPaginatedProfiles = useCallback(() => {
+  const getPaginatedProfiles = () => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     return filteredProfiles.slice(start, end);
-  }, [filteredProfiles, page, pageSize]);
+  };
 
-  // Fetch all profiles
+  // Fetch profiles from Supabase
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      // First, let's check what columns actually exist in the profiles table
-      const { data: profileColumns, error: columnsError } = await supabase
-        .from('profiles')
-        .select('*')
-        .limit(1);
-        
-      if (columnsError) {
-        console.error('Error checking profile columns:', columnsError);
-        throw columnsError;
-      }
-      
-      console.log('Profile table structure:', profileColumns);
-      
-      // Now fetch all profiles with the correct column names
       const { data, error } = await supabase
         .from('profiles')
-        .select('*');
-      
+        .select('*')
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      
-      if (data) {
-        console.log('Fetched profiles:', data);
-        // Filter out profiles that don't have a pet_name
-        const filteredData = data.filter(profile => profile.pet_name);
-        console.log('Filtered profiles (with pet_name):', filteredData);
-        setProfiles(filteredData);
+
+      if (data && data.length > 0) {
+        setProfiles(data);
       } else {
         // Fallback to mock data if no real data is available
         // All mock profiles have pet names to ensure consistency with our filtering
         const mockProfiles: ProfileData[] = [
           {
             id: '1',
+            name: 'Sarah Johnson',
             pet_name: 'Abby',
             location: 'Westfield, IN',
             pet_photos: [
@@ -134,11 +106,12 @@ export function useProfiles(options: UseProfilesOptions = {}) {
             role: 'pet_owner',
             tags: ['Fetch'],
             pet_breed: 'Golden Retriever',
-            pet_favorite_tricks: 'Fetch, roll over, and high five!',
+            pet_favorite_tricks: ['Fetch', 'Roll over', 'High five'],
             created_at: '2025-01-15T00:00:00.000Z'
           },
           {
             id: '2',
+            name: 'Michael Smith',
             pet_name: 'Chloe',
             location: 'Carmel, IN',
             pet_photos: [
@@ -148,11 +121,12 @@ export function useProfiles(options: UseProfilesOptions = {}) {
             role: 'pet_owner',
             tags: ['Fetch', 'Swimming'],
             pet_breed: 'Schnauzer',
-            pet_favorite_tricks: 'Swimming and playing with toys',
+            pet_favorite_tricks: ['Swimming', 'Playing with toys'],
             created_at: '2025-01-20T00:00:00.000Z'
           },
           {
             id: '3',
+            name: 'Emily Davis',
             pet_name: 'Louis',
             location: 'Fishers, IN',
             pet_photos: [
@@ -162,11 +136,12 @@ export function useProfiles(options: UseProfilesOptions = {}) {
             role: 'pet_owner',
             tags: ['Frisbee'],
             pet_breed: 'Boxer',
-            pet_favorite_tricks: 'Catching frisbees and jumping',
+            pet_favorite_tricks: ['Catching frisbees', 'Jumping'],
             created_at: '2025-02-10T00:00:00.000Z'
           },
           {
             id: '4',
+            name: 'David Wilson',
             pet_name: 'AJ',
             location: 'Carmel, IN',
             pet_photos: [
@@ -176,11 +151,12 @@ export function useProfiles(options: UseProfilesOptions = {}) {
             role: 'pet_owner',
             tags: ['Swimming'],
             pet_breed: 'Schnauzer',
-            pet_favorite_tricks: 'Swimming and diving',
+            pet_favorite_tricks: ['Swimming', 'Diving'],
             created_at: '2025-02-15T00:00:00.000Z'
           },
           {
             id: '5',
+            name: 'Jessica Brown',
             pet_name: 'Stanley',
             location: 'Fishers, IN',
             pet_photos: [
@@ -190,7 +166,7 @@ export function useProfiles(options: UseProfilesOptions = {}) {
             role: 'pet_owner',
             tags: ['Fetch', 'Slobber'],
             pet_breed: 'Mixed Breed',
-            pet_favorite_tricks: 'Fetching sticks and digging holes',
+            pet_favorite_tricks: ['Fetching sticks', 'Digging holes'],
             created_at: '2025-03-01T00:00:00.000Z'
           }
         ];

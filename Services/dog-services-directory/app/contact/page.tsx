@@ -5,6 +5,11 @@ import { Mail } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Contact Us | Dog Services Directory',
   description: 'Get in touch with us for any questions, feedback, or support regarding dog services.',
+  other: {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  }
 };
 
 export default function ContactPage() {

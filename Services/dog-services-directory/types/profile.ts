@@ -1,48 +1,47 @@
 // Shared profile data type for use across the application
 export type ProfileData = {
   id: string;
-  // Different possible name fields
-  name?: string;
+  // Core profile fields
+  name: string;
   pet_name?: string;
-  username?: string;
   email?: string;
-  // Different possible location fields
-  location?: string;
-  city?: string;
-  state?: string;
-  // Different possible description fields
   bio?: string;
   about?: string;
-  // Photo fields
-  image_url?: string;
-  pet_photos?: string[];  // Array of photo URLs
-  // Pet details
-  pet_breed?: string;
-  pet_favorite_tricks?: string;
-  // Role and tags
+  
+  // Location fields
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  location?: string;
+  
+  // Role and status
+  member_type?: 'Member' | 'Admin' | 'Service Provider' | 'Reviewer';
   role?: string;
-  tags?: string[];
-  // Contact information
-  contact_email?: string;
-  phone?: string;
+  open_to_public?: boolean;
+  accept_titer_exemption?: boolean;
+  
+  // Pet details
+  pet_photos?: string[];
+  pet_breed?: string;
+  pet_favorite_tricks?: string[];
+  profile_photo?: string;
+  
   // Additional fields
-  joined_date?: string;
-  pets?: any[];
-  created_at?: string;
+  tags?: string[];
+  created_at: string;
   updated_at?: string;
-  // Allow for any other fields that might exist
-  [key: string]: any;
 };
 
 // Helper functions for profile data
 export const getProfileName = (profile: ProfileData): string => {
-  return profile.pet_name || profile.name || profile.username || 'Pet Owner';
+  return profile.pet_name || profile.name || 'Pet Owner';
 };
 
 export const getProfileLocation = (profile: ProfileData): string => {
-  if (profile.location) return profile.location;
-  if (profile.city && profile.state) return `${profile.city}, ${profile.state}`;
-  return profile.city || profile.state || '';
+  if (profile.city && profile.state) {
+    return `${profile.city}, ${profile.state} ${profile.zip_code || ''}`.trim();
+  }
+  return profile.location || '';
 };
 
 export const getProfileDescription = (profile: ProfileData): string => {
@@ -50,26 +49,12 @@ export const getProfileDescription = (profile: ProfileData): string => {
 };
 
 export const getProfileRole = (profile: ProfileData): string => {
-  switch (profile.role) {
-    case 'pet_owner':
-      return 'Pet Owner';
-    case 'service_provider':
-      return 'Service Provider';
-    case 'admin':
-      return 'Administrator';
-    default:
-      return 'Member';
-  }
+  return profile.role || profile.member_type || 'Member';
 };
 
 export const getProfileImage = (profile: ProfileData): string | null => {
-  if (profile.profile_photo) {
-    return profile.profile_photo;
-  }
-  
   if (profile.pet_photos && profile.pet_photos.length > 0) {
     return profile.pet_photos[0];
   }
-  
-  return profile.image_url || null;
+  return null;
 };

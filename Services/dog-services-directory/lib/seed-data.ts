@@ -3,64 +3,46 @@ import { supabase } from './supabase';
 // Sample service definitions data
 const sampleServiceDefinitions = [
   {
+    service_name: 'Boarding & Daycare',
+    service_value: 'boarding_daycare',
+    service_description: 'Dog boarding and daycare facilities',
+    badge_color: 'teal'
+  },
+  {
     service_name: 'Dog Parks',
     service_value: 'dog_park',
-    service_description: 'Off-leash dog parks and recreational areas for dogs'
+    service_description: 'Off-leash dog parks and recreational areas for dogs',
+    badge_color: 'emerald'
   },
   {
-    service_name: 'Veterinarians',
+    service_name: 'Dog Trainers',
+    service_value: 'dog_trainer',
+    service_description: 'Professional dog training services',
+    badge_color: 'pink'
+  },
+  {
+    service_name: 'Groomers',
+    service_value: 'groomer',
+    service_description: 'Professional dog grooming services',
+    badge_color: 'purple'
+  },
+  {
+    service_name: 'Holistic Veterinarians',
     service_value: 'veterinarian',
-    service_description: 'Veterinary clinics and animal hospitals'
+    service_description: 'Holistic veterinary care and services',
+    badge_color: 'blue'
   },
   {
-    service_name: 'Grooming',
-    service_value: 'grooming',
-    service_description: 'Dog grooming and pet spa services'
+    service_name: 'Other',
+    service_value: 'other',
+    service_description: 'Other pet-related services',
+    badge_color: 'cyan'
   },
   {
-    service_name: 'Boarding',
-    service_value: 'boarding',
-    service_description: 'Dog boarding and kennel services'
-  },
-  {
-    service_name: 'Training',
-    service_value: 'training',
-    service_description: 'Dog training and obedience classes'
-  },
-  {
-    service_name: 'Daycare',
-    service_value: 'daycare',
-    service_description: 'Dog daycare and play facilities'
-  },
-  {
-    service_name: 'Walking',
-    service_value: 'walking',
-    service_description: 'Dog walking services'
-  },
-  {
-    service_name: 'Pet Sitting',
-    service_value: 'sitting',
-    service_description: 'In-home pet sitting services'
-  },
-  {
-    service_name: 'Rescue',
-    service_value: 'rescue',
-    service_description: 'Animal rescue and adoption services'
-  },
-  {
-    service_name: 'Supplies',
-    service_value: 'supplies',
-    service_description: 'Pet supplies and retail stores'
-  },
-  {
-    service_name: 'Photography',
-    service_value: 'photography',
-    service_description: 'Pet photography services'
-  },
-  {
-    service_name: 'Transport',
-    service_value: 'transport',
-    service_description: 'Pet transportation services'
+    service_name: 'Pet Products',
+    service_value: 'pet_products',
+    service_description: 'Pet supplies and retail products',
+    badge_color: 'amber'
   }
 ];
 
@@ -69,7 +51,7 @@ const sampleServices = [
   {
     name: 'Central Bark Dog Park',
     description: 'A spacious off-leash dog park with separate areas for small and large dogs, agility equipment, and water stations.',
-    service_type: 'dog_park',
+    service_value: 'dog_park',
     address: '123 Dogwood Lane',
     city: 'Indianapolis',
     state: 'Indiana',
@@ -86,7 +68,7 @@ const sampleServices = [
   {
     name: 'Pawfect Grooming',
     description: 'Professional grooming services including baths, haircuts, nail trimming, and special treatments for all dog breeds.',
-    service_type: 'grooming',
+    service_value: 'groomer',
     address: '456 Furry Street',
     city: 'Carmel',
     state: 'Indiana',
@@ -101,9 +83,9 @@ const sampleServices = [
     email: 'appointments@pawfect.com'
   },
   {
-    name: 'Healing Hands Veterinary',
-    description: 'Full-service veterinary hospital providing comprehensive medical care, surgery, and preventative services.',
-    service_type: 'veterinarian',
+    name: 'Healing Hands Holistic Vet',
+    description: 'Holistic veterinary care providing comprehensive medical care, acupuncture, and natural remedies.',
+    service_value: 'veterinarian',
     address: '789 Vet Way',
     city: 'Indianapolis',
     state: 'Indiana',
@@ -118,9 +100,9 @@ const sampleServices = [
     email: 'care@healinghands.com'
   },
   {
-    name: 'Happy Tails Boarding',
-    description: 'Luxury dog boarding facility with spacious kennels, play areas, and 24/7 supervision for your furry friend.',
-    service_type: 'boarding',
+    name: 'Happy Tails Boarding & Daycare',
+    description: 'Luxury dog boarding and daycare facility with spacious play areas and 24/7 supervision.',
+    service_value: 'boarding_daycare',
     address: '101 Kennel Drive',
     city: 'Fishers',
     state: 'Indiana',
@@ -137,7 +119,7 @@ const sampleServices = [
   {
     name: 'Canine Training Academy',
     description: 'Professional dog training services offering obedience classes, behavior modification, and specialized training programs.',
-    service_type: 'training',
+    service_value: 'dog_trainer',
     address: '222 Obedience Road',
     city: 'Noblesville',
     state: 'Indiana',

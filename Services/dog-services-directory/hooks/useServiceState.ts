@@ -4,13 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { showToast } from '@/lib/toast';
 import { Analytics } from '@/lib/analytics';
-
-interface Service {
-  id: string;
-  name: string;
-  featured?: boolean;
-  [key: string]: any;
-}
+import { Service } from '@/lib/types';
 
 export function useServiceState(initialService: Service) {
   const [service, setService] = useState(initialService);
@@ -47,7 +41,7 @@ export function useServiceState(initialService: Service) {
 
   const handleToggleFeatured = async () => {
     try {
-      const newFeaturedState = !service.featured;
+      const newFeaturedState = service.featured === 'Y' ? 'N' : 'Y';
       const { error } = await supabase
         .from('services')
         .update({ featured: newFeaturedState })
@@ -57,7 +51,7 @@ export function useServiceState(initialService: Service) {
 
       setService(prev => ({ ...prev, featured: newFeaturedState }));
       showToast.success(
-        newFeaturedState ? 'Service marked as featured' : 'Service removed from featured'
+        newFeaturedState === 'Y' ? 'Service marked as featured' : 'Service removed from featured'
       );
 
       Analytics.trackUserInteraction({

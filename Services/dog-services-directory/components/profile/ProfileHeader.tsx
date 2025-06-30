@@ -2,27 +2,46 @@
 
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
-type ProfileHeaderProps = {
-  profileName: string;
-};
+interface ProfileHeaderProps {
+  title: string;
+  backLink?: string;
+  backText?: string;
+}
 
-export function ProfileHeader({ profileName }: ProfileHeaderProps) {
+export function ProfileHeader({ title, backLink = '/directory', backText = 'Back to Directory' }: ProfileHeaderProps) {
   return (
-    <div className="mb-8">
-      <div className="flex items-center mb-4">
-        <Link href="/directory" className="text-gray-500 hover:text-gray-700 text-sm flex items-center">
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to Directory
+    <motion.div 
+      className="mb-8"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Back Navigation */}
+      <motion.div 
+        className="mb-4"
+        whileHover={{ x: -5 }}
+        transition={{ duration: 0.2 }}
+      >
+        <Link
+          href={backLink}
+          className="inline-flex items-center text-[#D28000] hover:text-[#b06c00] transition-colors duration-300"
+        >
+          <ChevronLeft className="h-5 w-5" />
+          <span className="text-sm font-medium">{backText}</span>
         </Link>
-      </div>
-      
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <h1 className="text-2xl md:text-3xl font-bold">{profileName}'s Profile</h1>
-        </div>
-      </div>
-    </div>
+      </motion.div>
+
+      {/* Title */}
+      <motion.h1 
+        className="text-4xl font-bold text-gray-900"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+      >
+        {title}
+      </motion.h1>
+    </motion.div>
   );
 }
