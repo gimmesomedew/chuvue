@@ -1,7 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import Image from 'next/image';
-import { Heart } from 'lucide-react';
+import { Heart, PawPrint } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ServiceTypeBadge } from './ServiceTypeBadge';
 
@@ -15,27 +16,28 @@ interface ServiceImageProps {
 }
 
 export function ServiceImage({ imageUrl, name, onError, isFavorited, serviceType, badgeColor }: ServiceImageProps) {
+  const [imgError, setImgError] = React.useState(false);
+
+  const handleImageError = () => {
+    setImgError(true);
+    onError?.();
+  };
+
   return (
-    <div className="relative aspect-[16/9] bg-[#E91A7E] rounded-t-lg overflow-hidden">
-      {imageUrl ? (
+    <div className="relative aspect-[16/9] bg-[#0A2E3E]/60 rounded-t-lg overflow-hidden">
+      {imageUrl && !imgError ? (
         <Image
           src={imageUrl}
           alt={name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
-          onError={onError}
+          onError={handleImageError}
           priority
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-          <Image
-            src="/images/paw-placeholder.svg"
-            alt="Paw print"
-            width={64}
-            height={64}
-            className="opacity-50"
-          />
+          <PawPrint className="h-16 w-16 opacity-50 text-white" />
           <span className="mt-2 text-sm font-medium">No Image Available</span>
         </div>
       )}
