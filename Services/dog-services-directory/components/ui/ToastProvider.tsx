@@ -8,40 +8,49 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <Toaster
-        position="top-right"
+        position="bottom-right"
         toastOptions={{
           duration: 5000,
           style: {
-            background: '#fff',
-            color: '#333',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            borderRadius: '8px',
+            background: '#22C55E',
+            color: '#ffffff',
             padding: '16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            fontSize: '14px',
+            maxWidth: '350px',
           },
           success: {
             style: {
-              border: '1px solid #22c55e',
-              borderLeft: '8px solid #22c55e',
+              background: '#059669',
+              border: '1px solid #047857',
+              borderLeft: '6px solid #047857',
             },
             iconTheme: {
-              primary: '#22c55e',
-              secondary: '#fff',
+              primary: '#ffffff',
+              secondary: '#059669',
             },
           },
           error: {
             style: {
-              border: '1px solid #ef4444',
-              borderLeft: '8px solid #ef4444',
+              background: '#ef4444',
+              border: '1px solid #dc2626',
+              borderLeft: '6px solid #dc2626',
             },
             iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
+              primary: '#ffffff',
+              secondary: '#ef4444',
             },
           },
           loading: {
             style: {
-              border: '1px solid #3b82f6',
-              borderLeft: '8px solid #3b82f6',
+              background: '#3b82f6',
+              border: '1px solid #2563eb',
+              borderLeft: '6px solid #2563eb',
+            },
+            iconTheme: {
+              primary: '#ffffff',
+              secondary: '#3b82f6',
             },
           },
         }}

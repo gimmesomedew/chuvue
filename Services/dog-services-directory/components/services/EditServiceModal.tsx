@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Service } from '@/lib/types';
 import { showToast } from '@/lib/toast';
 
@@ -55,7 +56,9 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <Label htmlFor="name">Business Name</Label>
             <Input
+              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -63,7 +66,9 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
             />
           </div>
           <div>
+            <Label htmlFor="description">Description</Label>
             <Textarea
+              id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
@@ -72,7 +77,9 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
             />
           </div>
           <div>
+            <Label htmlFor="address">Address</Label>
             <Input
+              id="address"
               name="address"
               value={formData.address}
               onChange={handleChange}
@@ -80,27 +87,41 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
             />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <Input
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder="City"
-            />
-            <Input
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-              placeholder="State"
-            />
-            <Input
-              name="zip_code"
-              value={formData.zip_code}
-              onChange={handleChange}
-              placeholder="ZIP Code"
-            />
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                placeholder="City"
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                placeholder="State"
+              />
+            </div>
+            <div>
+              <Label htmlFor="zip_code">ZIP Code</Label>
+              <Input
+                id="zip_code"
+                name="zip_code"
+                value={formData.zip_code}
+                onChange={handleChange}
+                placeholder="ZIP Code"
+              />
+            </div>
           </div>
           <div>
+            <Label htmlFor="website_url">Website URL</Label>
             <Input
+              id="website_url"
               name="website_url"
               value={formData.website_url}
               onChange={handleChange}
@@ -109,7 +130,9 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
             />
           </div>
           <div>
+            <Label htmlFor="image_url">Image URL</Label>
             <Input
+              id="image_url"
               name="image_url"
               value={formData.image_url}
               onChange={handleChange}

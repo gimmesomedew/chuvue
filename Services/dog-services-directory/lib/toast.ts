@@ -1,32 +1,46 @@
-import toast from 'react-hot-toast';
+import toast, { Toast } from 'react-hot-toast';
 
-type ToastType = 'success' | 'error' | 'loading';
+export type ToastType = 'success' | 'error' | 'loading';
+
+interface ToastOptions {
+  duration?: number;
+  id?: string;
+}
 
 export const showToast = {
-  success: (message: string) => {
-    toast.success(message);
+  success: (message: string, options?: ToastOptions) => {
+    return toast.success(message, options);
   },
-  error: (message: string) => {
-    toast.error(message);
+  error: (message: string, options?: ToastOptions) => {
+    return toast.error(message, options);
   },
-  loading: (message: string) => {
-    return toast.loading(message);
+  loading: (message: string, options?: ToastOptions) => {
+    return toast.loading(message, options);
   },
-  dismiss: (toastId: string) => {
+  dismiss: (toastId?: Toast['id']) => {
     toast.dismiss(toastId);
   },
-  custom: (message: string, type: ToastType) => {
-    switch (type) {
-      case 'success':
-        toast.success(message);
-        break;
-      case 'error':
-        toast.error(message);
-        break;
-      case 'loading':
-        return toast.loading(message);
-      default:
-        toast(message);
-    }
+  promise: <T>(
+    promise: Promise<T>,
+    {
+      loading,
+      success,
+      error,
+    }: {
+      loading: string;
+      success: string | ((data: T) => string);
+      error: string | ((err: any) => string);
+    },
+    options?: ToastOptions
+  ) => {
+    return toast.promise(
+      promise,
+      {
+        loading,
+        success,
+        error,
+      },
+      options
+    );
   },
 };

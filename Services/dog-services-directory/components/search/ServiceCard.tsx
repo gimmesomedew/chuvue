@@ -69,6 +69,8 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
       setIsDeleteDialogOpen(true);
     } else if (action.type === 'feature') {
       handleToggleFeatured();
+    } else if (action.type === 'edit') {
+      setIsEditModalOpen(true);
     }
     onAction?.(action);
   };
@@ -140,6 +142,10 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
           onDeleteConfirm={handleDelete}
           onDeleteCancel={() => setIsDeleteDialogOpen(false)}
           serviceName={currentService.name}
+          isEditModalOpen={isEditModalOpen}
+          onEditClose={() => setIsEditModalOpen(false)}
+          service={currentService}
+          onUpdate={handleUpdate}
         />
       </Card>
     </motion.div>

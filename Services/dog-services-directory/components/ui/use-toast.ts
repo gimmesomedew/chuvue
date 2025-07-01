@@ -1,8 +1,7 @@
-// Direct export of react-hot-toast
-import toast from 'react-hot-toast';
+import { showToast } from '@/lib/toast';
 
-// Re-export toast directly
-export { toast };
+// Re-export the showToast utility
+export const toast = showToast;
 
 // For backward compatibility
 export interface ToastOptions {
@@ -22,11 +21,11 @@ export const useToast = () => {
       if (!message) return undefined;
       
       if (variant === 'destructive') {
-        return toast.error(message, { duration });
+        return showToast.error(message, { duration });
       }
       
-      return toast.success(message, { duration });
+      return showToast.success(message, { duration });
     },
-    dismiss: toast.dismiss
+    dismiss: showToast.dismiss
   };
 };

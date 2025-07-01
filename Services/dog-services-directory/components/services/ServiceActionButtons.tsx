@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, Globe, MapPin, Star, Trash2 } from 'lucide-react';
+import { Heart, Globe, MapPin, Star, Trash2, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { User } from '@supabase/supabase-js';
 import { Analytics } from '@/lib/analytics';
@@ -56,7 +56,7 @@ export function ServiceActionButtons({
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-4 justify-center">
+      <div className="flex items-center justify-end space-x-4">
         {service.website_url && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -64,7 +64,7 @@ export function ServiceActionButtons({
                 href={service.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => onAction({ type: 'website', serviceId: service.id })}
+                onClick={handleWebsiteClick}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -83,11 +83,11 @@ export function ServiceActionButtons({
             <TooltipTrigger asChild>
               <motion.a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  service.address
+                  `${service.name} ${service.address} ${service.city} ${service.state} ${service.zip_code}`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => onAction({ type: 'map', serviceId: service.id })}
+                onClick={handleMapClick}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -123,6 +123,22 @@ export function ServiceActionButtons({
 
         {isAdminOrReviewer && (
           <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={() => onAction({ type: 'edit', serviceId: service.id })}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                >
+                  <Pencil className="h-5 w-5" />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Service</p>
+              </TooltipContent>
+            </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <motion.button

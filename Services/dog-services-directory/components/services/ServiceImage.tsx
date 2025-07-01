@@ -55,9 +55,9 @@ export function ServiceImage({ imageUrl, name, onError, isFavorited, serviceType
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-2 right-2 p-2 rounded-full bg-black/50"
+            className="absolute top-2 right-2 p-2 rounded-full bg-white/80"
           >
-            <Heart className="h-5 w-5 text-white fill-white" />
+            <Heart className="h-5 w-5 text-red-500 fill-red-500" />
           </motion.div>
         )}
       </AnimatePresence>
