@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Search, Navigation } from 'lucide-react';
+import { Search, Navigation, MapPin } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ServiceDefinition } from '@/lib/types';
 import { USState } from '@/lib/states';
@@ -11,6 +11,7 @@ interface SearchHeaderProps {
   totalResults: number;
   selectedServiceType: string;
   selectedState: string;
+  zipCode: string;
   serviceDefinitions: ServiceDefinition[];
   states: USState[];
   sortByDistance: boolean;
@@ -24,6 +25,7 @@ export function SearchHeader({
   totalResults,
   selectedServiceType,
   selectedState,
+  zipCode,
   serviceDefinitions,
   states,
   sortByDistance,
@@ -62,7 +64,14 @@ export function SearchHeader({
           )}
           {selectedState && (
             <span className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 mb-2">
+              <MapPin className="h-3 w-3 inline-block mr-1" />
               {states.find(s => s.abbreviation === selectedState)?.name}
+            </span>
+          )}
+          {zipCode && (
+            <span className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 mb-2">
+              <MapPin className="h-3 w-3 inline-block mr-1" />
+              ZIP: {zipCode}
             </span>
           )}
         </div>

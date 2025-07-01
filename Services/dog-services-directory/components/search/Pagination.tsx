@@ -1,72 +1,98 @@
 'use client';
 
-import { useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface PaginationProps {
+export interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  isSearching: boolean;
-  handlePageChange: (page: number) => void;
+  onPageChange: (page: number) => void;
+  onPageHover?: (page: number) => void;
 }
 
 export function Pagination({
   currentPage,
   totalPages,
-  isSearching,
-  handlePageChange
+  onPageChange,
+  onPageHover
 }: PaginationProps) {
-  if (totalPages <= 1) return null;
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   
+  // Generate page numbers to show
+  const getVisiblePages = () => {
+    if (totalPages <= 7) return pages;
+    
+    if (currentPage <= 4) {
+      return [...pages.slice(0, 5), '...', totalPages];
+    }
+    
+    if (currentPage >= totalPages - 3) {
+      return [1, '...', ...pages.slice(totalPages - 5)];
+    }
+    
+    return [
+      1,
+      '...',
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      '...',
+      totalPages
+    ];
+  };
+
+  const visiblePages = getVisiblePages();
+
   return (
-    <div className="flex justify-center mt-10">
+    <nav className="flex justify-center items-center space-x-2" aria-label="Pagination">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        aria-label="Previous page"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
       <div className="flex space-x-2">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            // Handle page change
-            handlePageChange(currentPage - 1);
-            
-            // Scroll to top of search results
-            const searchResultsElement = document.querySelector('.search-results-container');
-            if (searchResultsElement) {
-              searchResultsElement.scrollIntoView({ behavior: 'smooth' });
-            } else {
-              // Fallback to scrolling to top of page
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          disabled={currentPage === 1 || isSearching}
-        >
-          Previous
-        </Button>
-        
-        <div className="flex items-center px-4">
-          <span className="text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-        </div>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            // Handle page change
-            handlePageChange(currentPage + 1);
-            
-            // Scroll to top of search results
-            const searchResultsElement = document.querySelector('.search-results-container');
-            if (searchResultsElement) {
-              searchResultsElement.scrollIntoView({ behavior: 'smooth' });
-            } else {
-              // Fallback to scrolling to top of page
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          disabled={currentPage === totalPages || isSearching}
-        >
-          Next
-        </Button>
+        {visiblePages.map((page, index) => {
+          if (page === '...') {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="px-4 py-2 text-gray-500"
+              >
+                ...
+              </span>
+            );
+          }
+
+          const pageNum = page as number;
+          return (
+            <Button
+              key={pageNum}
+              variant={currentPage === pageNum ? 'default' : 'outline'}
+              onClick={() => onPageChange(pageNum)}
+              onMouseEnter={() => onPageHover?.(pageNum)}
+              aria-current={currentPage === pageNum ? 'page' : undefined}
+              aria-label={`Page ${pageNum}`}
+            >
+              {pageNum}
+            </Button>
+          );
+        })}
       </div>
-    </div>
+
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        aria-label="Next page"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </nav>
   );
 }

@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-pt-sans)', 'sans-serif'],
+        narrow: ['var(--font-pt-sans-narrow)', 'sans-serif'],
+      },
       colors: {
         emerald: {
           50: '#f0fdf4',

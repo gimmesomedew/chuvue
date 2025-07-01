@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Bone, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
 import { ProfileData, getProfileName, getProfileLocation, getProfileDescription } from '@/types/profile';
 
 type ProfileCardProps = {
@@ -12,12 +14,24 @@ type ProfileCardProps = {
 };
 
 export function ProfileCard({ profile, index }: ProfileCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  
   // Calculate staggered animation delay based on index
   const animationDelay = 0.05 * (index % 12);
   
   const handleClick = (e: React.MouseEvent) => {
     // Stop propagation to prevent the event from bubbling up
     e.stopPropagation();
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setIsImageLoading(false);
+  };
+
+  const handleImageLoad = () => {
+    setIsImageLoading(false);
   };
   
   return (
@@ -36,18 +50,25 @@ export function ProfileCard({ profile, index }: ProfileCardProps) {
         className="block aspect-w-1 aspect-h-1 bg-gray-200 relative min-h-[230px] group cursor-pointer"
         onClick={handleClick}
       >
-        {profile.pet_photos && profile.pet_photos.length > 0 ? (
-          <>
+        {profile.pet_photos && profile.pet_photos.length > 0 && !imageError ? (
+          <div className="relative w-full h-full">
+            {isImageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="animate-pulse w-16 h-16 rounded-full bg-gray-200" />
+              </div>
+            )}
             <img 
               src={profile.pet_photos[0]} 
               alt={`${getProfileName(profile)}'s profile`} 
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              data-component-name="DirectoryPage"
+              className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                isImageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onError={handleImageError}
+              onLoad={handleImageLoad}
               loading="lazy"
-              onClick={handleClick}
             />
             <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
-          </>
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#D28000] min-h-[230px] group-hover:bg-[#b06c00] transition-colors duration-300">
             <Bone className="w-24 h-24 text-white" />

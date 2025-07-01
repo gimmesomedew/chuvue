@@ -1,6 +1,5 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
 import { Service } from '@/lib/types';
 
 export interface ServiceHeaderProps {
@@ -10,7 +9,7 @@ export interface ServiceHeaderProps {
   onEdit: () => void;
 }
 
-export function ServiceHeader({ service, featured, isAdminOrReviewer, onEdit }: ServiceHeaderProps) {
+export function ServiceHeader({ service, featured }: ServiceHeaderProps) {
   return (
     <div className="flex justify-between items-start">
       <div className="flex-1">
@@ -23,15 +22,6 @@ export function ServiceHeader({ service, featured, isAdminOrReviewer, onEdit }: 
           )}
         </h2>
       </div>
-      {isAdminOrReviewer && (
-        <button
-          onClick={onEdit}
-          className="text-gray-500 hover:text-gray-700 transition-colors"
-          aria-label="Edit service"
-        >
-          <Pencil className="h-5 w-5" />
-        </button>
-      )}
     </div>
   );
 } 

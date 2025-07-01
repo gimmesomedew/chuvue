@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { PT_Sans, PT_Sans_Narrow } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import BackToTopButton from '@/components/ui/BackToTopButton';
 
-const inter = Inter({ subsets: ["latin"] });
+const ptSans = PT_Sans({ 
+  weight: ['400', '700'],
+  subsets: ["latin"],
+  variable: '--font-pt-sans',
+});
+
+const ptSansNarrow = PT_Sans_Narrow({
+  weight: ['400', '700'],
+  subsets: ["latin"],
+  variable: '--font-pt-sans-narrow',
+});
 
 export const metadata: Metadata = {
   title: "Dog Park Adventures - Find the Best Dog Services Near You",
@@ -26,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${ptSans.variable} ${ptSansNarrow.variable} font-sans`}>
         <Providers>
           {children}
           <BackToTopButton />

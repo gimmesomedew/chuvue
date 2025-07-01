@@ -110,7 +110,7 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
           badgeColor={badgeConfig.bgColor}
         />
 
-        <div className="p-4 flex flex-col flex-1 space-y-4">
+        <div className="p-3 flex flex-col flex-1 space-y-2">
           <ServiceHeader 
             service={currentService}
             featured={currentService.featured}
@@ -124,7 +124,7 @@ export function ServiceCard({ service, sortByDistance, userLocation, delay = 0, 
             userLocation={userLocation}
           />
 
-          <div className="mt-auto pt-2">
+          <div className="mt-auto pt-1">
             <ServiceActionButtons 
               service={currentService}
               user={user}

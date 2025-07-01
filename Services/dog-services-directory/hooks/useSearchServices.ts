@@ -36,7 +36,7 @@ interface UseSearchServicesReturn {
   totalResults: number;
   
   // Actions
-  handleSearch: () => Promise<void>;
+  handleSearch: (params?: Partial<SearchState>) => Promise<void>;
   handlePageChange: (newPage: number) => Promise<void>;
   resetSearch: () => void;
   
@@ -99,17 +99,25 @@ export function useSearchServices(): UseSearchServicesReturn {
   };
   
   // Handle search form submission
-  const handleSearch = async () => {
+  const handleSearch = async (params?: Partial<SearchState>) => {
     setIsSearching(true);
     setHasSearched(true);
     setCurrentPage(1);
     
+    // If params are provided, update the search state first
+    if (params) {
+      setSearchStateInternal(prev => ({ ...prev, ...params }));
+    }
+    
+    // Use the updated search state or params for the search
+    const searchParams = params || searchState;
+    
     try {
       const result = await retryApiCall(
         () => searchServices(
-          searchState.selectedServiceType,
-          searchState.selectedState,
-          searchState.zipCode,
+          searchParams.selectedServiceType || '',
+          searchParams.selectedState || '',
+          searchParams.zipCode || '',
           1,
           SEARCH_CONSTANTS.RESULTS_PER_PAGE
         ),
@@ -124,10 +132,10 @@ export function useSearchServices(): UseSearchServicesReturn {
         
         // Track search analytics
         Analytics.trackSearchEvent(
-          `${searchState.selectedServiceType || 'all'} ${searchState.selectedState || searchState.zipCode || 'all locations'}`,
-          searchState.selectedServiceType,
-          searchState.selectedState,
-          searchState.zipCode,
+          `${searchParams.selectedServiceType || 'all'} ${searchParams.selectedState || searchParams.zipCode || 'all locations'}`,
+          searchParams.selectedServiceType,
+          searchParams.selectedState,
+          searchParams.zipCode,
           results.total,
           1
         );
@@ -208,7 +216,6 @@ export function useSearchServices(): UseSearchServicesReturn {
     }
   };
   
-  // Reset search form and results
   const resetSearch = () => {
     setSearchStateInternal({
       selectedServiceType: '',

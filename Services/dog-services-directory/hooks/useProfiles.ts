@@ -13,6 +13,13 @@ type UseProfilesOptions = {
   searchQuery?: string;
 };
 
+type SignedUrlResponse = {
+  data: {
+    signedUrl: string;
+  } | null;
+  error: Error | null;
+};
+
 export function useProfiles(options: UseProfilesOptions = {}) {
   const {
     pageSize = 12,
@@ -29,6 +36,38 @@ export function useProfiles(options: UseProfilesOptions = {}) {
   const [page, setPage] = useState(initialPage);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+
+  // Helper function to get signed URL for profile photos
+  const getSignedUrl = async (path: string) => {
+    try {
+      const { data, error }: SignedUrlResponse = await supabase.storage
+        .from('pet_photos')
+        .createSignedUrl(path, 3600); // 1 hour expiry
+
+      if (error || !data) throw error || new Error('No signed URL returned');
+      return data.signedUrl;
+    } catch (err) {
+      console.error('Error getting signed URL:', err);
+      return null;
+    }
+  };
+
+  // Process profile photos to get signed URLs
+  const processProfilePhotos = async (profile: ProfileData) => {
+    if (profile.pet_photos && profile.pet_photos.length > 0) {
+      const signedUrls = await Promise.all(
+        profile.pet_photos.map(async (photo) => {
+          // If it's already a full URL, return it
+          if (photo.startsWith('http')) return photo;
+          // Otherwise, get a signed URL
+          const signedUrl = await getSignedUrl(photo);
+          return signedUrl || photo;
+        })
+      );
+      return { ...profile, pet_photos: signedUrls.filter(Boolean) };
+    }
+    return profile;
+  };
 
   // Filter and sort profiles
   useEffect(() => {
@@ -89,10 +128,13 @@ export function useProfiles(options: UseProfilesOptions = {}) {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        setProfiles(data);
+        // Process each profile to get signed URLs for photos
+        const processedProfiles = await Promise.all(
+          data.map(profile => processProfilePhotos(profile))
+        );
+        setProfiles(processedProfiles);
       } else {
         // Fallback to mock data if no real data is available
-        // All mock profiles have pet names to ensure consistency with our filtering
         const mockProfiles: ProfileData[] = [
           {
             id: '1',
@@ -180,6 +222,11 @@ export function useProfiles(options: UseProfilesOptions = {}) {
       setLoading(false);
     }
   }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
 
   // Fetch a single profile by ID
   const fetchProfileById = useCallback(async (id: string) => {

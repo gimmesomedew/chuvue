@@ -17,6 +17,12 @@ interface ServiceActionButtonsProps {
   onAction: (action: ServiceAction) => void;
 }
 
+const IconWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-1.5 rounded-full transition-all duration-200 ${className}`}>
+    {children}
+  </div>
+);
+
 export function ServiceActionButtons({
   service,
   user,
@@ -56,124 +62,138 @@ export function ServiceActionButtons({
 
   return (
     <TooltipProvider>
-      <div className="flex items-center justify-end space-x-4">
-        {service.website_url && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <motion.a
-                href={service.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleWebsiteClick}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="text-gray-500 hover:text-gray-700 cursor-pointer"
-              >
-                <Globe className="h-5 w-5" />
-              </motion.a>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Visit Website</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {service.address && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <motion.a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  `${service.name} ${service.address} ${service.city} ${service.state} ${service.zip_code}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleMapClick}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="text-gray-500 hover:text-gray-700 cursor-pointer"
-              >
-                <MapPin className="h-5 w-5" />
-              </motion.a>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>View on Map</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {user && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <motion.button
-                onClick={handleFavorite}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className={`${
-                  isFavorited ? 'text-red-500' : 'text-gray-500 hover:text-gray-700'
-                } cursor-pointer`}
-              >
-                <Heart className={isFavorited ? 'fill-current' : ''} />
-              </motion.button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {isAdminOrReviewer && (
-          <>
+      <div className="border-t border-gray-100">
+        <div className="flex items-center justify-center gap-4 py-2 px-4">
+          {service.website_url && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <motion.button
-                  onClick={() => onAction({ type: 'edit', serviceId: service.id })}
+                <motion.a
+                  href={service.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleWebsiteClick}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                  className="text-primary-500 hover:text-primary-600 cursor-pointer"
                 >
-                  <Pencil className="h-5 w-5" />
-                </motion.button>
+                  <IconWrapper className="bg-primary-50 hover:bg-primary-100">
+                    <Globe className="h-4 w-4" />
+                  </IconWrapper>
+                </motion.a>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Edit Service</p>
+                <p>Visit Website</p>
               </TooltipContent>
             </Tooltip>
+          )}
 
+          {service.address && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    `${service.name} ${service.address} ${service.city} ${service.state} ${service.zip_code}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleMapClick}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-emerald-500 hover:text-emerald-600 cursor-pointer"
+                >
+                  <IconWrapper className="bg-emerald-50 hover:bg-emerald-100">
+                    <MapPin className="h-4 w-4" />
+                  </IconWrapper>
+                </motion.a>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View on Map</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {user && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <motion.button
-                  onClick={() => onAction({ type: 'feature', serviceId: service.id })}
+                  onClick={handleFavorite}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className={`${
-                    featured === 'Y' ? 'text-yellow-500' : 'text-gray-500 hover:text-gray-700'
+                    isFavorited ? 'text-red-500' : 'text-red-400 hover:text-red-500'
                   } cursor-pointer`}
                 >
-                  <Star className={featured === 'Y' ? 'fill-current' : ''} />
+                  <IconWrapper className={`${isFavorited ? 'bg-red-50' : 'bg-gray-50 hover:bg-red-50'}`}>
+                    <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
+                  </IconWrapper>
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{featured === 'Y' ? 'Remove from Featured' : 'Mark as Featured'}</p>
+                <p>{isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}</p>
               </TooltipContent>
             </Tooltip>
+          )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.button
-                  onClick={() => onAction({ type: 'delete', serviceId: service.id })}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-gray-500 hover:text-red-600 cursor-pointer"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </motion.button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete Service</p>
-              </TooltipContent>
-            </Tooltip>
-          </>
-        )}
+          {isAdminOrReviewer && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => onAction({ type: 'edit', serviceId: service.id })}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="text-blue-500 hover:text-blue-600 cursor-pointer"
+                  >
+                    <IconWrapper className="bg-blue-50 hover:bg-blue-100">
+                      <Pencil className="h-4 w-4" />
+                    </IconWrapper>
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit Service</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => onAction({ type: 'feature', serviceId: service.id })}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`${
+                      featured === 'Y' ? 'text-amber-500' : 'text-amber-400 hover:text-amber-500'
+                    } cursor-pointer`}
+                  >
+                    <IconWrapper className={`${featured === 'Y' ? 'bg-amber-50' : 'bg-gray-50 hover:bg-amber-50'}`}>
+                      <Star className={`h-4 w-4 ${featured === 'Y' ? 'fill-current' : ''}`} />
+                    </IconWrapper>
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{featured === 'Y' ? 'Remove from Featured' : 'Mark as Featured'}</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => onAction({ type: 'delete', serviceId: service.id })}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="text-red-500 hover:text-red-600 cursor-pointer"
+                  >
+                    <IconWrapper className="bg-red-50 hover:bg-red-100">
+                      <Trash2 className="h-4 w-4" />
+                    </IconWrapper>
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete Service</p>
+                </TooltipContent>
+              </Tooltip>
+            </>
+          )}
+        </div>
       </div>
     </TooltipProvider>
   );

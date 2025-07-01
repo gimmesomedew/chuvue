@@ -7,21 +7,14 @@ import { SearchForm } from './SearchForm';
 import { ServiceDefinition } from '@/lib/types';
 import { USState } from '@/lib/states';
 import { ANIMATION_CONSTANTS } from '@/lib/constants';
+import { SearchState } from '@/hooks/useServicesQuery';
 
 interface SearchSectionProps {
-  serviceDefinitions: ServiceDefinition[];
-  states: USState[];
   isLoading: boolean;
   isSearching: boolean;
-  selectedServiceType: string;
-  selectedState: string;
-  zipCode: string;
-  setSelectedServiceType: (value: string) => void;
-  setSelectedState: (value: string) => void;
-  setZipCode: (value: string) => void;
-  handleSearch: () => void;
-  resetSearch: () => void;
   hasSearched: boolean;
+  onSearch: (params: Partial<SearchState>) => void;
+  resetSearch: () => void;
 }
 
 const SearchSectionSkeleton = () => (
@@ -57,19 +50,11 @@ const SearchSectionSkeleton = () => (
 );
 
 export function SearchSection({
-  serviceDefinitions,
-  states,
   isLoading,
   isSearching,
-  selectedServiceType,
-  selectedState,
-  zipCode,
-  setSelectedServiceType,
-  setSelectedState,
-  setZipCode,
-  handleSearch,
-  resetSearch,
-  hasSearched
+  hasSearched,
+  onSearch,
+  resetSearch
 }: SearchSectionProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -148,24 +133,7 @@ export function SearchSection({
           >
             <div className="p-8">
               <SearchForm 
-                serviceDefinitions={serviceDefinitions}
-                states={states}
-                isLoading={isLoading}
-                isSearching={isSearching}
-                selectedServiceType={selectedServiceType}
-                selectedState={selectedState}
-                zipCode={zipCode}
-                setSelectedServiceType={setSelectedServiceType}
-                setSelectedState={setSelectedState}
-                setZipCode={setZipCode}
-                handleSearch={() => {
-                  handleSearch();
-                }}
-                resetSearch={() => {
-                  resetSearch();
-                  setIsCollapsed(false);
-                }}
-                hasSearched={hasSearched}
+                onSearch={onSearch}
               />
             </div>
           </motion.div>

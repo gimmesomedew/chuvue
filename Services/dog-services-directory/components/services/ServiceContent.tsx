@@ -8,10 +8,10 @@ export function ServiceContent({ service, sortByDistance, userLocation }: Servic
   const distance = 'distance' in service ? service.distance : undefined;
 
   return (
-    <div className="space-y-2">
-      <div className="space-y-1">
+    <div className="space-y-1.5">
+      <div className="space-y-0.5">
         <div className="flex items-center text-gray-500 text-sm">
-          <MapPin className="h-5 w-5 mr-2 text-emerald-600 flex-shrink-0" />
+          <MapPin className="h-5 w-5 mr-1.5 text-emerald-600 flex-shrink-0" />
           <span>{service.address}</span>
         </div>
         
@@ -27,8 +27,8 @@ export function ServiceContent({ service, sortByDistance, userLocation }: Servic
         </div>
       </div>
 
-      <div className="flex-1 space-y-3">
-        <div className="space-y-1">
+      <div className="flex-1 space-y-2">
+        <div className="space-y-0.5">
           <h3 className="text-sm font-medium text-emerald-600">Description</h3>
           <p className="text-sm text-gray-600">
             {service.description.length > DESCRIPTION_MAX_LENGTH 
@@ -37,7 +37,7 @@ export function ServiceContent({ service, sortByDistance, userLocation }: Servic
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {service.is_verified && (
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
               Verified

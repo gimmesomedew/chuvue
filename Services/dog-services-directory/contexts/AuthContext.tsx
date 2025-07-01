@@ -285,9 +285,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setIsSigningOut(false);
       
-      // Force redirect to login page to ensure clean state
-      console.log('Redirecting to login page...');
-      window.location.href = '/auth/login';
+      // Force redirect to home page to ensure clean state
+      console.log('Redirecting to home page...');
+      window.location.href = '/';
     }
   };
 
