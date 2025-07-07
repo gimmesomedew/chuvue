@@ -30,9 +30,6 @@ export function Footer() {
                 <Link href="/" className="text-gray hover:text-gray-200">Home</Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
-                <Link href="/directory" className="text-gray hover:text-gray-200">Member Directory</Link>
-              </motion.li>
-              <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                 <Link href="/add-listing" className="text-gray hover:text-gray-200">Add Your Service</Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>

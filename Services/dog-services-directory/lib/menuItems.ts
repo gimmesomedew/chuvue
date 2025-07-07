@@ -51,7 +51,7 @@ export const menuEntries: MenuEntry[] = [
     section: 'base',
   },
   {
-    label: 'Services',
+    label: 'Service Directory',
     href: '/',
     icon: Navigation,
     roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
@@ -61,14 +61,14 @@ export const menuEntries: MenuEntry[] = [
     label: 'Member Directory',
     href: '/directory',
     icon: Navigation,
-    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    roles: [],
     section: 'base',
   },
   {
     label: 'Messages',
     href: '/messages',
     icon: Mail,
-    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    roles: [],
     section: 'base',
   },
   {

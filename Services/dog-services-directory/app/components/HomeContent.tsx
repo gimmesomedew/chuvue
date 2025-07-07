@@ -82,8 +82,8 @@ export function HomeContent() {
         </section>
       )}
       
-      {/* Featured Service Providers Carousel - Only show if not searched */}
-      {!hasSearched && (
+      {/* Featured Service Providers Carousel - Disabled */}
+      {false && !hasSearched && (
         <section className="py-16">
           <div className="container mx-auto px-4" data-component-name="Home">
             <FeaturedCarousel />
