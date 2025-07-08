@@ -10,6 +10,9 @@ interface SearchState {
   selectedServiceType: string;
   selectedState: string;
   zipCode: string;
+  latitude?: number;
+  longitude?: number;
+  radiusMiles?: number;
 }
 
 interface SearchResults {
@@ -53,7 +56,10 @@ export function useSearchServices(): UseSearchServicesReturn {
   const [searchState, setSearchStateInternal] = useState<SearchState>({
     selectedServiceType: '',
     selectedState: '',
-    zipCode: ''
+    zipCode: '',
+    latitude: undefined,
+    longitude: undefined,
+    radiusMiles: undefined,
   });
   
   // Search results state
@@ -118,6 +124,9 @@ export function useSearchServices(): UseSearchServicesReturn {
           searchParams.selectedServiceType || '',
           searchParams.selectedState || '',
           searchParams.zipCode || '',
+          searchParams.latitude,
+          searchParams.longitude,
+          searchParams.radiusMiles,
           1,
           SEARCH_CONSTANTS.RESULTS_PER_PAGE
         ),
@@ -180,6 +189,9 @@ export function useSearchServices(): UseSearchServicesReturn {
           searchState.selectedServiceType,
           searchState.selectedState,
           searchState.zipCode,
+          searchState.latitude,
+          searchState.longitude,
+          searchState.radiusMiles,
           newPage,
           SEARCH_CONSTANTS.RESULTS_PER_PAGE
         ),
@@ -220,7 +232,10 @@ export function useSearchServices(): UseSearchServicesReturn {
     setSearchStateInternal({
       selectedServiceType: '',
       selectedState: '',
-      zipCode: ''
+      zipCode: '',
+      latitude: undefined,
+      longitude: undefined,
+      radiusMiles: undefined,
     });
     setSearchResults([]);
     setHasSearched(false);

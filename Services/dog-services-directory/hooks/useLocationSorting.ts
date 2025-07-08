@@ -87,14 +87,6 @@ export function useLocationSorting(searchResults: Service[]) {
   
   // Memoize the sorted results to avoid recalculating on every render
   const sortedResults = useMemo(() => {
-    // Log location usage for debugging and analytics
-    if (state.sortByDistance && state.userLocation) {
-      console.log('Using location for sorting:', {
-        latitude: state.userLocation.latitude,
-        longitude: state.userLocation.longitude
-      });
-    }
-
     if (searchResults.length === 0) {
       return [];
     }

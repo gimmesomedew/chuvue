@@ -7,6 +7,9 @@ export interface SearchState {
   selectedServiceType: string;
   selectedState: string;
   zipCode: string;
+  latitude?: number;
+  longitude?: number;
+  radiusMiles?: number;
   page: number;
 }
 
@@ -23,6 +26,9 @@ export function useServicesQuery(searchState: SearchState) {
       serviceType: searchState.selectedServiceType,
       state: searchState.selectedState,
       zipCode: searchState.zipCode,
+      latitude: searchState.latitude,
+      longitude: searchState.longitude,
+      radiusMiles: searchState.radiusMiles,
       page: searchState.page,
       perPage: SEARCH_CONSTANTS.RESULTS_PER_PAGE,
     }),
@@ -51,6 +57,9 @@ export function useServicesQuery(searchState: SearchState) {
           serviceType: searchState.selectedServiceType,
           state: searchState.selectedState,
           zipCode: searchState.zipCode,
+          latitude: searchState.latitude,
+          longitude: searchState.longitude,
+          radiusMiles: searchState.radiusMiles,
           page: searchState.page + 1,
           perPage: SEARCH_CONSTANTS.RESULTS_PER_PAGE,
         }),

@@ -46,7 +46,7 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4 text-[#38eb38]">Connect With Us</h3>
             <div className="flex space-x-4">
               <motion.a 
-                href="https://facebook.com/DogParkAdventures"
+                href="https://www.facebook.com/TheDogParkAdventures"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.1 }} 

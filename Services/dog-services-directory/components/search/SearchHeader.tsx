@@ -77,36 +77,7 @@ export function SearchHeader({
         </div>
       </div>
       
-      {/* Sort by distance toggle */}
-      {totalResults > 0 && (
-        <div className="flex items-center justify-end space-x-2">
-          <div className="flex items-center space-x-2">
-            <label htmlFor="sort-by-distance" className="text-sm font-medium text-gray-700 flex items-center">
-              <Navigation className="h-4 w-4 mr-1 text-emerald-500" />
-              Sort by distance
-            </label>
-            <Switch
-              id="sort-by-distance"
-              checked={sortByDistance}
-              onCheckedChange={(checked) => setSortByDistance(checked)}
-              disabled={isLoadingLocation}
-              aria-label="Sort by distance"
-            />
-          </div>
-          
-          {isLoadingLocation && (
-            <span className="text-xs text-gray-500 animate-pulse">
-              Getting your location...
-            </span>
-          )}
-          
-          {locationError && (
-            <span className="text-xs text-red-500">
-              {locationError}
-            </span>
-          )}
-        </div>
-      )}
+      {/* Distance toggle removed per requirement */}
     </div>
   );
 }

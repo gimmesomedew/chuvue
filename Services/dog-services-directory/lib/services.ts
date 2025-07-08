@@ -171,8 +171,6 @@ export async function getAllServices(
       return { services: [], total: 0, page, totalPages: 0 };
     }
     
-    console.log('Total services count:', count);
-    
     const total = count || 0;
     const totalPages = Math.ceil(total / pageSize);
     
@@ -186,11 +184,6 @@ export async function getAllServices(
     if (error) {
       console.error('Error fetching all services:', error);
       return { services: [], total: 0, page, totalPages: 0 };
-    }
-    
-    console.log(`All services results count: ${data?.length || 0}`);
-    if (data && data.length > 0) {
-      console.log('First service:', data[0]);
     }
     
     return {
@@ -339,10 +332,39 @@ export async function searchServices(
   serviceType: string,
   state: string,
   zipCode: string,
-  page: number,
-  perPage: number
+  latitude?: number,
+  longitude?: number,
+  radiusMiles: number = 25,
+  page: number = 1,
+  perPage: number = 15
 ): Promise<{ services: Service[]; totalPages: number; total: number }> {
   try {
+    // If lat/lon provided, use RPC
+    if (latitude !== undefined && longitude !== undefined) {
+      const { data, error } = await supabase
+        .rpc('services_within_radius', {
+          p_lat: latitude,
+          p_lon: longitude,
+          p_radius_miles: radiusMiles
+        });
+
+      if (error) throw error;
+
+      let rows = data || [];
+      if (serviceType) {
+        const normType = normalizeServiceType(serviceType);
+        rows = rows.filter((s: any) => s.service_type === normType);
+      }
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / perPage);
+
+      const startIdx = (page - 1) * perPage;
+      const paged = rows.slice(startIdx, startIdx + perPage);
+
+      return { services: paged as Service[], totalPages, total };
+    }
+
     let query = supabase
       .from('services')
       .select('*', { count: 'exact' });

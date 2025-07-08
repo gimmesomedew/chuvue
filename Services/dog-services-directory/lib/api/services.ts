@@ -5,6 +5,9 @@ export interface SearchParams {
   serviceType: string;
   state: string;
   zipCode: string;
+  latitude?: number;
+  longitude?: number;
+  radiusMiles?: number;
   page: number;
   perPage: number;
 }
@@ -20,12 +23,30 @@ export const servicesApi = {
     serviceType,
     state,
     zipCode,
+    latitude,
+    longitude,
+    radiusMiles,
     page,
     perPage,
   }: SearchParams): Promise<SearchResponse> => {
     let query = supabase
       .from('services')
       .select('*', { count: 'exact' });
+
+    // If lat/lon provided call RPC and return all rows (no count)
+    if (latitude !== undefined && longitude !== undefined) {
+      const { data, error } = await supabase.rpc('services_within_radius', {
+        p_lat: latitude,
+        p_lon: longitude,
+        p_radius_miles: radiusMiles ?? 25,
+      });
+      if (error) throw error;
+      return {
+        services: data || [],
+        totalPages: 1,
+        total: data?.length || 0,
+      };
+    }
 
     // Apply filters
     if (serviceType) {

@@ -11,7 +11,8 @@ const nextConfig = {
       'lh4.googleusercontent.com',
       'lh6.googleusercontent.com',
       'maps.googleapis.com',
-      'streetviewpixels-pa.googleapis.com'
+      'streetviewpixels-pa.googleapis.com',
+      'images.unsplash.com'
     ],
     remotePatterns: [
       {

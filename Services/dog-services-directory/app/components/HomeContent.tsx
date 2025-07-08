@@ -32,7 +32,7 @@ export function HomeContent() {
 
   const handleSearchSubmit = async (params: Partial<SearchState>) => {
     // Check if at least one search parameter is provided
-    if (!params.selectedServiceType && !params.selectedState && !params.zipCode) {
+    if (!params.selectedServiceType && !params.selectedState && !params.zipCode && params.latitude === undefined) {
       toast({
         title: "Search Parameters Required",
         description: "Please select a service type, state, or enter a ZIP code to search.",

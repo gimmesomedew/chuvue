@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react';
 
+const CACHE_KEY = 'userCoordsCache';
+const TTL_MS = 30 * 60 * 1000; // 30 minutes
+
 // Define the return type for the hook
 interface UseUserLocationReturn {
   location: GeolocationCoordinates | null;
@@ -14,7 +17,18 @@ interface UseUserLocationReturn {
  * Includes logging for analytics and debugging purposes
  */
 export function useUserLocation(): UseUserLocationReturn {
-  const [location, setLocation] = useState<GeolocationCoordinates | null>(null);
+  const [location, setLocation] = useState<GeolocationCoordinates | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const { coords, ts } = JSON.parse(raw);
+      if (Date.now() - ts < TTL_MS) {
+        return coords as GeolocationCoordinates;
+      }
+    } catch {}
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,11 +60,10 @@ export function useUserLocation(): UseUserLocationReturn {
             setLocation(coords);
             setIsLoading(false);
             
-            // Log success for analytics
-            console.log('Location obtained successfully', {
-              accuracy: coords.accuracy,
-              timestamp: new Date().toISOString()
-            });
+            // cache coords with timestamp
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify({ coords, ts: Date.now() }));
+            } catch {}
             
             resolve(coords);
           },
@@ -102,6 +115,7 @@ export function useUserLocation(): UseUserLocationReturn {
   const clearLocation = useCallback(() => {
     setLocation(null);
     setError(null);
+    try { localStorage.removeItem(CACHE_KEY); } catch {}
   }, []);
 
   // Helper function to log location errors for analytics

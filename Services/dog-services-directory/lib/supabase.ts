@@ -18,7 +18,7 @@ export type UserRole = 'admin' | 'service_provider' | 'pet_owner' | 'guest' | 'r
 // Function to get the current user's role
 export async function getUserRole(): Promise<UserRole> {
   try {
-    console.log('Getting user role...');
+    // console.log('Getting user role...');
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError) {
