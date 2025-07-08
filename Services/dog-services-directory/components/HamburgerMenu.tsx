@@ -26,7 +26,7 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
       <Link
         href={href || '#'}
         onClick={onClick}
-        className="group flex items-center gap-3 px-3 py-2 text-primary-600 hover:bg-gray-100 hover:text-[#D28001] rounded-md transition-colors"
+        className="group flex items-center gap-3 px-3 py-2 text-primary-600 hover:bg-emerald-500/50 rounded-md transition-colors"
       >
         {Icon && (
           <motion.div

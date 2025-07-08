@@ -38,7 +38,11 @@ export function Header() {
           {/* Center links */}
           <div className="flex items-center space-x-6">
             {baseLinks.map((entry) => (
-              <Link key={entry.label} href={entry.href} className="text-gray-700 hover:text-emerald-600">
+              <Link
+                key={entry.label}
+                href={entry.href}
+                className="px-3 py-2 rounded text-gray-700 hover:text-emerald-800 hover:bg-emerald-500/50 transition-colors"
+              >
                 {entry.label}
               </Link>
             ))}
