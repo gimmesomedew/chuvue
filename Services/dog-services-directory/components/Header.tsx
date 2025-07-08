@@ -36,7 +36,7 @@ export function Header() {
         {/* Desktop navigation */}
         <nav className="hidden md:flex flex-1 items-center justify-between">
           {/* Center links */}
-          <div className="flex-1 flex justify-center space-x-6">
+          <div className="flex items-center space-x-6">
             {/* No center links when logged out */}
             {user && (
               <>
