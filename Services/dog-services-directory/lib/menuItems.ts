@@ -54,7 +54,7 @@ export const menuEntries: MenuEntry[] = [
     label: 'Service Directory',
     href: '/',
     icon: Navigation,
-    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
+    roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
     section: 'base',
   },
   {

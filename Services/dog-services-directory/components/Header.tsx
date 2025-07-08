@@ -16,7 +16,7 @@ import {
 import { getSectionedEntries } from "@/lib/menuItems";
 
 export function Header() {
-  const { user, profile, userRole, unreadMessageCount, signOut } = useAuth();
+  const { user, profile, userRole, signOut } = useAuth();
 
   const sections = getSectionedEntries(userRole);
 
@@ -37,27 +37,11 @@ export function Header() {
         <nav className="hidden md:flex flex-1 items-center justify-between">
           {/* Center links */}
           <div className="flex items-center space-x-6">
-            {/* No center links when logged out */}
-            {user && (
-              <>
-                {baseLinks.map((entry) => (
-                  entry.label === 'Messages' ? (
-                    <div key={entry.label} className="relative">
-                      <Link href={entry.href} className="text-gray-700 hover:text-emerald-600">
-                        {entry.label}
-                      </Link>
-                      {unreadMessageCount > 0 && (
-                        <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full px-1">{unreadMessageCount}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <Link key={entry.label} href={entry.href} className="text-gray-700 hover:text-emerald-600">
-                      {entry.label}
-                    </Link>
-                  )
-                ))}
-              </>
-            )}
+            {baseLinks.map((entry) => (
+              <Link key={entry.label} href={entry.href} className="text-gray-700 hover:text-emerald-600">
+                {entry.label}
+              </Link>
+            ))}
           </div>
 
           {/* Right-side actions */}
