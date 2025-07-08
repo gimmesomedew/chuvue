@@ -72,7 +72,7 @@ export const menuEntries: MenuEntry[] = [
     section: 'base',
   },
   {
-    label: 'Add Listing',
+    label: 'Add Your Service',
     href: '/add-listing',
     icon: Briefcase,
     roles: ['guest', 'pet_owner', 'service_provider'],
