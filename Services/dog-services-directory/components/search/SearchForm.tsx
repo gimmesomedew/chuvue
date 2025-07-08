@@ -115,7 +115,7 @@ export function SearchForm({ onSearch }: SearchFormProps) {
         </div>
 
         {/* Location Field */}
-        <div className="md:col-span-6">
+        <div className="md:col-span-4">
           <div className="flex items-center mb-2">
             <MapPin className="h-5 w-5 text-emerald-500 mr-2" />
             <span className="font-medium">Where?</span>
