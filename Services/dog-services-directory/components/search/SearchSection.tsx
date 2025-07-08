@@ -135,6 +135,17 @@ export function SearchSection({
               <SearchForm 
                 onSearch={onSearch}
               />
+
+              {/* Reset search link */}
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={resetSearch}
+                  className="text-emerald-500 text-sm hover:underline"
+                >
+                  Reset Search
+                </button>
+              </div>
             </div>
           </motion.div>
 
