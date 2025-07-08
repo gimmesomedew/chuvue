@@ -58,7 +58,7 @@ export function Footer() {
                 </svg>
               </motion.a>
               <motion.a 
-                href="https://instagram.com/DogParkAdventures"
+                href="https://www.instagram.com/gymsfordogs/"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.1 }} 
@@ -93,7 +93,7 @@ export function Footer() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="border-t border-white/20 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center"
         >
-          <p className="text-sm text-white">© {new Date().getFullYear()} Dog Park Adventures. All rights reserved.</p>
+          <p className="text-sm text-white">© {new Date().getFullYear()} Dog Park Adventures</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
               <Link href="/privacy" className="text-sm text-white hover:text-gray-200">
