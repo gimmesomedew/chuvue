@@ -8,7 +8,7 @@ import { Select } from '@/components/ui/select';
 import { useServiceDefinitions } from '@/hooks/useServiceDefinitions';
 import { US_STATES } from '@/lib/states';
 import { ServiceDefinition } from '@/lib/types';
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, Ruler } from 'lucide-react';
 
 type LocationType = 'state' | 'zip';
 
@@ -163,6 +163,7 @@ export function SearchForm({ onSearch }: SearchFormProps) {
         {/* Distance Field */}
         <div className="md:col-span-2">
           <div className="flex items-center mb-2">
+            <Ruler className="h-5 w-5 text-emerald-500 mr-2" />
             <span className="font-medium">Distance</span>
           </div>
           <Select
