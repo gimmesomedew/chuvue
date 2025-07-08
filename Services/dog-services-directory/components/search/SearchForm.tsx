@@ -55,10 +55,11 @@ interface SearchFormProps {
 
 export function SearchForm({ onSearch }: SearchFormProps) {
   const [locationType, setLocationType] = useState<LocationType>('state');
-  const [formState, setFormState] = useState<Partial<SearchState>>({
+  const [formState, setFormState] = useState<any>({
     selectedServiceType: '',
     selectedState: '',
     zipCode: '',
+    distanceMiles: '',
   });
 
   const { data: serviceDefinitions, isLoading } = useServiceDefinitions();
@@ -70,15 +71,15 @@ export function SearchForm({ onSearch }: SearchFormProps) {
 
   const handleLocationTypeChange = (type: LocationType) => {
     setLocationType(type);
-    setFormState(prev => ({
+    setFormState((prev: any) => ({
       ...prev,
       selectedState: type === 'state' ? prev.selectedState : '',
       zipCode: type === 'zip' ? prev.zipCode : '',
     }));
   };
 
-  const handleChange = (field: keyof SearchState, value: string) => {
-    setFormState(prev => ({
+  const handleChange = (field: string, value: string) => {
+    setFormState((prev: any) => ({
       ...prev,
       [field]: value,
     }));
@@ -157,6 +158,24 @@ export function SearchForm({ onSearch }: SearchFormProps) {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Distance Field */}
+        <div className="md:col-span-2">
+          <div className="flex items-center mb-2">
+            <span className="font-medium">Distance</span>
+          </div>
+          <Select
+            value={formState.distanceMiles}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
+              handleChange('distanceMiles' as any, e.target.value)
+            }
+          >
+            <option value="">Any</option>
+            <option value="25">25 miles</option>
+            <option value="50">50 miles</option>
+            <option value="100">100 miles</option>
+          </Select>
         </div>
 
         {/* Search Button */}
