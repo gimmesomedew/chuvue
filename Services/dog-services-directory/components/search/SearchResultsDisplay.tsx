@@ -6,6 +6,10 @@ import { ServicesList } from './ServicesList';
 import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
 import { SearchHeader } from './SearchHeader';
+import { ServicesMap } from '@/components/maps/ServicesMap';
+import { useState } from 'react';
+import { LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SearchResultsDisplayProps {
   searchResults: Service[];
@@ -40,6 +44,9 @@ export function SearchResultsDisplay({
     // We can add it later if needed
   };
 
+  // Toggle between card and map views
+  const [view, setView] = useState<'cards' | 'map'>('cards');
+
   if (isSearching) {
     return <SearchSkeleton />;
   }
@@ -59,7 +66,35 @@ export function SearchResultsDisplay({
         isLoadingLocation={false}
         locationError={null}
       />
-      <ServicesList services={searchResults} />
+
+      {/* View Toggle */}
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Card view"
+          onClick={() => setView('cards')}
+          className={view === 'cards' ? 'bg-emerald-50 text-emerald-600' : ''}
+        >
+          <LayoutGrid className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Map view"
+          onClick={() => setView('map')}
+          className={view === 'map' ? 'bg-emerald-50 text-emerald-600' : ''}
+        >
+          <MapIcon className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {view === 'map' ? (
+        <ServicesMap services={searchResults} />
+      ) : (
+        <ServicesList services={searchResults} />
+      )}
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
