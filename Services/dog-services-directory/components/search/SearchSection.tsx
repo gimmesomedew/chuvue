@@ -131,7 +131,7 @@ export function SearchSection({
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="bg-white rounded-lg shadow-md overflow-hidden"
           >
-            <div className="p-8">
+            <div className="p-4 md:p-8">
               <SearchForm 
                 onSearch={onSearch}
               />
