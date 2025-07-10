@@ -28,9 +28,16 @@ function LocationToggle({ locationType, onTypeChange, disabled }: LocationToggle
   ];
 
   return (
-    <fieldset className="flex rounded-md overflow-hidden border border-gray-200" role="radiogroup" aria-label="Location type selector">
+    <fieldset
+      className="flex w-full sm:max-w-[375px] rounded-md overflow-hidden border border-gray-200"
+      role="radiogroup"
+      aria-label="Location type selector"
+    >
       {options.map((opt) => (
-        <label key={opt.value} className={`cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${locationType === opt.value ? 'bg-emerald-500 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}> 
+        <label
+          key={opt.value}
+          className={`flex-1 sm:flex-none sm:min-w-[125px] sm:max-w-[125px] text-center cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${locationType === opt.value ? 'bg-emerald-500 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
           <input
             type="radio"
             name="locationType"
@@ -166,7 +173,7 @@ export function SearchForm({ onSearch }: SearchFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Service Type Field */}
         <div className="md:col-span-3 border border-emerald-300 rounded-md p-3">
@@ -200,7 +207,7 @@ export function SearchForm({ onSearch }: SearchFormProps) {
             <MapPin className="h-5 w-5 text-emerald-500 mr-2" />
             <span className="font-medium">What Location?</span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 w-full">
             <LocationToggle
               locationType={locationType}
               onTypeChange={handleLocationTypeChange}
@@ -209,13 +216,14 @@ export function SearchForm({ onSearch }: SearchFormProps) {
             <div className="flex-1">
               <AnimatePresence mode="wait" initial={false}>
                 {locationType === 'state' && (
-                  <motion.div key="state" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                  <motion.div key="state" className="flex-1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
                     <Select
                       value={formState.selectedState}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
                         handleChange('selectedState', e.target.value)
                       }
                       disabled={isLoading}
+                      className="w-full"
                     >
                       <option value="">Select a state</option>
                       {US_STATES.map((state) => (
