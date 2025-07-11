@@ -184,22 +184,22 @@ export default function PendingReviewPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="overflow-x-auto bg-white rounded-lg shadow-md p-4">
-              <table className="table table-zebra w-full">
-                <thead>
+            <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-100">
                   <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Location</th>
-                    <th>Submitted</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Submitted</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-200">
                   {submissions.map((s) => (
-                    <tr key={s.id}>
-                      <td>
+                    <tr key={s.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <button
                           className="font-medium text-emerald-600 underline hover:text-emerald-700"
                           onClick={() => setSelected(s)}
@@ -207,59 +207,49 @@ export default function PendingReviewPage() {
                           {s.name}
                         </button>
                       </td>
-                      <td className="capitalize">{s.service_type.replace('_', ' ')}</td>
-                      <td>
+                      <td className="px-6 py-4 capitalize whitespace-nowrap text-sm text-gray-700">{s.service_type.replace('_', ' ')}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         <div className="flex items-center">
                           {s.city}, {s.state}
                           {s.geocoding_status === 'failed' && (
-                            <span className="ml-2 text-amber-500 flex items-center" title={s.geocoding_error}>
-                              <AlertTriangle className="h-4 w-4" />
+                            <span title={s.geocoding_error ?? ''}>
+                              <AlertTriangle className="h-4 w-4 ml-2 text-amber-500" />
                             </span>
                           )}
                           {s.geocoding_status === 'success' && (
-                            <span className="ml-2 text-emerald-500">
-                              <MapPin className="h-4 w-4" />
-                            </span>
+                            <MapPin className="h-4 w-4 ml-2 text-emerald-500" />
                           )}
                         </div>
                       </td>
-                      <td>{new Date(s.created_at).toLocaleDateString()}</td>
-                      <td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{new Date(s.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {s.status === 'approved' ? (
-                          <span className="flex items-center text-emerald-600">
-                            <BadgeCheck className="h-4 w-4 mr-1"/>Approved
-                          </span>
+                          <span className="flex items-center text-emerald-600"><BadgeCheck className="h-4 w-4 mr-1"/>Approved</span>
                         ) : s.status === 'rejected' ? (
-                          <span className="flex items-center text-red-600">
-                            <XCircle className="h-4 w-4 mr-1"/>Rejected
-                          </span>
+                          <span className="flex items-center text-red-600"><XCircle className="h-4 w-4 mr-1"/>Rejected</span>
                         ) : (
-                          <span className="flex items-center text-yellow-600">
-                            <Clock className="h-4 w-4 mr-1"/>Pending
-                          </span>
+                          <span className="flex items-center text-yellow-600"><Clock className="h-4 w-4 mr-1"/>Pending</span>
                         )}
                       </td>
-                      <td>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                            onClick={() => handleApprove(s.id)}
-                            disabled={processing === s.id || s.status !== 'pending'}
-                          >
-                            <ThumbsUp className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleReject(s.id)}
-                            disabled={processing === s.id || s.status !== 'pending'}
-                          >
-                            <ThumbsDown className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm flex justify-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          onClick={() => handleApprove(s.id)}
+                          disabled={processing === s.id || s.status !== 'pending'}
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleReject(s.id)}
+                          disabled={processing === s.id || s.status !== 'pending'}
+                        >
+                          <ThumbsDown className="h-4 w-4" />
+                        </Button>
                       </td>
                     </tr>
                   ))}
