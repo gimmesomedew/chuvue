@@ -54,7 +54,7 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const bucket = 'service_images';
+      const bucket = 'service-images';
       // ensure bucket exists
       const { error: bucketErr } = await supabase.storage.createBucket(bucket, { public: true }).catch(()=>({error:null}));
       if (bucketErr && bucketErr?.message && bucketErr.message !== 'Bucket already exists') throw bucketErr;
