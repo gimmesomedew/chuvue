@@ -42,7 +42,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // get user id from headers (supabase auth) - for simplicity accept from body
+    // Validate service_type against known list; fallback to 'other'
+    const allowedServiceTypes = [
+      'dog_park','veterinarian','grooming','boarding','training','daycare','walking','sitting','rescue','supplies','photography','transport','other'
+    ];
+
+    if (!allowedServiceTypes.includes(body.service_type)) {
+      body.service_type = 'other';
+    }
+
+    // get user id from headers (supabase auth) - accept from body
     const user_id = body.user_id || null;
 
     const { error } = await supabaseAdmin.from('service_submissions').insert([
