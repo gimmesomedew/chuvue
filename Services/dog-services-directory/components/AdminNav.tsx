@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FaList, FaExclamationTriangle } from 'react-icons/fa'
+import { FaList, FaExclamationTriangle, FaInbox } from 'react-icons/fa'
 
 const AdminNav = () => {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
@@ -23,6 +23,15 @@ const AdminNav = () => {
       >
         <FaExclamationTriangle className="w-5 h-5" />
         <span>Error Logs</span>
+      </Link>
+      <Link
+        href="/review/pending"
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+          pathname === '/review/pending' ? 'bg-primary text-primary-content' : 'hover:bg-base-200'
+        }`}
+      >
+        <FaInbox className="w-5 h-5" />
+        <span>Submissions</span>
       </Link>
     </div>
   )
