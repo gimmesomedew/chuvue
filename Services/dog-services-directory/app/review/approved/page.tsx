@@ -87,23 +87,23 @@ export default function ApprovedSubmissionsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="overflow-x-auto bg-white rounded-lg shadow-md p-4">
-              <table className="table table-zebra w-full">
-                <thead>
+            <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-100">
                   <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Location</th>
-                    <th>Approved</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Approved</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-200">
                   {submissions.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.name}</td>
-                      <td className="capitalize">{s.service_type.replace('_', ' ')}</td>
-                      <td>{s.city}, {s.state}</td>
-                      <td><BadgeCheck className="text-emerald-600 h-4 w-4" /></td>
+                    <tr key={s.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{s.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap capitalize text-sm text-gray-700">{s.service_type.replace('_', ' ')}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{s.city}, {s.state}</td>
+                      <td className="px-6 py-4 whitespace-nowrap flex justify-center"><BadgeCheck className="text-emerald-600 h-4 w-4" /></td>
                     </tr>
                   ))}
                 </tbody>
