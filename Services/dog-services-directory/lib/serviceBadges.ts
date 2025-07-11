@@ -22,6 +22,7 @@ const iconMapping: Record<string, React.ComponentType<{ className?: string }>> =
   supplies: ShoppingBag,
   photography: HelpCircle,
   transport: MapPin,
+  apartments: Home,
   other: HelpCircle,
 };
 
