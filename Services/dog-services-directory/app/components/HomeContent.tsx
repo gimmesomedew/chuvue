@@ -5,6 +5,7 @@ import { SearchResultsDisplay } from '@/components/search/SearchResultsDisplay';
 import { FeaturedCarousel } from '@/components/services/FeaturedCarousel';
 import { SignUpCallout } from '@/components/search/SignUpCallout';
 import { useSearchServices } from '@/hooks/useSearchServices';
+import { useSearchParams } from 'next/navigation';
 import { getSortedStates } from '@/lib/states';
 import { SearchState } from '@/hooks/useServicesQuery';
 import { useToast } from '@/components/ui/use-toast';
@@ -26,6 +27,10 @@ export function HomeContent() {
     resetSearch,
     searchResultsRef
   } = useSearchServices();
+
+  // Get initial service type from query string
+  const searchParams = useSearchParams();
+  const initialServiceType = searchParams?.get('type') ?? '';
 
   const { toast } = useToast();
   const states = getSortedStates();
@@ -58,6 +63,7 @@ export function HomeContent() {
         hasSearched={hasSearched}
         onSearch={handleSearchSubmit}
         resetSearch={resetSearch}
+        initialSelectedServiceType={initialServiceType}
       />
       
       {/* Search Results Section */}

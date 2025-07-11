@@ -15,6 +15,7 @@ interface SearchSectionProps {
   hasSearched: boolean;
   onSearch: (params: Partial<SearchState>) => void;
   resetSearch: () => void;
+  initialSelectedServiceType?: string;
 }
 
 const SearchSectionSkeleton = () => (
@@ -54,7 +55,8 @@ export function SearchSection({
   isSearching,
   hasSearched,
   onSearch,
-  resetSearch
+  resetSearch,
+  initialSelectedServiceType = ''
 }: SearchSectionProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -134,6 +136,7 @@ export function SearchSection({
             <div className="p-4 md:p-8">
               <SearchForm 
                 onSearch={onSearch}
+                initialSelectedServiceType={initialSelectedServiceType}
               />
 
               {/* Reset search link */}

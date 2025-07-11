@@ -56,6 +56,7 @@ function LocationToggle({ locationType, onTypeChange, disabled }: LocationToggle
 
 interface SearchFormProps {
   onSearch: (params: Partial<SearchState>) => void;
+  initialSelectedServiceType?: string;
 }
 
 // simple debounce utility
@@ -67,17 +68,24 @@ function debounce<F extends (...args: any[]) => void>(fn: F, delay: number) {
   };
 }
 
-export function SearchForm({ onSearch }: SearchFormProps) {
+export function SearchForm({ onSearch, initialSelectedServiceType = '' }: SearchFormProps) {
   const [locationType, setLocationType] = useState<LocationType>('state');
 
   const [formState, setFormState] = useState<any>({
-    selectedServiceType: '',
+    selectedServiceType: initialSelectedServiceType,
     selectedState: '',
     zipCode: '',
     latitude: undefined,
     longitude: undefined,
     radiusMiles: 25,
   });
+
+  // Update selectedServiceType if prop changes
+  useEffect(() => {
+    if (initialSelectedServiceType && initialSelectedServiceType !== formState.selectedServiceType) {
+      setFormState((prev: any) => ({ ...prev, selectedServiceType: initialSelectedServiceType }));
+    }
+  }, [initialSelectedServiceType]);
 
   const { data: serviceDefinitions, isLoading } = useServiceDefinitions();
 
