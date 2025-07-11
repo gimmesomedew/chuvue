@@ -37,6 +37,8 @@ interface Submission {
   email?: string;
   geocoding_status?: string;
   geocoding_error?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 const PAGE_SIZE = 25;
@@ -287,6 +289,9 @@ export default function PendingReviewPage() {
                 <div><span className="font-medium">Address:</span> {selected.address}</div>
                 <div><span className="font-medium">City/State:</span> {selected.city}, {selected.state} {selected.zip_code}</div>
                 <div><span className="font-medium">Phone:</span> {selected.contact_phone}</div>
+                {selected.latitude && selected.longitude && (
+                  <div className="md:col-span-2"><span className="font-medium">Coordinates:</span> {selected.latitude}, {selected.longitude}</div>
+                )}
                 {selected.website_url && <div><span className="font-medium">Website:</span> <a href={selected.website_url} target="_blank" className="text-blue-600 underline">{selected.website_url}</a></div>}
                 <div className="md:col-span-2"><span className="font-medium">Description:</span><br/>{selected.description}</div>
               </div>
