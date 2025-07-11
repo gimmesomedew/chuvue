@@ -20,6 +20,28 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // If latitude or longitude missing, attempt to geocode using Nominatim
+    let { latitude, longitude } = body;
+
+    if (!latitude || !longitude) {
+      const query = `${body.address}, ${body.city}, ${body.state} ${body.zip_code}`;
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+          { headers: { 'User-Agent': 'DogServicesDirectory/1.0' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            latitude = data[0].lat;
+            longitude = data[0].lon;
+          }
+        }
+      } catch (error) {
+        console.error('Geocoding error:', error);
+      }
+    }
+
     // get user id from headers (supabase auth) - for simplicity accept from body
     const user_id = body.user_id || null;
 
@@ -33,8 +55,8 @@ export async function POST(req: NextRequest) {
         city: body.city,
         state: body.state,
         zip_code: body.zip_code,
-        latitude: body.latitude || null,
-        longitude: body.longitude || null,
+        latitude: latitude || null,
+        longitude: longitude || null,
         contact_phone: body.contact_phone,
         website_url: body.website_url,
         email: body.email,
