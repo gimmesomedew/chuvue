@@ -42,12 +42,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Validate service_type against known list; fallback to 'other'
-    const allowedServiceTypes = [
-      'dog_park','veterinarian','grooming','boarding','training','daycare','walking','sitting','rescue','supplies','photography','transport','apartments','other'
-    ];
+    // Dynamically fetch allowed service types from service_definitions
+    let allowedServiceTypes: string[] = [];
+    try {
+      const { data: defs, error: defsErr } = await supabaseAdmin
+        .from('service_definitions')
+        .select('service_type');
 
-    if (!allowedServiceTypes.includes(body.service_type)) {
+      if (defsErr) {
+        console.error('Error fetching service definitions:', defsErr.message);
+      } else {
+        allowedServiceTypes = (defs || []).map((d: any) => d.service_type);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching service definitions:', err);
+    }
+
+    // Fallback to other if not in list
+    if (allowedServiceTypes.length > 0 && !allowedServiceTypes.includes(body.service_type)) {
       body.service_type = 'other';
     }
 
