@@ -37,16 +37,20 @@ export default function AddListingPage() {
     const place = ac.getPlace();
     if (!place.address_components) return;
 
-    // Helper to extract component by type
-    const getComponent = (type: string) => {
+    // Helper to extract component by type and field (long or short)
+    const getComponent = (
+      type: string,
+      field: 'long_name' | 'short_name' = 'long_name'
+    ) => {
       const component = place.address_components!.find((c) => c.types.includes(type));
-      return component ? component.long_name : '';
+      // @ts-ignore
+      return component ? component[field] : '';
     };
 
     const streetNumber = getComponent('street_number');
     const route = getComponent('route');
     const city = getComponent('locality') || getComponent('sublocality') || getComponent('administrative_area_level_2');
-    const state = getComponent('administrative_area_level_1');
+    const state = getComponent('administrative_area_level_1', 'short_name');
     const zip = getComponent('postal_code');
 
     const addressLine = `${streetNumber} ${route}`.trim();
