@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { ClipboardList, MapPin, Phone, Share2, PawPrint, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -107,13 +108,41 @@ export default function AddListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-8">
-        <h1 className="text-3xl font-bold mb-6">Add a New Listing</h1>
-        <form className="space-y-8" onSubmit={handleSubmit}>
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Header */}
+      <section className="bg-gradient-to-r from-[#667eea] to-[#764ba2] py-12 text-center text-white shadow-md">
+        <h1 className="text-4xl font-bold mb-2">Add a New Listing</h1>
+        <p className="text-lg opacity-90">Share your dog service with our community</p>
+      </section>
+
+      {/* Progress Indicator */}
+      <nav className="max-w-4xl mx-auto w-full -mt-6 mb-8 px-4">
+        <ol className="flex justify-between bg-white shadow rounded-lg p-4">
+          {[
+            { label: 'Service Details', icon: ClipboardList },
+            { label: 'Location', icon: MapPin },
+            { label: 'Contact', icon: Phone },
+            { label: 'Social', icon: Share2 },
+            { label: 'Pet Info', icon: PawPrint },
+          ].map(({ label, icon: Icon }, idx) => (
+            <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
+              <Icon className="w-5 h-5 mb-1 text-emerald-600" />
+              <span className="hidden sm:inline-block text-center">{label}</span>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      {/* Form Card */}
+      <div className="flex-1">
+        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-10">
+        <form className="space-y-12" onSubmit={handleSubmit}>
           {/* Service Details */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Service Details</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <ClipboardList className="w-5 h-5 text-emerald-600" />
+              Service Details
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
                 <Label>Service Type</Label>
@@ -143,7 +172,10 @@ export default function AddListingPage() {
 
           {/* Location */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Location</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-emerald-600" />
+              Location
+            </h2>
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2"><Label>Address</Label><Input name="address" value={form.address} onChange={handleChange} required /></div>
               {/* City, State, Zip in one row */}
@@ -166,7 +198,10 @@ export default function AddListingPage() {
 
           {/* Contact Information */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Phone className="w-5 h-5 text-emerald-600" />
+              Contact Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Contact Phone</Label><Input name="contact_phone" placeholder="(555) 123-4567" value={form.contact_phone} onChange={handleChange} /></div>
               <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" placeholder="example@domain.com" value={form.email} onChange={handleChange} required /></div>
@@ -176,7 +211,10 @@ export default function AddListingPage() {
 
           {/* Social Links */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Social Links</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-emerald-600" />
+              Social Links
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2"><Label>Facebook URL</Label><Input name="facebook_url" placeholder="https://facebook.com/..." value={form.facebook_url} onChange={handleChange} /></div>
               <div className="space-y-2"><Label>Instagram URL</Label><Input name="instagram_url" placeholder="https://instagram.com/..." value={form.instagram_url} onChange={handleChange} /></div>
@@ -186,7 +224,10 @@ export default function AddListingPage() {
 
           {/* Pet Information */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Pet Information (optional)</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <PawPrint className="w-5 h-5 text-emerald-600" />
+              Pet Information (optional)
+            </h2>
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2"><Label>Pet's Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
               <div className="space-y-2"><Label>Pet Description</Label><Textarea name="pet_description" placeholder="Tell us a bit about your pet..." value={form.pet_description} onChange={handleChange} /></div>
@@ -212,5 +253,6 @@ export default function AddListingPage() {
         </form>
       </div>
     </div>
+  </div>
   );
 } 
