@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { getServiceDefinitionsWithCounts, ServiceDefinitionWithCount } from '@/lib/services';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 interface ServiceStats {
   totalServices: number;
@@ -172,20 +173,22 @@ export function ServicesManagement() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
-              <Settings className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {serviceStats ? formatNumber(serviceStats.pendingSubmissions) : '0'}
-              </div>
-              <p className="text-xs text-gray-600">
-                Awaiting review
-              </p>
-            </CardContent>
-          </Card>
+          <Link href="/review/pending" className="block">
+            <Card className="hover:shadow-lg transition-shadow h-full flex flex-col cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
+                <Settings className="h-4 w-4 text-yellow-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {serviceStats ? formatNumber(serviceStats.pendingSubmissions) : '0'}
+                </div>
+                <p className="text-xs text-gray-600">
+                  Awaiting review
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         </motion.div>
 
         <motion.div
