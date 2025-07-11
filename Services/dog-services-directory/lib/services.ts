@@ -19,9 +19,7 @@ export interface ServiceDefinitionWithCount {
 function normalizeServiceType(serviceType: string): string {
   return serviceType
     .toLowerCase()
-    .replace(/\s+/g, '_')
-    // Remove trailing 's' if present
-    .replace(/s$/, '');
+    .replace(/\s+/g, '_');
 }
 
 /**
