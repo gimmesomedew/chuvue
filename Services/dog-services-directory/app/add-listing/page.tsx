@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ClipboardList, MapPin, Phone, Share2, PawPrint, CheckCircle } from 'lucide-react';
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +17,50 @@ export default function AddListingPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [serviceDefinitions, setServiceDefinitions] = useState<ServiceDefinition[]>([]);
+
+  // Google Places Autocomplete
+  const { isLoaded: mapsLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    libraries: ['places'],
+    id: 'google-places-script',
+  });
+
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  const handlePlaceLoaded = (autocomplete: google.maps.places.Autocomplete) => {
+    autocompleteRef.current = autocomplete;
+  };
+
+  const handlePlaceChanged = () => {
+    const ac = autocompleteRef.current;
+    if (!ac) return;
+    const place = ac.getPlace();
+    if (!place.address_components) return;
+
+    // Helper to extract component by type
+    const getComponent = (type: string) => {
+      const component = place.address_components!.find((c) => c.types.includes(type));
+      return component ? component.long_name : '';
+    };
+
+    const streetNumber = getComponent('street_number');
+    const route = getComponent('route');
+    const city = getComponent('locality') || getComponent('sublocality') || getComponent('administrative_area_level_2');
+    const state = getComponent('administrative_area_level_1');
+    const zip = getComponent('postal_code');
+
+    const addressLine = `${streetNumber} ${route}`.trim();
+
+    setForm((prev) => ({
+      ...prev,
+      address: addressLine || prev.address,
+      city: city || prev.city,
+      state: state || prev.state,
+      zip_code: zip || prev.zip_code,
+      latitude: place.geometry?.location?.lat().toString() || prev.latitude,
+      longitude: place.geometry?.location?.lng().toString() || prev.longitude,
+    }));
+  };
   const [form, setForm] = useState({
     service_type: '',
     name: '',
@@ -110,7 +155,7 @@ export default function AddListingPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
-      <section className="bg-gradient-to-r from-[#667eea] to-[#764ba2] py-12 text-center text-white shadow-md">
+      <section className="bg-gradient-to-r from-[#22C55E] to-[#0A2E3E] py-12 text-center text-white shadow-md">
         <h1 className="text-4xl font-bold mb-2">Add a New Listing</h1>
         <p className="text-lg opacity-90">Share your dog service with our community</p>
       </section>
@@ -177,7 +222,23 @@ export default function AddListingPage() {
               Location
             </h2>
             <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2"><Label>Address</Label><Input name="address" value={form.address} onChange={handleChange} required /></div>
+              <div className="space-y-2">
+                <Label>Address</Label>
+                {mapsLoaded ? (
+                  <Autocomplete onLoad={handlePlaceLoaded} onPlaceChanged={handlePlaceChanged} fields={["address_components","geometry"]}>
+                    <Input
+                      name="address"
+                      value={form.address}
+                      onChange={handleChange}
+                      placeholder="Start typing address"
+                      autoComplete="off"
+                      required
+                    />
+                  </Autocomplete>
+                ) : (
+                  <Input name="address" value={form.address} onChange={handleChange} required />
+                )}
+              </div>
               {/* City, State, Zip in one row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2"><Label>City</Label><Input name="city" placeholder="City" value={form.city} onChange={handleChange} required /></div>
