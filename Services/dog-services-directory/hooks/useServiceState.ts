@@ -15,12 +15,11 @@ export function useServiceState(initialService: Service) {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from('services')
-        .delete()
-        .eq('id', service.id);
-
-      if (error) throw error;
+      const res = await fetch(`/api/services/${service.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete');
+      }
 
       setIsDeleted(true);
       setIsDeleteDialogOpen(false);
