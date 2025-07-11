@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Service } from '@/lib/types';
 import { showToast } from '@/lib/toast';
+import { supabase } from '@/lib/supabase';
+import { Upload } from 'lucide-react';
 
 export interface EditServiceModalProps {
   isOpen: boolean;
@@ -46,6 +48,31 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const filePath = `service_images/${service.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('service_images')
+        .upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: pub } = supabase.storage
+        .from('service_images')
+        .getPublicUrl(filePath);
+      if (pub?.publicUrl) {
+        setFormData(prev => ({ ...prev, image_url: pub.publicUrl }));
+        showToast.success('Image uploaded');
+      }
+    } catch (err) {
+      console.error('Image upload error', err);
+      showToast.error('Failed to upload image');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   return (
@@ -139,6 +166,17 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
               placeholder="Image URL"
               type="url"
             />
+            <div className="mt-2">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-emerald-600 hover:text-emerald-700">
+                <Upload className="h-4 w-4" /> Upload Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </label>
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
