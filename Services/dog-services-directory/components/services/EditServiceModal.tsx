@@ -54,19 +54,14 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const bucket = 'pet_photos';
-      // ensure bucket exists
-      const { error: bucketErr } = await supabase.storage.createBucket(bucket, { public: true }).catch(()=>({error:null}));
-      if (bucketErr && bucketErr?.message && bucketErr.message !== 'Bucket already exists') throw bucketErr;
-
       const filePath = `${service.id}/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from(bucket)
+        .from('pet_photos')
         .upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
 
       const { data: pub } = supabase.storage
-        .from(bucket)
+        .from('pet_photos')
         .getPublicUrl(filePath);
       if (pub?.publicUrl) {
         setFormData(prev => ({ ...prev, image_url: pub.publicUrl }));
