@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate coordinates
-    const { latitude, longitude, error: geocodingError } = await generateCoordinates(
+    const { latitude: geoLat, longitude: geoLon, error: geocodingError } = await generateCoordinates(
       submission.address,
       submission.city,
       submission.state,
@@ -76,6 +76,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Determine final coordinates
+    const finalLat = submission.latitude ?? geoLat;
+    const finalLon = submission.longitude ?? geoLon;
+
+    if (finalLat === null || finalLon === null) {
+      return NextResponse.json({ error: 'Latitude/Longitude missing; cannot approve.' }, { status: 400 });
+    }
+
     // Insert into services table
     const { error: insertError } = await supabaseAdmin.from('services').insert([{
       name: submission.name,
@@ -87,8 +95,8 @@ export async function POST(req: NextRequest) {
       zip_code: submission.zip_code,
       website_url: submission.website_url,
       email: submission.email,
-      latitude: latitude,
-      longitude: longitude,
+      latitude: finalLat,
+      longitude: finalLon,
       geocoding_status: geocodingError ? 'failed' : 'success',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
