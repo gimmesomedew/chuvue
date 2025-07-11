@@ -54,12 +54,12 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const bucket = 'service-images';
+      const bucket = 'pet_photos';
       // ensure bucket exists
       const { error: bucketErr } = await supabase.storage.createBucket(bucket, { public: true }).catch(()=>({error:null}));
       if (bucketErr && bucketErr?.message && bucketErr.message !== 'Bucket already exists') throw bucketErr;
 
-      const filePath = `${bucket}/${service.id}/${Date.now()}-${file.name}`;
+      const filePath = `${service.id}/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, { upsert: true });
