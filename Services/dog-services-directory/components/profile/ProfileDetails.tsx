@@ -1,16 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Bone, MapPin, Tag, MessageCircle, Calendar, Edit, PawPrint, Info, Image as ImageIcon } from 'lucide-react';
+import { Bone, MapPin, Tag, MessageCircle, Calendar, Edit, PawPrint, Info, Image as ImageIcon, Star } from 'lucide-react';
 import { showToast } from '@/lib/toast';
 import { ProfileData, getProfileName, getProfileLocation, getProfileRole } from '@/types/profile';
 import { MessageDialog } from './MessageDialog';
 import { ImageModal } from '@/components/ui/ImageModal';
 import Image from 'next/image';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import { ServiceCard } from '@/components/search/ServiceCard';
+import { Service } from '@/lib/types';
 
 // Sub-components for better organization
 const ProfileImage = ({ photo, name, onImageClick }: { photo: string | null; name: string; onImageClick: (e: React.MouseEvent) => void }) => (
@@ -183,6 +186,25 @@ export function ProfileDetails({ profile, currentUserId }: ProfileDetailsProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
+  const [favoriteServices, setFavoriteServices] = useState<Service[]>([]);
+
+  // Load favorite services for this profile
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('favorites')
+          .select('services(*)')
+          .eq('user_id', profile.id);
+
+        if (error) throw error;
+        const services = (data || []).map((row: any) => row.services as Service).filter(Boolean);
+        setFavoriteServices(services);
+      } catch (err) {
+        console.error('Error fetching favorite services', err);
+      }
+    })();
+  }, [profile.id]);
   
   const allPhotos = profile.pet_photos || [];
   const mainPhoto = profile.profile_photo || allPhotos[0] || null;
@@ -285,6 +307,21 @@ export function ProfileDetails({ profile, currentUserId }: ProfileDetailsProps) 
         photos={allPhotos} 
         onPhotoClick={(e, index) => handleImageClick(e, index + 1)} 
       />
+
+      {/* Favorite Services */}
+      {favoriteServices.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 text-[#D28000]" />
+            <h2 className="text-xl font-semibold text-gray-900">Favorite Services</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {favoriteServices.map((svc) => (
+              <ServiceCard key={svc.id} service={svc} sortByDistance={false} userLocation={null} onAction={() => {}} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Image Modal */}
       <ImageModal
