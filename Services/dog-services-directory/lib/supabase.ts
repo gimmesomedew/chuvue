@@ -18,7 +18,6 @@ export type UserRole = 'admin' | 'service_provider' | 'pet_owner' | 'guest' | 'r
 // Function to get the current user's role
 export async function getUserRole(): Promise<UserRole> {
   try {
-    // console.log('Getting user role...');
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError) {
@@ -27,11 +26,8 @@ export async function getUserRole(): Promise<UserRole> {
     }
     
     if (!user) {
-      console.log('No user found, returning guest role');
       return 'guest';
     }
-    
-    console.log('User found:', user.email);
     
     // Get role from profiles table
     const { data: profile, error: profileError } = await supabase
@@ -41,25 +37,19 @@ export async function getUserRole(): Promise<UserRole> {
       .single()
       .throwOnError();
     
-    console.log('Profile query result:', { profile, profileError });
-    
     if (profileError || !profile) {
       // Fallback to admin detection for your email
       if (user.email === 'carykchandler@gmail.com') {
-        console.log('Using fallback admin role for your email');
         return 'admin';
       }
-      console.log('No profile or error, returning default pet_owner');
       return 'pet_owner';
     }
     
     const dbRole = profile.role as string | null;
     if (dbRole && ['admin', 'service_provider', 'pet_owner', 'reviewer'].includes(dbRole)) {
-      console.log('Role found in profiles table:', dbRole);
       return dbRole as UserRole;
     }
     
-    console.log('No valid role in profile, returning default pet_owner');
     return 'pet_owner';
   } catch (error) {
     console.error('Error in getUserRole:', error);
