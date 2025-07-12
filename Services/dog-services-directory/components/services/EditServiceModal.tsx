@@ -31,11 +31,15 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // TODO: Add validation
-      const updatedService = {
-        ...service,
-        ...formData,
-      };
+      const res = await fetch(`/api/services/${service.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Update failed');
+
+      const updatedService = { ...service, ...formData } as Service;
       onUpdate(updatedService);
       onClose();
       showToast.success('Service updated successfully');

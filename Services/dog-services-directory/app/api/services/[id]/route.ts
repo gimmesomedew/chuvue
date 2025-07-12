@@ -48,4 +48,40 @@ export async function DELETE(_: NextRequest, { params }: { params: { id: string 
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message || 'Deletion failed' }, { status: 500 });
   }
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const serviceId = params.id;
+  if (!serviceId) {
+    return NextResponse.json({ error: 'Service ID is required' }, { status: 400 });
+  }
+
+  const body = await req.json();
+
+  // Allowed fields to update
+  const updatable = [
+    'name','description','address','city','state','zip_code','website_url','image_url'
+  ];
+  const updateData: Record<string, any> = {};
+  updatable.forEach((f)=>{
+    if (body[f] !== undefined) updateData[f]=body[f];
+  });
+
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
+
+  updateData.updated_at = new Date().toISOString();
+
+  const { error } = await supabaseAdmin
+    .from('services')
+    .update(updateData)
+    .eq('id', serviceId);
+
+  if (error) {
+    await logServiceError(error, 'update_service', serviceId);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
 } 
