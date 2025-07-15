@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +11,9 @@ const supabaseAdmin = createClient(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // Generate a fallback email if none supplied (DB column is NOT NULL)
+    const emailSafe = (body.email && body.email.trim()) ? body.email.trim() : `no-email-${randomUUID()}@example.com`;
 
     const required = [
       'service_type', 'name', 'description', 'address', 'city', 'state', 'zip_code'
@@ -80,7 +84,7 @@ export async function POST(req: NextRequest) {
         longitude: longitude || null,
         contact_phone: body.contact_phone,
         website_url: body.website_url,
-        email: body.email || null,
+        email: emailSafe,
         facebook_url: body.facebook_url,
         instagram_url: body.instagram_url,
         twitter_url: body.twitter_url,
