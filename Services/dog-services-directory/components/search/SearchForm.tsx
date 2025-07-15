@@ -292,26 +292,27 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
           </div>
         </div>
 
-        {/* Search Button */}
-        <div className="md:col-span-2 flex items-end">
-          <Button 
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-[42px]"
-          >
-            {isLoading ? (
-              <>
-                <Search className="h-5 w-5 mr-2 animate-spin" />
-                Searching...
-              </>
-            ) : (
-              <>
-                <Search className="h-5 w-5 mr-2" />
-                Search
-              </>
-            )}
-          </Button>
-        </div>
+      </div>
+
+      {/* Search Button - full width on its own row */}
+      <div className="mt-4">
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-12"
+        >
+          {isLoading ? (
+            <>
+              <Search className="h-5 w-5 mr-2 animate-spin" />
+              Searching...
+            </>
+          ) : (
+            <>
+              <Search className="h-5 w-5 mr-2" />
+              Search
+            </>
+          )}
+        </Button>
       </div>
 
       {/* hidden lat/lon fields for submission */}
