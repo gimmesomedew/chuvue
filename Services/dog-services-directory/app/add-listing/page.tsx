@@ -269,7 +269,9 @@ export default function AddListingPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Contact Phone</Label><Input name="contact_phone" placeholder="(555) 123-4567" value={form.contact_phone} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" placeholder="example@domain.com" value={form.email} onChange={handleChange} required /></div>
+              <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" placeholder="example@domain.com" value={form.email} onChange={handleChange} />
+                <p className="text-sm text-gray-500">Optional: Providing an email allows us to create an account so you can manage your listing.</p>
+              </div>
               <div className="space-y-2 md:col-span-2"><Label>Website URL</Label><Input name="website_url" placeholder="https://" value={form.website_url} onChange={handleChange} /></div>
             </div>
           </section>

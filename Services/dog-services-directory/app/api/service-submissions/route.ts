@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const required = [
-      'service_type', 'name', 'description', 'address', 'city', 'state', 'zip_code', 'email'
+      'service_type', 'name', 'description', 'address', 'city', 'state', 'zip_code'
     ];
     for (const field of required) {
       if (!body[field]) {
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         longitude: longitude || null,
         contact_phone: body.contact_phone,
         website_url: body.website_url,
-        email: body.email,
+        email: body.email || null,
         facebook_url: body.facebook_url,
         instagram_url: body.instagram_url,
         twitter_url: body.twitter_url,
