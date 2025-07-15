@@ -184,7 +184,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
     <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Service Type Field */}
-        <div className="md:col-span-3 border border-emerald-300 rounded-md p-3">
+        <div className="md:col-span-6 border border-emerald-300 rounded-md p-3">
           <div className="flex items-center mb-2">
             {isLoading ? (
               <Search className="h-5 w-5 text-emerald-500 mr-2 animate-spin" />
@@ -210,7 +210,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
         </div>
 
         {/* Location Field */}
-        <div className="md:col-span-7 border border-emerald-300 rounded-md p-3">
+        <div className="md:col-span-6 border border-emerald-300 rounded-md p-3">
           <div className="flex items-center mb-2">
             <MapPin className="h-5 w-5 text-emerald-500 mr-2" />
             <span className="font-medium">What Location?</span>
