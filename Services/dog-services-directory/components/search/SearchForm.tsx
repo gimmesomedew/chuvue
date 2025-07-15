@@ -181,7 +181,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-[#F8F9FA] p-4 md:p-8 rounded-lg shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Service Type Field */}
         <div className="md:col-span-5 border border-emerald-300 rounded-md p-3">
