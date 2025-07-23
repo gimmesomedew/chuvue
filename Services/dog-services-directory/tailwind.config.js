@@ -12,24 +12,12 @@ module.exports = {
         narrow: ['var(--font-pt-sans-narrow)', 'sans-serif'],
       },
       colors: {
-        primary: {
-          DEFAULT: '#11055F',
-        },
-        secondary: {
-          DEFAULT: '#e91a7e',
-        },
-        third: {
-          DEFAULT: '#185a87',
-        },
-        alternate1: {
-          DEFAULT: '#add4fa',
-        },
-        alternate2: {
-          DEFAULT: '#f49cc4',
-        },
-        alternate3: {
-          DEFAULT: '#219982',
-        },
+        primary: '#11055F',
+        secondary: '#e91a7e',
+        third: '#185a87',
+        alternate1: '#add4fa',
+        alternate2: '#f49cc4',
+        alternate3: '#219982',
         teal: {
           50: '#f0fdfa',
           100: '#ccfbf1',

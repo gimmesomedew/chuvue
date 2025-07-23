@@ -24,7 +24,7 @@ export default function Home() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-bold text-center mb-3" style={{ color: '#7CAADC' }}
+            className="text-3xl md:text-4xl font-bold text-center mb-3 text-secondary"
           >
             Explore All Available Dog Services
           </motion.h1>
