@@ -221,17 +221,17 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
               onTypeChange={handleLocationTypeChange}
               disabled={isLoading}
             />
-            <div className="flex-1">
+            <div className="w-full md:flex-1">
               <AnimatePresence mode="wait" initial={false}>
                 {locationType === 'state' && (
-                  <motion.div key="state" className="flex-1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                  <motion.div key="state" className="w-full md:flex-1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
                     <Select
                       value={formState.selectedState}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => 
                         handleChange('selectedState', e.target.value)
                       }
                       disabled={isLoading}
-                      className="w-full"
+                      className="block w-full"
                     >
                       <option value="">Select a state</option>
                       {US_STATES.map((state) => (
@@ -244,7 +244,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
                 )}
 
                 {locationType === 'zip' && (
-                  <motion.div key="zip" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+                  <motion.div key="zip" className="w-full md:flex-1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
                     <Input
                       ref={zipInputRef}
                       type="text"
@@ -259,7 +259,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
                       }}
                       maxLength={5}
                       disabled={isLoading}
-                      className="w-full"
+                      className="block w-full"
                     />
                     {locationError && (
                       <p className="mt-1 text-xs text-red-600">Location permission denied — please enter your ZIP code instead.</p>
