@@ -143,7 +143,7 @@ body {
 
 /* Button styles */
 .btn-primary {
-  background-color: #22c55e;
+  background-color: #11055F;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
@@ -152,12 +152,12 @@ body {
 }
 
 .btn-primary:hover {
-  background-color: #16a34a;
+  background-color: #185a87;
 }
 
 .btn-outline {
-  border: 1px solid #22c55e;
-  color: #22c55e;
+  border: 1px solid #e91a7e;
+  color: #e91a7e;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   font-weight: 500;
@@ -165,7 +165,7 @@ body {
 }
 
 .btn-outline:hover {
-  background-color: #22c55e;
+  background-color: #e91a7e;
   color: white;
 }
 

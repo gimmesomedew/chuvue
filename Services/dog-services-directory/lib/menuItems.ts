@@ -206,13 +206,6 @@ export const menuEntries: MenuEntry[] = [
     section: 'account',
   },
   {
-    label: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    roles: ['pet_owner', 'service_provider', 'reviewer', 'admin'],
-    section: 'account',
-  },
-  {
     label: 'Sign Out',
     href: '#', // special; will be handled as action
     icon: LogOut,

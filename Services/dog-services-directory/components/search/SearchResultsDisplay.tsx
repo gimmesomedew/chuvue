@@ -10,6 +10,7 @@ import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface SearchResultsDisplayProps {
   searchResults: Service[];
@@ -68,26 +69,43 @@ export function SearchResultsDisplay({
       />
 
       {/* View Toggle */}
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Card view"
-          onClick={() => setView('cards')}
-          className={view === 'cards' ? 'bg-emerald-50 text-emerald-600' : ''}
-        >
-          <LayoutGrid className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Map view"
-          onClick={() => setView('map')}
-          className={view === 'map' ? 'bg-emerald-50 text-emerald-600' : ''}
-        >
-          <MapIcon className="h-4 w-4" />
-        </Button>
-      </div>
+      <TooltipProvider>
+        <div className="flex justify-end gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Card view"
+                onClick={() => setView('cards')}
+                className={view === 'cards' ? 'bg-secondary text-white' : ''}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Grid View</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Map view"
+                onClick={() => setView('map')}
+                className={view === 'map' ? 'bg-secondary text-white' : ''}
+              >
+                <MapIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Map View</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
 
       {view === 'map' ? (
         <ServicesMap services={searchResults} />

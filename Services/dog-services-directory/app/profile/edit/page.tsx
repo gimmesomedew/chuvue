@@ -466,7 +466,7 @@ export default function ProfileEditPage() {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                  className="bg-primary hover:bg-third text-white transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
                   disabled={saving || uploading}
                 >
                   {saving ? (

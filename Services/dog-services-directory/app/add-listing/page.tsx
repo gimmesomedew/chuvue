@@ -311,7 +311,7 @@ export default function AddListingPage() {
             </button>
             <button 
               type="submit" 
-              className="btn btn-primary" 
+              className="btn btn-primary bg-primary hover:bg-third" 
               disabled={loading || isLoadingDefinitions}
             >
               {loading ? 'Submitting...' : 'Submit Listing'}

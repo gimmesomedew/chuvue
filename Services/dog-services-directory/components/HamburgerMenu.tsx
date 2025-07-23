@@ -26,7 +26,7 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
       <Link
         href={href || '#'}
         onClick={onClick}
-        className="group flex items-center gap-3 px-3 py-2 text-primary-600 hover:bg-emerald-500/50 rounded-md transition-colors"
+        className="group flex items-center gap-3 px-3 py-2" style={{ color: '#2C3D73' }}
       >
         {Icon && (
           <motion.div
@@ -34,7 +34,7 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
             whileHover={{ rotate: 10, scale: 1.1 }}
             transition={{ duration: 0.2 }}
           >
-            <Icon className="w-5 h-5 text-primary-500 group-hover:text-[#D28001]" />
+            <Icon className="w-5 h-5" style={{ color: '#2C3D73' }} />
           </motion.div>
         )}
         <span>{label}</span>
@@ -121,7 +121,7 @@ export function HamburgerMenu() {
       {/* Hamburger button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white focus:outline-none border-2 border-white rounded-md"
+        className="p-2 bg-secondary hover:bg-third text-white focus:outline-none border-2 border-white rounded-md"
         aria-label="Toggle menu"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -152,11 +152,11 @@ export function HamburgerMenu() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 h-full bg-white shadow-xl overflow-y-auto w-80 md:w-96 lg:w-[400px]"
+            className="fixed top-0 right-0 h-full" style={{ background: '#7BABDC' }}
           >
             <div className="p-6">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-emerald-600">Menu</h2>
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--color-secondary, #e91a7e)' }}>Menu</h2>
                 <motion.button
                   onClick={() => setIsOpen(false)}
                   className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"

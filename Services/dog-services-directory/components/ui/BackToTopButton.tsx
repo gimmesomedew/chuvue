@@ -21,7 +21,7 @@ export default function BackToTopButton() {
   return visible ? (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg transition-colors flex items-center justify-center"
+      className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-secondary hover:bg-third text-white shadow-lg transition-colors flex items-center justify-center"
       aria-label="Back to top"
     >
       <ArrowUp className="w-6 h-6" />

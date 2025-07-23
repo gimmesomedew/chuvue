@@ -29,14 +29,14 @@ function LocationToggle({ locationType, onTypeChange, disabled }: LocationToggle
 
   return (
     <fieldset
-      className="flex w-full sm:max-w-[375px] rounded-md overflow-hidden border border-gray-200"
+      className="flex w-full sm:max-w-[375px] rounded-md overflow-hidden border border-secondary"
       role="radiogroup"
       aria-label="Location type selector"
     >
       {options.map((opt) => (
         <label
           key={opt.value}
-          className={`flex-1 text-center cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${locationType === opt.value ? 'bg-emerald-500 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`flex-1 text-center cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${locationType === opt.value ? 'bg-secondary text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <input
             type="radio"
@@ -184,12 +184,12 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
     <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-[#F8F9FA] p-4 md:p-8 rounded-lg shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Service Type Field */}
-        <div className="md:col-span-5 border border-emerald-300 rounded-md p-3">
+        <div className="md:col-span-5 border border-primary rounded-md p-3">
           <div className="flex items-center mb-2">
             {isLoading ? (
-              <Search className="h-5 w-5 text-emerald-500 mr-2 animate-spin" />
+              <Search className="h-5 w-5 text-secondary mr-2 animate-spin" />
             ) : (
-              <Search className="h-5 w-5 text-emerald-500 mr-2" />
+              <Search className="h-5 w-5 text-secondary mr-2" />
             )}
             <span className="font-medium">What services?</span>
           </div>
@@ -210,9 +210,9 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
         </div>
 
         {/* Location Field */}
-        <div className="md:col-span-7 border border-emerald-300 rounded-md p-3">
+        <div className="md:col-span-7 border border-primary rounded-md p-3">
           <div className="flex items-center mb-2">
-            <MapPin className="h-5 w-5 text-emerald-500 mr-2" />
+            <MapPin className="h-5 w-5 text-secondary mr-2" />
             <span className="font-medium">What Location?</span>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 w-full">
@@ -295,11 +295,11 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
       </div>
 
       {/* Search Button - full width on its own row */}
-      <div className="mt-4">
+      <div className="mt-4 flex justify-center">
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-12"
+          className="w-full max-w-[700px] bg-primary hover:bg-third text-white h-12"
         >
           {isLoading ? (
             <>

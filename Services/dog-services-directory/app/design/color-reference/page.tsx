@@ -1,10 +1,11 @@
 export default function ColorReference() {
   const colors = [
-    { name: 'Primary', class: 'bg-primary', hex: '#22C55E' },
-    { name: 'Primary Light', class: 'bg-primary-light', hex: '#38EB38' },
-    { name: 'Secondary', class: 'bg-secondary', hex: '#E91A7E' },
-    { name: 'Brand Navy', class: 'bg-brand-navy', hex: '#0A2E3E' },
-    { name: 'Brand Orange', class: 'bg-brand-orange', hex: '#D28001' },
+    { name: 'Primary', class: 'bg-primary', hex: '#11055F' },
+    { name: 'Secondary', class: 'bg-secondary', hex: '#e91a7e' },
+    { name: 'Third', class: 'bg-third', hex: '#185a87' },
+    { name: 'Alternate 1', class: 'bg-alternate1', hex: '#add4fa' },
+    { name: 'Alternate 2', class: 'bg-alternate2', hex: '#f49cc4' },
+    { name: 'Alternate 3', class: 'bg-alternate3', hex: '#219982' },
   ];
 
   return (

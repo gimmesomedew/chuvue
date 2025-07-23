@@ -73,6 +73,7 @@ export function Pagination({
             <Button
               key={pageNum}
               variant={currentPage === pageNum ? 'default' : 'outline'}
+              className={currentPage === pageNum ? 'bg-secondary text-white hover:bg-secondary' : ''}
               onClick={() => onPageChange(pageNum)}
               onMouseEnter={() => onPageHover?.(pageNum)}
               aria-current={currentPage === pageNum ? 'page' : undefined}

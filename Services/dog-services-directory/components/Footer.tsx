@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="bg-[rgba(9,46,62,1)] text-white py-12 mt-auto">
+    <footer className="bg-[#11055F] text-white py-12 mt-auto">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <motion.div
@@ -24,7 +24,7 @@ export function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <h3 className="text-lg font-semibold mb-4 text-[#38eb38]">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4 text-[#e91a7e]">Quick Links</h3>
             <ul className="space-y-2">
               <motion.li whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                 <Link href="/" className="text-gray hover:text-gray-200">Home</Link>
@@ -43,7 +43,7 @@ export function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <h3 className="text-lg font-semibold mb-4 text-[#38eb38]">Connect With Us</h3>
+            <h3 className="text-lg font-semibold mb-4 text-[#219982]">Connect With Us</h3>
             <div className="flex space-x-4">
               <motion.a 
                 href="https://www.facebook.com/TheDogParkAdventures"

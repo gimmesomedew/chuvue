@@ -12,18 +12,23 @@ module.exports = {
         narrow: ['var(--font-pt-sans-narrow)', 'sans-serif'],
       },
       colors: {
-        emerald: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
+        primary: {
+          DEFAULT: '#11055F',
+        },
+        secondary: {
+          DEFAULT: '#e91a7e',
+        },
+        third: {
+          DEFAULT: '#185a87',
+        },
+        alternate1: {
+          DEFAULT: '#add4fa',
+        },
+        alternate2: {
+          DEFAULT: '#f49cc4',
+        },
+        alternate3: {
+          DEFAULT: '#219982',
         },
         teal: {
           50: '#f0fdfa',
@@ -180,24 +185,6 @@ module.exports = {
           800: '#1f2937',
           900: '#111827',
           950: '#030712',
-        },
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
-          DEFAULT: '#22C55E', // Green
-          light: '#38EB38',   // Light Green
-        },
-        secondary: {
-          DEFAULT: '#E91A7E',  // Pink
         },
         brand: {
           navy: '#0A2E3E',     // Dark Navy

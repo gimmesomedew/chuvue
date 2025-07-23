@@ -432,7 +432,7 @@ export function SignUpForm() {
         >
           <Button
             type="submit"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center"
+            className="w-full bg-primary hover:bg-third text-white flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (

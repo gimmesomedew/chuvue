@@ -1,6 +1,6 @@
 export const ANIMATION_DURATION = 200;
 export const DESCRIPTION_MAX_LENGTH = 120;
-export const IMAGE_PLACEHOLDER_COLOR = '#E91A7E';
+export const IMAGE_PLACEHOLDER_COLOR = '#e91a7e';
 export const CARD_DIMENSIONS = {
   maxWidth: '400px',
   imageHeight: '225px', // 16:9 ratio for maxWidth
@@ -35,33 +35,42 @@ export const ICON_SIZES = {
 } as const;
 
 export const COLORS = {
-  primary: 'emerald',
-  secondary: 'gray',
+  primary: 'primary',
+  secondary: 'secondary',
+  third: 'third',
+  alternate1: 'alternate1',
+  alternate2: 'alternate2',
+  alternate3: 'alternate3',
   accent: {
-    emerald: {
-      bg: 'bg-emerald-50',
-      text: 'text-emerald-700',
-      border: 'border-emerald-200',
+    primary: {
+      bg: 'bg-primary',
+      text: 'text-primary',
+      border: 'border-primary',
     },
-    blue: {
-      bg: 'bg-blue-50',
-      text: 'text-blue-700',
-      border: 'border-blue-200',
+    secondary: {
+      bg: 'bg-secondary',
+      text: 'text-secondary',
+      border: 'border-secondary',
     },
-    purple: {
-      bg: 'bg-purple-50',
-      text: 'text-purple-700',
-      border: 'border-purple-200',
+    third: {
+      bg: 'bg-third',
+      text: 'text-third',
+      border: 'border-third',
     },
-    amber: {
-      bg: 'bg-amber-50',
-      text: 'text-amber-700',
-      border: 'border-amber-200',
+    alternate1: {
+      bg: 'bg-alternate1',
+      text: 'text-alternate1',
+      border: 'border-alternate1',
     },
-    rose: {
-      bg: 'bg-rose-50',
-      text: 'text-rose-700',
-      border: 'border-rose-200',
+    alternate2: {
+      bg: 'bg-alternate2',
+      text: 'text-alternate2',
+      border: 'border-alternate2',
+    },
+    alternate3: {
+      bg: 'bg-alternate3',
+      text: 'text-alternate3',
+      border: 'border-alternate3',
     },
   },
 }; 

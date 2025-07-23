@@ -54,17 +54,17 @@ export function Header() {
             {!user && (
               <>
                 {addListingEntry && (
-                  <Button variant="outline" className="border-2 border-[#E91A7E] text-[#E91A7E] rounded-[6px]" asChild>
+                  <Button variant="outline" className="md:border-2 md:border-secondary md:text-secondary md:rounded-[6px]" asChild>
                     <Link href={addListingEntry.href}>{addListingEntry.label}</Link>
                   </Button>
                 )}
                 {accountLinks.map((entry) => (
                   entry.label === 'Sign In' ? (
-                    <Button key={entry.label} variant="outline" className="border-emerald-500 text-emerald-500 rounded-[6px]" asChild>
+                    <Button key={entry.label} variant="outline" className="md:border-secondary md:text-secondary md:rounded-[6px]" asChild>
                       <Link href={entry.href}><LogIn className="h-4 w-4 mr-1"/>{entry.label}</Link>
                     </Button>
                   ) : (
-                    <Button key={entry.label} className="bg-emerald-500 text-white rounded-[6px]" asChild>
+                    <Button key={entry.label} className="md:bg-secondary md:text-white md:rounded-[6px]" asChild>
                       <Link href={entry.href}><UserPlus className="h-4 w-4 mr-1"/>{entry.label}</Link>
                     </Button>
                   )
@@ -76,7 +76,7 @@ export function Header() {
               <>
                 {/* Add Listing for regular user */}
                 {addListingEntry && userRole !== 'reviewer' && userRole !== 'admin' && (
-                  <Button variant="outline" className="border-2 border-[#E91A7E] text-[#E91A7E] rounded-[6px]" asChild>
+                  <Button variant="outline" className="md:border-2 md:border-secondary md:text-secondary md:rounded-[6px]" asChild>
                     <Link href={addListingEntry.href}>{addListingEntry.label}</Link>
                   </Button>
                 )}

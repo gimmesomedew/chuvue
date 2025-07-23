@@ -114,7 +114,7 @@ export function SearchSection({
                   duration: ANIMATION_CONSTANTS.PAGE_TRANSITION_DURATION, 
                   delay: 0.2 
                 }}
-                className="text-gray-600 text-center mb-4"
+                className="text-[#11055F] text-center mb-4"
               >
                 Find the perfect services for your furry friend across various locations and categories
               </motion.p>
@@ -144,7 +144,7 @@ export function SearchSection({
                 <button
                   type="button"
                   onClick={resetSearch}
-                  className="text-emerald-500 text-sm hover:underline"
+                  className="text-secondary text-sm hover:underline"
                 >
                   Reset Search
                 </button>
@@ -156,7 +156,7 @@ export function SearchSection({
             <div className="flex justify-center mt-4 mb-8">
               <button
                 onClick={toggleCollapse}
-                className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 bg-white rounded-full px-4 py-2 shadow-sm hover:shadow transition-all"
+                className="inline-flex items-center gap-2 bg-secondary text-white rounded-full px-4 py-2 shadow-sm hover:bg-third hover:text-white transition-all"
               >
                 <span className="text-sm font-medium">
                   {isCollapsed ? 'Show search form' : 'Hide search form'}
