@@ -124,6 +124,17 @@ body {
   background-color: #fff;
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Search section background */
 .bg-search-section {
   background-color: #f3f9f4;
