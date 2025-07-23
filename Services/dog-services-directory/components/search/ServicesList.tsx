@@ -33,7 +33,7 @@ export function ServicesList({ services }: ServicesListProps) {
       style={{ maxWidth: '1400px' }}
     >
       {locationSortedResults.map((service, index) => (
-        <div key={service.id} className="w-full mx-auto md:max-w-[400px] max-w-[499px] px-2">
+        <div key={service.id} className="w-full mx-auto md:max-w-[400px] max-w-[400px] px-2">
           <ServiceCard
             service={service}
             sortByDistance={sortByDistance}
