@@ -43,7 +43,7 @@ export function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <h3 className="text-lg font-semibold mb-4 text-[#219982]">Connect With Us</h3>
+            <h3 className="text-lg font-semibold mb-4 text-secondary">Connect With Us</h3>
             <div className="flex space-x-4">
               <motion.a 
                 href="https://www.facebook.com/TheDogParkAdventures"

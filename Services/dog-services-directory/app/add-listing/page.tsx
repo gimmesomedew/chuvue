@@ -159,7 +159,7 @@ export default function AddListingPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
-      <section className="bg-gradient-to-r from-[#22C55E] to-[#0A2E3E] py-12 text-center text-white shadow-md">
+      <section className="bg-gradient-to-r from-primary to-secondary py-12 text-center text-white shadow-md">
         <h1 className="text-4xl font-bold mb-2">Add a New Listing</h1>
         <p className="text-lg opacity-90">Share your dog service with our community</p>
       </section>
@@ -175,7 +175,7 @@ export default function AddListingPage() {
             { label: 'Pet Info', icon: PawPrint },
           ].map(({ label, icon: Icon }, idx) => (
             <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
-              <Icon className="w-5 h-5 mb-1 text-emerald-600" />
+              <Icon className="w-5 h-5 mb-1 text-secondary" />
               <span className="hidden sm:inline-block text-center">{label}</span>
             </li>
           ))}
@@ -189,7 +189,7 @@ export default function AddListingPage() {
           {/* Service Details */}
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-emerald-600" />
+              <ClipboardList className="w-5 h-5 text-secondary" />
               Service Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -222,7 +222,7 @@ export default function AddListingPage() {
           {/* Location */}
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-emerald-600" />
+              <MapPin className="w-5 h-5 text-secondary" />
               Location
             </h2>
             <div className="grid grid-cols-1 gap-4">
@@ -264,7 +264,7 @@ export default function AddListingPage() {
           {/* Contact Information */}
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Phone className="w-5 h-5 text-emerald-600" />
+              <Phone className="w-5 h-5 text-secondary" />
               Contact Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -279,7 +279,7 @@ export default function AddListingPage() {
           {/* Social Links */}
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-emerald-600" />
+              <Share2 className="w-5 h-5 text-secondary" />
               Social Links
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -292,7 +292,7 @@ export default function AddListingPage() {
           {/* Pet Information */}
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <PawPrint className="w-5 h-5 text-emerald-600" />
+              <PawPrint className="w-5 h-5 text-secondary" />
               Pet Information (optional)
             </h2>
             <div className="grid grid-cols-1 gap-4">
