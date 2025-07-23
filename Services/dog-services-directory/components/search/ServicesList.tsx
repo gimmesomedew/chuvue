@@ -29,11 +29,11 @@ export function ServicesList({ services }: ServicesListProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto w-full"
       style={{ maxWidth: '1400px' }}
     >
       {locationSortedResults.map((service, index) => (
-        <div key={service.id} className="max-w-[400px] w-full mx-auto">
+        <div key={service.id} className="w-full mx-auto md:max-w-[400px] max-w-[499px] px-2">
           <ServiceCard
             service={service}
             sortByDistance={sortByDistance}
