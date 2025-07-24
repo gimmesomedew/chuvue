@@ -27,10 +27,10 @@ export function Header() {
   const accountLinks = sections.account || [];
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+    <header className="border-b border-gray-200 sticky top-0 z-10 shadow-sm" style={{ backgroundColor: '#12045E' }}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="flex items-center space-x-2 mr-6">
-          <img src="/images/DogParkAdventures-Logo.png" alt="Dog Park Adventures Logo" className="h-10" />
+          <img src="/images/DPA-white-logo.png" alt="Dog Park Adventures Logo" className="h-10" />
         </Link>
         
         {/* Desktop navigation */}
@@ -41,7 +41,7 @@ export function Header() {
               <Link
                 key={entry.label}
                 href={entry.href}
-                className="px-3 py-2 rounded text-gray-800 hover:text-emerald-800 hover:bg-emerald-500/10 transition-colors"
+                className="px-3 py-2 rounded text-white hover:text-secondary hover:bg-white/10 transition-colors"
               >
                 {entry.label}
               </Link>
