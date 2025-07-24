@@ -11,6 +11,7 @@ import { ServiceDefinition } from '@/lib/types';
 import { Search, MapPin, Crosshair } from 'lucide-react';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '@/components/ui/use-toast';
 
 type LocationType = 'state' | 'zip' | 'geo';
 
@@ -161,6 +162,10 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (locationType === 'state' && !formState.selectedState) {
+      toast.error('Please select a state before searching.');
+      return;
+    }
     onSearch(formState);
   };
 
