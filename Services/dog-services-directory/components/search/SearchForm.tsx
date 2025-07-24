@@ -249,13 +249,10 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
                       ref={zipInputRef}
                       type="text"
                       placeholder="Enter ZIP Code"
+                      value={formState.zipCode}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 5);
-                        if (numericValue.length === 5) {
-                          debouncedSetZip(numericValue);
-                        } else {
-                          debouncedSetZip('');
-                        }
+                        handleChange('zipCode', numericValue);
                       }}
                       maxLength={5}
                       disabled={isLoading}

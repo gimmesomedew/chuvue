@@ -69,9 +69,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors font-semibold ${
                 pathname === link.href
-                  ? 'bg-primary text-primary-content' : 'hover:bg-base-300'
+                  ? 'bg-[#AED2FC] text-secondary' // selected
+                  : 'bg-white text-[#222]' // default
               }`}
             >
               {link.icon}
@@ -84,7 +85,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="mt-auto pt-4 border-t border-base-300">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-base-300 text-base-content"
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors font-semibold ${
+              pathname === '/' ? 'bg-[#AED2FC] text-secondary' : 'bg-white text-[#222]'
+            }`}
           >
             <FaHome className="w-5 h-5" />
             <span>Back to Home</span>

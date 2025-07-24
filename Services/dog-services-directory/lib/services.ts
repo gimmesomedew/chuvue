@@ -477,3 +477,42 @@ export async function isServiceFavorited(userId: string, serviceId: string): Pro
     return false;
   }
 }
+
+// Section Display Config: Fetch from Supabase
+export async function getSectionDisplayConfig(): Promise<Record<string, Record<string, boolean>>> {
+  const { data, error } = await supabase
+    .from('service_section_display')
+    .select('service_type, section_key, enabled');
+  if (error) {
+    console.error('Error fetching section display config:', error);
+    return {};
+  }
+  const config: Record<string, Record<string, boolean>> = {};
+  for (const row of data || []) {
+    if (!config[row.service_type]) config[row.service_type] = {};
+    config[row.service_type][row.section_key] = row.enabled;
+  }
+  return config;
+}
+
+// Section Display Config: Save to Supabase (upsert all values)
+export async function saveSectionDisplayConfig(config: Record<string, Record<string, boolean>>): Promise<void> {
+  const rows = [];
+  for (const service_type of Object.keys(config)) {
+    for (const section_key of Object.keys(config[service_type])) {
+      rows.push({
+        service_type,
+        section_key,
+        enabled: config[service_type][section_key],
+      });
+    }
+  }
+  if (rows.length === 0) return;
+  const { error } = await supabase
+    .from('service_section_display')
+    .upsert(rows, { onConflict: 'service_type,section_key' });
+  if (error) {
+    console.error('Error saving section display config:', error);
+    throw error;
+  }
+}

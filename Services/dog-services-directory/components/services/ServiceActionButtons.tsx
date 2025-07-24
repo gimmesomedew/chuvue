@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, Globe, MapPin, Star, Trash2, Pencil } from 'lucide-react';
+import { Heart, Link, MapPlus, Star, Trash2, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { User } from '@supabase/supabase-js';
 import { Analytics } from '@/lib/analytics';
@@ -77,7 +77,7 @@ export function ServiceActionButtons({
                   className="text-primary-500 hover:text-primary-600 cursor-pointer"
                 >
                   <IconWrapper className="bg-primary-50 hover:bg-primary-100">
-                    <Globe className="h-4 w-4" />
+                    <Link className="h-4 w-4" color="#22c55e" />
                   </IconWrapper>
                 </motion.a>
               </TooltipTrigger>
@@ -102,7 +102,7 @@ export function ServiceActionButtons({
                   className="text-emerald-500 hover:text-emerald-600 cursor-pointer"
                 >
                   <IconWrapper className="bg-emerald-50 hover:bg-emerald-100">
-                    <MapPin className="h-4 w-4" />
+                    <MapPlus className="h-4 w-4 text-secondary" />
                   </IconWrapper>
                 </motion.a>
               </TooltipTrigger>

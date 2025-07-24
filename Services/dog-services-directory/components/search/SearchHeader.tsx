@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Search, Navigation, MapPin } from 'lucide-react';
+import { Search, Navigation, Map } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ServiceDefinition } from '@/lib/types';
 import { USState } from '@/lib/states';
@@ -64,13 +64,13 @@ export function SearchHeader({
           )}
           {selectedState && (
             <span className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 mb-2">
-              <MapPin className="h-3 w-3 inline-block mr-1" />
+              <Map className="h-3 w-3 inline-block mr-1 text-secondary" />
               {states.find(s => s.abbreviation === selectedState)?.name}
             </span>
           )}
           {zipCode && (
             <span className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 mb-2">
-              <MapPin className="h-3 w-3 inline-block mr-1" />
+              <Map className="h-3 w-3 inline-block mr-1 text-secondary" />
               ZIP: {zipCode}
             </span>
           )}

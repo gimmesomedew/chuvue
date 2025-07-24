@@ -12,7 +12,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         toastOptions={{
           duration: 5000,
           style: {
-            background: '#11055F',
+            background: '#E91A7E',
             color: '#ffffff',
             padding: '16px',
             borderRadius: '8px',
@@ -22,35 +22,35 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           },
           success: {
             style: {
-              background: '#219982',
-              border: '1px solid #185a87',
-              borderLeft: '6px solid #185a87',
-            },
-            iconTheme: {
-              primary: '#ffffff',
-              secondary: '#219982',
-            },
-          },
-          error: {
-            style: {
-              background: '#e91a7e',
+              background: '#E91A7E',
               border: '1px solid #b1135e',
               borderLeft: '6px solid #b1135e',
             },
             iconTheme: {
               primary: '#ffffff',
-              secondary: '#e91a7e',
+              secondary: '#E91A7E',
+            },
+          },
+          error: {
+            style: {
+              background: '#E91A7E',
+              border: '1px solid #b1135e',
+              borderLeft: '6px solid #b1135e',
+            },
+            iconTheme: {
+              primary: '#ffffff',
+              secondary: '#E91A7E',
             },
           },
           loading: {
             style: {
-              background: '#add4fa',
-              border: '1px solid #185a87',
-              borderLeft: '6px solid #185a87',
+              background: '#E91A7E',
+              border: '1px solid #b1135e',
+              borderLeft: '6px solid #b1135e',
             },
             iconTheme: {
-              primary: '#11055F',
-              secondary: '#add4fa',
+              primary: '#ffffff',
+              secondary: '#E91A7E',
             },
           },
         }}

@@ -182,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('receiver_id', user.id)
-          .is('read', false);
+          .eq('is_read', false);
 
         if (!error) {
           setUnreadMessageCount(count || 0);

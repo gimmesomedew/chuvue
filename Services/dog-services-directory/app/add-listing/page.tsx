@@ -12,6 +12,7 @@ import { US_STATES } from '@/lib/states';
 import { useRouter } from 'next/navigation';
 import { getServiceDefinitions } from '@/lib/services';
 import type { ServiceDefinition } from '@/lib/types';
+import { getSectionDisplayConfig } from '@/lib/services';
 
 export default function AddListingPage() {
   const { user } = useAuth();
@@ -156,6 +157,35 @@ export default function AddListingPage() {
     }
   }
 
+  // Section display config loaded from Supabase
+  const [sectionDisplayConfig, setSectionDisplayConfig] = useState<Record<string, Record<string, boolean>> | null>(null);
+  const [loadingSectionConfig, setLoadingSectionConfig] = useState(true);
+
+  useEffect(() => {
+    async function fetchConfig() {
+      setLoadingSectionConfig(true);
+      const config = await getSectionDisplayConfig();
+      setSectionDisplayConfig(config);
+      setLoadingSectionConfig(false);
+    }
+    fetchConfig();
+  }, []);
+
+  if (loadingSectionConfig) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg">Loading...</div>;
+  }
+
+  // Helper to get section config for current type
+  const getSection = (section: string) => {
+    if (!sectionDisplayConfig) return true;
+    const type = form.service_type;
+    if (sectionDisplayConfig[type] && sectionDisplayConfig[type][section] !== undefined) {
+      return sectionDisplayConfig[type][section];
+    }
+    // fallback to default (all true)
+    return true;
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
@@ -277,29 +307,33 @@ export default function AddListingPage() {
           </section>
 
           {/* Social Links */}
-          <section>
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-secondary" />
-              Social Links
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>Facebook URL</Label><Input name="facebook_url" placeholder="https://facebook.com/..." value={form.facebook_url} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Instagram URL</Label><Input name="instagram_url" placeholder="https://instagram.com/..." value={form.instagram_url} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Twitter URL</Label><Input name="twitter_url" placeholder="https://twitter.com/..." value={form.twitter_url} onChange={handleChange} /></div>
-            </div>
-          </section>
+          {getSection('showSocial') && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-secondary" />
+                Social Links
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2"><Label>Facebook URL</Label><Input name="facebook_url" placeholder="https://facebook.com/..." value={form.facebook_url} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Instagram URL</Label><Input name="instagram_url" placeholder="https://instagram.com/..." value={form.instagram_url} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Twitter URL</Label><Input name="twitter_url" placeholder="https://twitter.com/..." value={form.twitter_url} onChange={handleChange} /></div>
+              </div>
+            </section>
+          )}
 
           {/* Pet Information */}
-          <section>
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <PawPrint className="w-5 h-5 text-secondary" />
-              Pet Information (optional)
-            </h2>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2"><Label>Pet's Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Pet Description</Label><Textarea name="pet_description" placeholder="Tell us a bit about your pet..." value={form.pet_description} onChange={handleChange} /></div>
-            </div>
-          </section>
+          {getSection('showPetInfo') && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <PawPrint className="w-5 h-5 text-secondary" />
+                Pet Information (optional)
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2"><Label>Pet's Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Pet Description</Label><Textarea name="pet_description" placeholder="Tell us a bit about your pet..." value={form.pet_description} onChange={handleChange} /></div>
+              </div>
+            </section>
+          )}
 
           <div className="flex justify-end space-x-4">
             <button 

@@ -1,4 +1,5 @@
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPlus } from 'lucide-react';
+import { Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ServiceContentProps } from '@/types/service';
 import { formatDistance } from '@/lib/location';
@@ -11,7 +12,7 @@ export function ServiceContent({ service, sortByDistance, userLocation }: Servic
     <div className="space-y-1.5">
       <div className="space-y-0.5">
         <div className="flex items-center text-gray-500 text-sm">
-          <MapPin className="h-5 w-5 mr-1.5 text-secondary flex-shrink-0" />
+          <MapPlus className="h-5 w-5 mr-1.5 text-secondary flex-shrink-0" />
           <span>{service.address}</span>
         </div>
         

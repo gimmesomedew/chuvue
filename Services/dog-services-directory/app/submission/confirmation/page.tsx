@@ -31,7 +31,7 @@ const steps = [
 
 export default function SubmissionConfirmationPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-[#add4fa]">
       <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -52,21 +52,21 @@ export default function SubmissionConfirmationPage() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                className="rounded-full bg-emerald-100 p-3"
+                className="rounded-full bg-secondary p-3"
               >
-                <CheckCircle2 className="h-12 w-12 text-emerald-600" />
+                <CheckCircle2 className="h-12 w-12 text-white" />
               </motion.div>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-emerald-400"
+                className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-secondary"
               />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900">
+            <h1 className="text-4xl font-bold text-primary">
               Thank you for your submission!
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-third max-w-2xl mx-auto">
               We're excited to review your listing and add it to our directory.
             </p>
           </motion.div>
@@ -84,15 +84,15 @@ export default function SubmissionConfirmationPage() {
                   variants={fadeIn}
                   className="relative"
                 >
-                  <Card className="h-full p-6 bg-white shadow-md hover:shadow-lg transition-shadow">
+                  <Card className="h-full p-6 bg-white/90 border border-[#e0e7ff] shadow-md hover:shadow-lg transition-shadow">
                     <div className="flex flex-col items-center text-center space-y-4">
-                      <div className="rounded-full bg-emerald-50 p-3">
-                        <Icon className="h-6 w-6 text-emerald-600" />
+                      <div className="rounded-full bg-secondary/10 p-3">
+                        <Icon className="h-6 w-6 text-secondary" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-primary">
                         {step.title}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-third">
                         {step.description}
                       </p>
                     </div>
@@ -113,7 +113,7 @@ export default function SubmissionConfirmationPage() {
             <Button
               asChild
               size="lg"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-primary hover:bg-secondary text-white shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Link href="/" className="inline-flex items-center gap-2">
                 <Home className="h-5 w-5" />
