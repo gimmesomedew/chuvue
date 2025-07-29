@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ServiceDefinition, Service } from '@/lib/types';
-import { getServiceDefinitions, searchServices } from '@/lib/services';
+import { getServiceDefinitions, searchServices, searchAllServices } from '@/lib/services';
 import { SEARCH_CONSTANTS } from '@/lib/constants';
 import { handleSearchError, handleNetworkError, isNetworkError } from '@/lib/errorHandling';
 import { retryApiCall } from '@/lib/retry';
@@ -32,6 +32,7 @@ interface UseSearchServicesReturn {
   
   // Search results
   searchResults: Service[];
+  allSearchResults: Service[];
   isSearching: boolean;
   hasSearched: boolean;
   currentPage: number;
@@ -64,6 +65,7 @@ export function useSearchServices(): UseSearchServicesReturn {
   
   // Search results state
   const [searchResults, setSearchResults] = useState<Service[]>([]);
+  const [allSearchResults, setAllSearchResults] = useState<Service[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,6 +106,30 @@ export function useSearchServices(): UseSearchServicesReturn {
     setSearchStateInternal(prev => ({ ...prev, ...newState }));
   };
   
+  // Fetch all search results for client-side filtering
+  const fetchAllSearchResults = async (searchParams: SearchState) => {
+    try {
+      const result = await retryApiCall(
+        () => searchAllServices(
+          searchParams.selectedServiceType || '',
+          searchParams.selectedState || '',
+          searchParams.zipCode || '',
+          searchParams.latitude,
+          searchParams.longitude,
+          searchParams.radiusMiles
+        ),
+        { maxAttempts: 2 }
+      );
+      
+      if (result.success && result.data) {
+        setAllSearchResults(result.data.services);
+      }
+    } catch (error) {
+      // Don't throw error for all results fetch, just log it
+      console.warn('Failed to fetch all search results for filtering:', error);
+    }
+  };
+  
   // Handle search form submission
   const handleSearch = async (params?: Partial<SearchState>) => {
     setIsSearching(true);
@@ -119,6 +145,7 @@ export function useSearchServices(): UseSearchServicesReturn {
     const searchParams = params || searchState;
     
     try {
+      // Fetch paginated results
       const result = await retryApiCall(
         () => searchServices(
           searchParams.selectedServiceType || '',
@@ -149,12 +176,21 @@ export function useSearchServices(): UseSearchServicesReturn {
           1
         );
         
-        // Scroll to search results
+        // Fetch all results for client-side filtering
+        await fetchAllSearchResults(searchParams as SearchState);
+        
+        // Scroll to search results - mobile-friendly approach
         setTimeout(() => {
           if (searchResultsRef.current) {
-            searchResultsRef.current.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start' 
+            const element = searchResultsRef.current;
+            const elementTop = element.offsetTop;
+            const headerOffset = 80; // Account for any fixed header
+            const offsetPosition = elementTop - headerOffset;
+            
+            // Use window.scrollTo instead of scrollIntoView to prevent mobile zoom issues
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
             });
           }
         }, SEARCH_CONSTANTS.SCROLL_DELAY);
@@ -238,6 +274,7 @@ export function useSearchServices(): UseSearchServicesReturn {
       radiusMiles: undefined,
     });
     setSearchResults([]);
+    setAllSearchResults([]);
     setHasSearched(false);
     setCurrentPage(1);
     setTotalPages(0);
@@ -250,6 +287,7 @@ export function useSearchServices(): UseSearchServicesReturn {
     searchState,
     setSearchState,
     searchResults,
+    allSearchResults,
     isSearching,
     hasSearched,
     currentPage,

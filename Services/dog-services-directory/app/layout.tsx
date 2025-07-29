@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { PT_Sans, PT_Sans_Narrow } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -26,7 +26,14 @@ export const metadata: Metadata = {
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
     'Pragma': 'no-cache',
     'Expires': '0'
-  }
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

@@ -27,7 +27,7 @@ export function Header() {
   const accountLinks = sections.account || [];
 
   return (
-    <header className="border-b border-gray-200 sticky top-0 z-10 shadow-sm" style={{ backgroundColor: '#12045E' }}>
+          <header className="border-b border-gray-200 sticky top-0 z-10 shadow-sm" style={{ backgroundColor: '#017FA3' }}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="flex items-center space-x-2 mr-6">
           <img src="/images/DPA-white-logo.png" alt="Dog Park Adventures Logo" className="h-10" />

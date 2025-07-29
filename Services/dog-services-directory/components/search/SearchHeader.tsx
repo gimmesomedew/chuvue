@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Search, Navigation, Map } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ServiceDefinition } from '@/lib/types';
 import { USState } from '@/lib/states';
@@ -55,26 +55,7 @@ export function SearchHeader({
           )}
         </h2>
         
-        {/* Filter summary */}
-        <div className="text-sm text-gray-600">
-          {selectedServiceType && serviceDefinitions.find(d => d.service_type === selectedServiceType) && (
-            <span className="inline-block bg-emerald-100 text-emerald-800 rounded-full px-3 py-1 mr-2 mb-2">
-              {serviceDefinitions.find(d => d.service_type === selectedServiceType)?.service_name}
-            </span>
-          )}
-          {selectedState && (
-            <span className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 mb-2">
-              <Map className="h-3 w-3 inline-block mr-1 text-secondary" />
-              {states.find(s => s.abbreviation === selectedState)?.name}
-            </span>
-          )}
-          {zipCode && (
-            <span className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 mb-2">
-              <Map className="h-3 w-3 inline-block mr-1 text-secondary" />
-              ZIP: {zipCode}
-            </span>
-          )}
-        </div>
+        {/* Filter summary removed - now handled by FilterTagBar component */}
       </div>
       
       {/* Distance toggle removed per requirement */}

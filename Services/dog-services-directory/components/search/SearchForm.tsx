@@ -301,7 +301,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full max-w-[700px] bg-primary hover:bg-third text-white h-12"
+          className="w-full max-w-[700px] bg-[#015A87] hover:bg-[#014a70] text-white h-12"
         >
           {isLoading ? (
             <>

@@ -6,6 +6,7 @@ import { ServicesList } from './ServicesList';
 import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
 import { SearchHeader } from './SearchHeader';
+import { FilterTagBar } from './FilterTagBar';
 import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
@@ -14,31 +15,54 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/comp
 
 interface SearchResultsDisplayProps {
   searchResults: Service[];
+  allSearchResults: Service[];
   isSearching: boolean;
   totalResults: number;
   currentPage: number;
   totalPages: number;
   selectedServiceType: string;
   selectedState: string;
+  zipCode?: string;
   serviceDefinitions: ServiceDefinition[];
   states: USState[];
   handlePageChange: (newPage: number) => void;
   resetSearch: () => void;
+  onRemoveServiceType?: () => void;
+  onRemoveState?: () => void;
+  onRemoveZipCode?: () => void;
+  onClearAll?: () => void;
+  onFilterByServiceType?: (serviceType: string) => void;
+  onClientFilter?: (serviceType: string) => void;
+  onClearClientFilter?: () => void;
 }
 
 export function SearchResultsDisplay({
   searchResults,
+  allSearchResults,
   isSearching,
   totalResults,
   currentPage,
   totalPages,
   selectedServiceType,
   selectedState,
+  zipCode = '',
   serviceDefinitions,
   states,
   handlePageChange,
   resetSearch,
+  onRemoveServiceType,
+  onRemoveState,
+  onRemoveZipCode,
+  onClearAll,
+  onFilterByServiceType,
+  onClientFilter,
+  onClearClientFilter,
 }: SearchResultsDisplayProps) {
+  // Client-side filtering state
+  const [clientFilteredServices, setClientFilteredServices] = useState<Service[]>([]);
+  const [isClientFiltered, setIsClientFiltered] = useState(false);
+  const [activeClientFilter, setActiveClientFilter] = useState<string | null>(null);
+
   // Prefetch next page on hover
   const handlePageHover = (pageNumber: number) => {
     // This is a placeholder for now since we don't have access to prefetchNextPage
@@ -48,7 +72,28 @@ export function SearchResultsDisplay({
   // Toggle between card and map views
   const [view, setView] = useState<'cards' | 'map'>('cards');
 
-  if (isSearching) {
+  // Client-side filtering handlers
+  const handleClientFilter = (serviceType: string) => {
+    const filtered = allSearchResults
+      .filter(service => service.service_type === serviceType)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setClientFilteredServices(filtered);
+    setIsClientFiltered(true);
+    setActiveClientFilter(serviceType);
+  };
+
+  const handleClearClientFilter = () => {
+    setIsClientFiltered(false);
+    setClientFilteredServices([]);
+    setActiveClientFilter(null);
+  };
+
+  // Determine which services to display
+  const displayServices = isClientFiltered ? clientFilteredServices : searchResults;
+  const displayTotal = isClientFiltered ? clientFilteredServices.length : totalResults;
+
+  // Only show skeleton when searching and we don't have any results to display
+  if (isSearching && searchResults.length === 0 && allSearchResults.length === 0) {
     return <SearchSkeleton />;
   }
 
@@ -56,16 +101,34 @@ export function SearchResultsDisplay({
     <div className="space-y-6">
       <SearchHeader
         isSearching={isSearching}
-        totalResults={totalResults}
+        totalResults={displayTotal}
         selectedServiceType={selectedServiceType}
         selectedState={selectedState}
-        zipCode=""
+        zipCode={zipCode}
         serviceDefinitions={serviceDefinitions}
         states={states}
         sortByDistance={false}
         setSortByDistance={() => {}}
         isLoadingLocation={false}
         locationError={null}
+      />
+      
+      <FilterTagBar
+        selectedServiceType={selectedServiceType}
+        selectedState={selectedState}
+        zipCode={zipCode}
+        serviceDefinitions={serviceDefinitions}
+        states={states}
+        searchResults={searchResults}
+        allSearchResults={allSearchResults}
+        isClientFiltered={isClientFiltered}
+        activeClientFilter={activeClientFilter}
+        onRemoveServiceType={onRemoveServiceType || (() => {})}
+        onRemoveState={onRemoveState || (() => {})}
+        onRemoveZipCode={onRemoveZipCode || (() => {})}
+        onClearAll={onClearAll || (() => {})}
+        onClientFilter={handleClientFilter}
+        onClearClientFilter={handleClearClientFilter}
       />
 
       {/* View Toggle */}
@@ -108,17 +171,20 @@ export function SearchResultsDisplay({
       </TooltipProvider>
 
       {view === 'map' ? (
-        <ServicesMap services={searchResults} />
+        <ServicesMap services={displayServices} />
       ) : (
-        <ServicesList services={searchResults} />
+        <ServicesList services={displayServices} />
       )}
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        onPageHover={handlePageHover}
-      />
+      {/* Only show pagination when not client-filtered */}
+      {!isClientFiltered && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onPageHover={handlePageHover}
+        />
+      )}
     </div>
   );
 } 

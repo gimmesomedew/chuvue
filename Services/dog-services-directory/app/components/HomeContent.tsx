@@ -17,6 +17,7 @@ export function HomeContent() {
     searchState,
     setSearchState,
     searchResults,
+    allSearchResults,
     isSearching,
     hasSearched,
     currentPage,
@@ -55,6 +56,38 @@ export function HomeContent() {
     await handleSearch(params);
   };
 
+  // Filter removal handlers
+  const handleRemoveServiceType = () => {
+    setSearchState({
+      selectedServiceType: '',
+    });
+  };
+
+  const handleRemoveState = () => {
+    setSearchState({
+      selectedState: '',
+    });
+  };
+
+  const handleRemoveZipCode = () => {
+    setSearchState({
+      zipCode: '',
+    });
+  };
+
+  const handleClearAll = () => {
+    setSearchState({
+      selectedServiceType: '',
+      selectedState: '',
+      zipCode: '',
+    });
+  };
+
+  const handleClientFilter = (serviceType: string) => {
+    // This will be handled by the SearchResultsDisplay component
+    // We don't need to do anything here for client-side filtering
+  };
+
   return (
     <>
       <SearchSection 
@@ -73,16 +106,23 @@ export function HomeContent() {
             {searchResults.length > 0 && <SignUpCallout />}
             <SearchResultsDisplay 
               searchResults={searchResults}
+              allSearchResults={allSearchResults}
               isSearching={isSearching}
               totalResults={totalResults}
               currentPage={currentPage}
               totalPages={totalPages}
               selectedServiceType={searchState.selectedServiceType}
               selectedState={searchState.selectedState}
+              zipCode={searchState.zipCode}
               serviceDefinitions={serviceDefinitions}
               states={states}
               handlePageChange={handlePageChange}
               resetSearch={resetSearch}
+              onRemoveServiceType={handleRemoveServiceType}
+              onRemoveState={handleRemoveState}
+              onRemoveZipCode={handleRemoveZipCode}
+              onClearAll={handleClearAll}
+              onClientFilter={handleClientFilter}
             />
           </div>
         </section>

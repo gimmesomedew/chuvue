@@ -14,12 +14,72 @@ export interface ServiceDefinitionWithCount {
 
 /**
  * Converts a display service type to database format
+ * Maps display names to the exact service_type enum values
  * e.g., "Dog Parks" -> "dog_park"
  */
 function normalizeServiceType(serviceType: string): string {
-  return serviceType
-    .toLowerCase()
-    .replace(/\s+/g, '_');
+  // Map display names to exact enum values
+  const serviceTypeMap: Record<string, string> = {
+    // Dog Parks
+    'dog parks': 'dog_park',
+    'dog park': 'dog_park',
+    
+    // Groomers
+    'groomers': 'groomer',
+    'groomer': 'groomer',
+    
+    // Veterinarians
+    'veterinarians': 'veterinarian',
+    'veterinarian': 'veterinarian',
+    'holistic veterinarians': 'veterinarian',
+    'holistic veterinarian': 'veterinarian',
+    'vets': 'veterinarian',
+    'vet': 'veterinarian',
+    
+    // Dog Trainers
+    'dog trainers': 'dog_trainer',
+    'dog trainer': 'dog_trainer',
+    'trainers': 'dog_trainer',
+    'trainer': 'dog_trainer',
+    
+    // Daycare
+    'daycare': 'daycare',
+    'day care': 'daycare',
+    
+    // Dog Sitters
+    'dog sitters': 'dog_sitter',
+    'dog sitter': 'dog_sitter',
+    'sitters': 'dog_sitter',
+    'sitter': 'dog_sitter',
+    
+    // Dog Walkers
+    'dog walkers': 'dog_walker',
+    'dog walker': 'dog_walker',
+    'walkers': 'dog_walker',
+    'walker': 'dog_walker',
+    
+    // Contractors
+    'contractors': 'contractor',
+    'contractor': 'contractor',
+    
+    // Landscape Contractors
+    'landscape contractors': 'landscape_contractor',
+    'landscape contractor': 'landscape_contractor',
+    
+    // Apartments
+    'apartments': 'apartments',
+    'apartment': 'apartments',
+  };
+
+  const normalized = serviceType.toLowerCase().trim();
+  
+  // Check if we have a direct mapping
+  if (serviceTypeMap[normalized]) {
+    return serviceTypeMap[normalized];
+  }
+  
+  // Fallback to the original logic for any unmapped values
+  return normalized.replace(/\s+/g, '_');
 }
 
 /**
@@ -363,9 +423,108 @@ export async function searchServices(
       return { services: paged as Service[], totalPages, total };
     }
 
+    // First, get the total count without pagination
+    let countQuery = supabase
+      .from('services')
+      .select('*', { count: 'exact', head: true });
+
+    // Apply filters to count query
+    if (serviceType) {
+      const normalizedType = normalizeServiceType(serviceType);
+      countQuery = countQuery.eq('service_type', normalizedType);
+    }
+    
+    if (state) {
+      countQuery = countQuery.eq('state', state);
+    }
+    
+    if (zipCode) {
+      countQuery = countQuery.eq('zip_code', zipCode);
+    }
+
+    const { count, error: countError } = await countQuery;
+    
+    if (countError) {
+      throw countError;
+    }
+
+    // Now get the actual data with pagination
+    let dataQuery = supabase
+      .from('services')
+      .select('*');
+
+    // Apply filters to data query
+    if (serviceType) {
+      const normalizedType = normalizeServiceType(serviceType);
+      dataQuery = dataQuery.eq('service_type', normalizedType);
+    }
+    
+    if (state) {
+      dataQuery = dataQuery.eq('state', state);
+    }
+    
+    if (zipCode) {
+      dataQuery = dataQuery.eq('zip_code', zipCode);
+    }
+
+    // Add pagination
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+    dataQuery = dataQuery.range(from, to);
+
+    // Sort by service type first, then by name for better distribution
+    dataQuery = dataQuery.order('service_type').order('name');
+
+    const { data, error } = await dataQuery;
+
+    if (error) {
+      throw error;
+    }
+
+    const totalPages = count ? Math.ceil(count / perPage) : 0;
+
+    return {
+      services: data || [],
+      totalPages,
+      total: count || 0
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Fetches all services for a search without pagination (for client-side filtering)
+ */
+export async function searchAllServices(
+  serviceType: string,
+  state: string,
+  zipCode: string,
+  latitude?: number,
+  longitude?: number,
+  radiusMiles: number = 25
+): Promise<{ services: Service[]; total: number }> {
+  try {
+    // If lat/lon provided, use RPC function
+    if (latitude !== undefined && longitude !== undefined) {
+      const { data, error } = await supabase.rpc('services_within_radius', {
+        p_lat: latitude,
+        p_lon: longitude,
+        p_radius_miles: radiusMiles,
+      });
+      
+      if (error) throw error;
+      
+      return {
+        services: data || [],
+        total: data?.length || 0
+      };
+    }
+
+    // Build query for all results
     let query = supabase
       .from('services')
-      .select('*', { count: 'exact' });
+      .select('*');
 
     // Apply filters
     if (serviceType) {
@@ -381,26 +540,18 @@ export async function searchServices(
       query = query.eq('zip_code', zipCode);
     }
 
-    // Add pagination
-    const from = (page - 1) * perPage;
-    const to = from + perPage - 1;
-    query = query.range(from, to);
+    // Sort by service type first, then by name
+    query = query.order('service_type').order('name');
 
-    // Sort alphabetically by name
-    query = query.order('name');
-
-    const { data, error, count } = await query;
+    const { data, error } = await query;
 
     if (error) {
       throw error;
     }
 
-    const totalPages = count ? Math.ceil(count / perPage) : 0;
-
     return {
       services: data || [],
-      totalPages,
-      total: count || 0
+      total: data?.length || 0
     };
   } catch (error) {
     throw error;
