@@ -91,9 +91,9 @@ export function FilterTagBar({
                   key={serviceType}
                   onClick={() => {
                     if (isSelected) {
-                      onRemoveServiceType();
+                      onClearAll(); // Changed from onRemoveServiceType() to onClearAll()
                     } else if (isClientFilterActive) {
-                      onClearClientFilter();
+                      onClearAll(); // Changed from onClearClientFilter() to onClearAll()
                     } else {
                       onClientFilter(serviceType);
                     }
@@ -119,7 +119,7 @@ export function FilterTagBar({
           <div className="flex flex-wrap gap-2">
             {selectedState && (
               <button
-                onClick={onRemoveState}
+                onClick={onClearAll} // Changed from onRemoveState to onClearAll
                 className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
               >
                 <Map className="h-3 w-3" />
@@ -132,7 +132,7 @@ export function FilterTagBar({
             
             {zipCode && (
               <button
-                onClick={onRemoveZipCode}
+                onClick={onClearAll} // Changed from onRemoveZipCode to onClearAll
                 className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
               >
                 <Map className="h-3 w-3" />

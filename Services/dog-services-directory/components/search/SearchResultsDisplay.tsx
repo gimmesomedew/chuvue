@@ -7,6 +7,7 @@ import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
 import { SearchHeader } from './SearchHeader';
 import { FilterTagBar } from './FilterTagBar';
+import { NameSearch } from './NameSearch';
 import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
@@ -63,6 +64,11 @@ export function SearchResultsDisplay({
   const [isClientFiltered, setIsClientFiltered] = useState(false);
   const [activeClientFilter, setActiveClientFilter] = useState<string | null>(null);
 
+  // Name search state
+  const [nameSearchQuery, setNameSearchQuery] = useState('');
+  const [nameSearchResults, setNameSearchResults] = useState<Service[]>([]);
+  const [isNameSearching, setIsNameSearching] = useState(false);
+
   // Prefetch next page on hover
   const handlePageHover = (pageNumber: number) => {
     // This is a placeholder for now since we don't have access to prefetchNextPage
@@ -88,9 +94,44 @@ export function SearchResultsDisplay({
     setActiveClientFilter(null);
   };
 
+  // Name search handlers
+  const handleNameSearch = (query: string) => {
+    setIsNameSearching(true);
+    setNameSearchQuery(query);
+    
+    // Search through all current search results (both paginated and all results)
+    const allCurrentResults = [...searchResults, ...allSearchResults];
+    const uniqueResults = allCurrentResults.filter((service, index, self) => 
+      index === self.findIndex(s => s.id === service.id)
+    );
+    
+    const filtered = uniqueResults.filter(service =>
+      service.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    setNameSearchResults(filtered);
+    setIsNameSearching(false);
+  };
+
+  const handleClearNameSearch = () => {
+    setNameSearchQuery('');
+    setNameSearchResults([]);
+  };
+
   // Determine which services to display
-  const displayServices = isClientFiltered ? clientFilteredServices : searchResults;
-  const displayTotal = isClientFiltered ? clientFilteredServices.length : totalResults;
+  let displayServices: Service[];
+  let displayTotal: number;
+
+  if (nameSearchQuery) {
+    displayServices = nameSearchResults;
+    displayTotal = nameSearchResults.length;
+  } else if (isClientFiltered) {
+    displayServices = clientFilteredServices;
+    displayTotal = clientFilteredServices.length;
+  } else {
+    displayServices = searchResults;
+    displayTotal = totalResults;
+  }
 
   // Only show skeleton when searching and we don't have any results to display
   if (isSearching && searchResults.length === 0 && allSearchResults.length === 0) {
@@ -131,44 +172,58 @@ export function SearchResultsDisplay({
         onClearClientFilter={handleClearClientFilter}
       />
 
-      {/* View Toggle */}
-      <TooltipProvider>
-        <div className="flex justify-end gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Card view"
-                onClick={() => setView('cards')}
-                className={view === 'cards' ? 'bg-secondary text-white' : ''}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Grid View</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Map view"
-                onClick={() => setView('map')}
-                className={view === 'map' ? 'bg-secondary text-white' : ''}
-              >
-                <MapIcon className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Map View</p>
-            </TooltipContent>
-          </Tooltip>
+      {/* Name Search and View Toggle */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex-1">
+          <NameSearch
+            onSearch={handleNameSearch}
+            onClear={handleClearNameSearch}
+            isSearching={isNameSearching}
+          />
         </div>
-      </TooltipProvider>
+        {nameSearchQuery && (
+          <div className="text-sm text-gray-600 whitespace-nowrap">
+            Found {displayTotal} result{displayTotal !== 1 ? 's' : ''}
+          </div>
+        )}
+        <TooltipProvider>
+          <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Card view"
+                  onClick={() => setView('cards')}
+                  className={view === 'cards' ? 'bg-secondary text-white' : ''}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Grid View</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Map view"
+                  onClick={() => setView('map')}
+                  className={view === 'map' ? 'bg-secondary text-white' : ''}
+                >
+                  <MapIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Map View</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      </div>
 
       {view === 'map' ? (
         <ServicesMap services={displayServices} />
@@ -176,8 +231,8 @@ export function SearchResultsDisplay({
         <ServicesList services={displayServices} />
       )}
 
-      {/* Only show pagination when not client-filtered */}
-      {!isClientFiltered && (
+      {/* Only show pagination when not client-filtered and not name-searching */}
+      {!isClientFiltered && !nameSearchQuery && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
