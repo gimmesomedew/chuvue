@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { ClipboardList, MapPin, Phone, Share2, PawPrint, CheckCircle } from 'lucide-react';
+import { ClipboardList, MapPin, Phone, Share2, PawPrint } from 'lucide-react';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { getServiceDefinitions } from '@/lib/services';
 import type { ServiceDefinition } from '@/lib/types';
 import { getSectionDisplayConfig } from '@/lib/services';
-import { attemptGeocoding, getDefaultCoordinates, needsGeocodingReview } from '@/lib/geocoding';
+import { attemptGeocoding, getDefaultCoordinates } from '@/lib/geocoding';
 
 export default function AddListingPage() {
   const { user } = useAuth();
@@ -46,7 +46,7 @@ export default function AddListingPage() {
       field: 'long_name' | 'short_name' = 'long_name'
     ) => {
       const component = place.address_components!.find((c) => c.types.includes(type));
-      // @ts-ignore
+      // @ts-expect-error - Google Maps types are incomplete
       return component ? component[field] : '';
     };
 
@@ -223,7 +223,7 @@ export default function AddListingPage() {
             { label: 'Contact', icon: Phone },
             { label: 'Social', icon: Share2 },
             { label: 'Pet Info', icon: PawPrint },
-          ].map(({ label, icon: Icon }, idx) => (
+          ].map(({ label, icon: Icon }) => (
             <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
               <Icon className="w-5 h-5 mb-1 text-secondary" />
               <span className="hidden sm:inline-block text-center">{label}</span>
@@ -360,7 +360,7 @@ export default function AddListingPage() {
                 Pet Information (optional)
               </h2>
               <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2"><Label>Pet's Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Pet&apos;s Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
                 <div className="space-y-2"><Label>Pet Description</Label><Textarea name="pet_description" placeholder="Tell us a bit about your pet..." value={form.pet_description} onChange={handleChange} /></div>
               </div>
             </section>
