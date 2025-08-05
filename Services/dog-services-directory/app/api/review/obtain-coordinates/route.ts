@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     let longitude: number;
     let needsReview: boolean;
 
-    if (geocoded.success) {
+    if (geocoded.success && typeof geocoded.latitude === 'number' && typeof geocoded.longitude === 'number') {
       latitude = geocoded.latitude;
       longitude = geocoded.longitude;
       needsReview = false;

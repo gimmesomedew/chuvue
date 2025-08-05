@@ -24,7 +24,7 @@ export default function AddListingPage() {
   const libraries = ['places'] as const;
   const { isLoaded: mapsLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries,
+    libraries: libraries as any,
     id: 'google-places-script',
   });
 
@@ -46,7 +46,6 @@ export default function AddListingPage() {
       field: 'long_name' | 'short_name' = 'long_name'
     ) => {
       const component = place.address_components!.find((c) => c.types.includes(type));
-      // @ts-expect-error - Google Maps types are incomplete
       return component ? component[field] : '';
     };
 
@@ -168,7 +167,7 @@ export default function AddListingPage() {
       showToast.success('Listing submitted for review!');
       router.push('/submission/confirmation');
       setForm({
-        service_type: '', name: '', description: '', address: '', city: '', state: '', zip_code: '', latitude: '', longitude: '', contact_phone: '', website_url: '', email: '', facebook_url: '', instagram_url: '', twitter_url: '', pets_name: '', pet_description: '',
+        service_type: '', name: '', description: '', address: '', address_line_2: '', city: '', state: '', zip_code: '', latitude: '', longitude: '', contact_phone: '', website_url: '', email: '', facebook_url: '', instagram_url: '', twitter_url: '', pets_name: '', pet_description: '',
       });
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : 'Submission failed');
