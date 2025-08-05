@@ -13,16 +13,18 @@ import { useRouter } from 'next/navigation';
 import { getServiceDefinitions } from '@/lib/services';
 import type { ServiceDefinition } from '@/lib/types';
 import { getSectionDisplayConfig } from '@/lib/services';
+import { attemptGeocoding, getDefaultCoordinates, needsGeocodingReview } from '@/lib/geocoding';
 
 export default function AddListingPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [serviceDefinitions, setServiceDefinitions] = useState<ServiceDefinition[]>([]);
 
-  // Google Places Autocomplete
+  // Google Places Autocomplete - Static libraries array to prevent re-renders
+  const libraries = ['places'] as const;
   const { isLoaded: mapsLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places'],
+    libraries,
     id: 'google-places-script',
   });
 
@@ -71,6 +73,7 @@ export default function AddListingPage() {
     name: '',
     description: '',
     address: '',
+    address_line_2: '',
     city: '',
     state: '',
     zip_code: '',
@@ -104,22 +107,39 @@ export default function AddListingPage() {
     loadServiceDefinitions();
   }, []);
 
-  // Auto geocode
+  // Enhanced auto geocode
   useEffect(() => {
     const { address, city, state, zip_code } = form;
     if (address && city && state && zip_code) {
-      const query = `${address}, ${city}, ${state} ${zip_code}`;
       const controller = new AbortController();
       const timeout = setTimeout(async () => {
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, { signal: controller.signal, headers: { 'User-Agent': 'dog-services-directory' }});
-          if (!res.ok) return;
-          const data = await res.json();
-          if (data && data.length > 0) {
-            const { lat, lon } = data[0];
-            setForm(f => ({ ...f, latitude: lat, longitude: lon }));
+          const geocoded = await attemptGeocoding(address, city, state, zip_code);
+          if (geocoded.success) {
+            setForm(f => ({ 
+              ...f, 
+              latitude: geocoded.latitude!.toString(), 
+              longitude: geocoded.longitude!.toString() 
+            }));
+          } else {
+            // Set default coordinates if geocoding fails
+            const defaults = getDefaultCoordinates(state);
+            setForm(f => ({ 
+              ...f, 
+              latitude: defaults.latitude.toString(), 
+              longitude: defaults.longitude.toString() 
+            }));
           }
-        } catch {}
+        } catch (error) {
+          console.error('Client-side geocoding error:', error);
+          // Set default coordinates on error
+          const defaults = getDefaultCoordinates(state);
+          setForm(f => ({ 
+            ...f, 
+            latitude: defaults.latitude.toString(), 
+            longitude: defaults.longitude.toString() 
+          }));
+        }
       }, 800);
       return () => {
         clearTimeout(timeout);
@@ -229,7 +249,7 @@ export default function AddListingPage() {
                   name="service_type" 
                   value={form.service_type} 
                   onChange={handleChange} 
-                  className="select select-bordered w-full" 
+                  className="select select-bordered w-full h-10" 
                   required
                   disabled={isLoadingDefinitions}
                 >
@@ -256,29 +276,40 @@ export default function AddListingPage() {
               Location
             </h2>
             <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label>Address</Label>
-                {mapsLoaded ? (
-                  <Autocomplete onLoad={handlePlaceLoaded} onPlaceChanged={handlePlaceChanged} fields={["address_components","geometry"]}>
-                    <Input
-                      name="address"
-                      value={form.address}
-                      onChange={handleChange}
-                      placeholder="Start typing address"
-                      autoComplete="off"
-                      required
-                    />
-                  </Autocomplete>
-                ) : (
-                  <Input name="address" value={form.address} onChange={handleChange} required />
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Address</Label>
+                  {mapsLoaded ? (
+                    <Autocomplete onLoad={handlePlaceLoaded} onPlaceChanged={handlePlaceChanged} fields={["address_components","geometry"]}>
+                      <Input
+                        name="address"
+                        value={form.address}
+                        onChange={handleChange}
+                        placeholder="Start typing address"
+                        autoComplete="off"
+                        required
+                      />
+                    </Autocomplete>
+                  ) : (
+                    <Input name="address" value={form.address} onChange={handleChange} required />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Address Line 2 (Optional)</Label>
+                  <Input
+                    name="address_line_2"
+                    value={form.address_line_2}
+                    onChange={handleChange}
+                    placeholder="Apt, Suite, Unit, etc."
+                  />
+                </div>
               </div>
               {/* City, State, Zip in one row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2"><Label>City</Label><Input name="city" placeholder="City" value={form.city} onChange={handleChange} required /></div>
                 <div className="space-y-2">
                   <Label>State</Label>
-                  <select name="state" value={form.state} onChange={handleChange} className="select select-bordered w-full" required>
+                  <select name="state" value={form.state} onChange={handleChange} className="select select-bordered w-full h-10" required>
                     <option value="">Select</option>
                     {US_STATES.map((st)=>(<option key={st.abbreviation} value={st.abbreviation}>{st.name}</option>))}
                   </select>

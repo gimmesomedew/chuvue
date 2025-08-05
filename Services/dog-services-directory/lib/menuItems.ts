@@ -44,14 +44,14 @@ export interface MenuEntry {
 export const menuEntries: MenuEntry[] = [
   // ----- Base (general navigation) -----
   {
-    label: 'Home',
+    label: 'HOME',
     href: 'https://www.dogparkadventures.com/',
     icon: Home,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
     section: 'base',
   },
   {
-    label: 'Service Directory',
+    label: 'FIND A BUSINESS',
     href: '/',
     icon: Navigation,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
@@ -72,7 +72,7 @@ export const menuEntries: MenuEntry[] = [
     section: 'base',
   },
   {
-    label: 'Add Your Service',
+    label: 'ADD YOUR BUSINESS',
     href: '/add-listing',
     icon: Briefcase,
     roles: ['guest', 'pet_owner', 'service_provider'],

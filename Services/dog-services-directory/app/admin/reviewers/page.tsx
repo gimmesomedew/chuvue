@@ -149,7 +149,7 @@ export default function AdminReviewersPage() {
               <div className="space-y-2">
                 <Label>Select User Email</Label>
                 <select
-                  className="select select-bordered w-full"
+                  className="select select-bordered w-full h-10"
                   value={selectedUserId}
                   onChange={(e) => setSelectedUserId(e.target.value)}
                 >

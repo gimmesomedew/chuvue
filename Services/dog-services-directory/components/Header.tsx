@@ -60,7 +60,7 @@ export function Header() {
                 )}
                 {accountLinks.map((entry) => (
                   entry.label === 'Sign In' ? (
-                    <Button key={entry.label} variant="outline" className="md:border-secondary md:text-secondary md:rounded-[6px]" asChild>
+                    <Button key={entry.label} variant="outline" className="md:border-white md:text-white md:rounded-[6px]" asChild>
                       <Link href={entry.href}><LogIn className="h-4 w-4 mr-1"/>{entry.label}</Link>
                     </Button>
                   ) : (

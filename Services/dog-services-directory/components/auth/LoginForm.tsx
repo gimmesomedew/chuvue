@@ -122,7 +122,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="pl-10 w-full py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="pl-10 w-full py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="you@example.com"
             />
           </div>
@@ -148,7 +148,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="pl-10 w-full py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="pl-10 w-full py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="••••••••"
             />
           </div>
@@ -162,7 +162,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="w-full bg-primary hover:bg-third text-white"
           >
             {isLoading ? (
               <>
@@ -186,7 +186,7 @@ export function LoginForm() {
           Don't have an account?{' '}
           <motion.a 
             href="/auth/signup" 
-            className="font-medium text-emerald-600 hover:text-emerald-500"
+            className="font-medium text-secondary hover:text-alternate2"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >

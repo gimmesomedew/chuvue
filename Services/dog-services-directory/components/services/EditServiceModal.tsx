@@ -21,6 +21,7 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
     name: service.name,
     description: service.description,
     address: service.address,
+    address_line_2: service.address_line_2 || '',
     city: service.city,
     state: service.state,
     zip_code: service.zip_code,
@@ -107,15 +108,27 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
               rows={4}
             />
           </div>
-          <div>
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Address"
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Address"
+              />
+            </div>
+            <div>
+              <Label htmlFor="address_line_2">Address Line 2 (Optional)</Label>
+              <Input
+                id="address_line_2"
+                name="address_line_2"
+                value={formData.address_line_2}
+                onChange={handleChange}
+                placeholder="Apt, Suite, Unit, etc."
+              />
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div>

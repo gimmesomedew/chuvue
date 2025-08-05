@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   // Allowed fields to update
   const updatable = [
-    'name','description','address','city','state','zip_code','website_url','image_url'
+    'name','description','address','address_line_2','city','state','zip_code','website_url','image_url','needs_geocoding_review'
   ];
   const updateData: Record<string, any> = {};
   updatable.forEach((f)=>{

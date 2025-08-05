@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
+import { attemptGeocoding, getDefaultCoordinates, needsGeocodingReview } from '@/lib/geocoding';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,25 +25,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // If latitude or longitude missing, attempt to geocode using Nominatim
+    // Enhanced geocoding with fallback to default coordinates
     let { latitude, longitude } = body;
+    let needsReview = false;
 
-    if (!latitude || !longitude) {
-      const query = `${body.address}, ${body.city}, ${body.state} ${body.zip_code}`;
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-          { headers: { 'User-Agent': 'DogServicesDirectory/1.0' } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.length > 0) {
-            latitude = data[0].lat;
-            longitude = data[0].lon;
-          }
-        }
-      } catch (error) {
-        console.error('Geocoding error:', error);
+    // Check if coordinates are missing or invalid
+    if (!latitude || !longitude || needsGeocodingReview(latitude, longitude)) {
+      // Attempt server-side geocoding
+      const geocoded = await attemptGeocoding(body.address, body.city, body.state, body.zip_code);
+      
+      if (geocoded.success) {
+        latitude = geocoded.latitude;
+        longitude = geocoded.longitude;
+        needsReview = false;
+      } else {
+        // Use default coordinates and flag for review
+        const defaults = getDefaultCoordinates(body.state);
+        latitude = defaults.latitude;
+        longitude = defaults.longitude;
+        needsReview = true;
       }
     }
 
@@ -77,19 +78,21 @@ export async function POST(req: NextRequest) {
         name: body.name,
         description: body.description,
         address: body.address,
+        address_line_2: body.address_line_2 || null,
         city: body.city,
         state: body.state,
         zip_code: body.zip_code,
-        latitude: latitude || null,
-        longitude: longitude || null,
-        contact_phone: body.contact_phone,
-        website_url: body.website_url,
+        latitude: latitude,
+        longitude: longitude,
+        needs_geocoding_review: needsReview,
+        contact_phone: body.contact_phone || 'No phone provided',
+        website_url: body.website_url || null,
         email: emailSafe,
-        facebook_url: body.facebook_url,
-        instagram_url: body.instagram_url,
-        twitter_url: body.twitter_url,
-        pets_name: body.pets_name,
-        pet_description: body.pet_description,
+        facebook_url: body.facebook_url || null,
+        instagram_url: body.instagram_url || null,
+        twitter_url: body.twitter_url || null,
+        pets_name: body.pets_name || null,
+        pet_description: body.pet_description || null,
       },
     ]);
 

@@ -24,12 +24,14 @@ export interface Service {
   name: string;
   description: string;
   address: string;
+  address_line_2?: string;
   city: string;
   state: string;
   zip_code: string;
   service_type: string; // Field in the services table
   latitude: number;
   longitude: number;
+  needs_geocoding_review?: boolean;
   image_url?: string;
   email?: string;
   website_url?: string;

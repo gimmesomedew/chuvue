@@ -271,13 +271,13 @@ export function SignUpForm() {
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
               I agree to the{' '}
-              <Link href="/terms" className="font-medium text-emerald-600 hover:text-emerald-500">
+              <Link href="/terms" className="font-medium text-secondary hover:text-alternate2">
                 <motion.span whileHover={{ scale: 1.05 }}>
                   Terms of Service
                 </motion.span>
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="font-medium text-emerald-600 hover:text-emerald-500">
+              <Link href="/privacy" className="font-medium text-secondary hover:text-alternate2">
                 <motion.span whileHover={{ scale: 1.05 }}>
                   Privacy Policy
                 </motion.span>
@@ -459,12 +459,12 @@ export function SignUpForm() {
       >
         <p className="text-sm text-gray-600">
           Already have an account?{' '}
-          <motion.a 
-            href="/auth/login" 
-            className="font-medium text-emerald-600 hover:text-emerald-500"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
+                      <motion.a 
+              href="/auth/login" 
+              className="font-medium text-secondary hover:text-alternate2"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
             Sign in
           </motion.a>
         </p>
