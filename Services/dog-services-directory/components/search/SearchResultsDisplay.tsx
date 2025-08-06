@@ -156,6 +156,7 @@ export function SearchResultsDisplay({
         locationError={null}
         onClearAll={onClearAll}
         onToggleSearchForm={onToggleSearchForm}
+        resetSearch={resetSearch}
       />
       
       <FilterTagBar

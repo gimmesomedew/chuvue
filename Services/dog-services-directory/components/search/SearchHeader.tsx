@@ -20,6 +20,7 @@ interface SearchHeaderProps {
   locationError: string | null;
   onClearAll?: () => void;
   onToggleSearchForm?: () => void;
+  resetSearch?: () => void;
 }
 
 export function SearchHeader({
@@ -35,7 +36,8 @@ export function SearchHeader({
   isLoadingLocation,
   locationError,
   onClearAll,
-  onToggleSearchForm
+  onToggleSearchForm,
+  resetSearch
 }: SearchHeaderProps) {
   return (
     <div className="flex flex-col space-y-4 mb-6">
@@ -64,7 +66,7 @@ export function SearchHeader({
           {(selectedState || zipCode) && (
             <button
               onClick={() => {
-                onClearAll?.();
+                resetSearch?.();
                 onToggleSearchForm?.();
               }}
               className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
