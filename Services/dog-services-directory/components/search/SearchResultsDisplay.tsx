@@ -35,6 +35,7 @@ interface SearchResultsDisplayProps {
   onFilterByServiceType?: (serviceType: string) => void;
   onClientFilter?: (serviceType: string) => void;
   onClearClientFilter?: () => void;
+  onToggleSearchForm?: () => void;
 }
 
 export function SearchResultsDisplay({
@@ -58,6 +59,7 @@ export function SearchResultsDisplay({
   onFilterByServiceType,
   onClientFilter,
   onClearClientFilter,
+  onToggleSearchForm,
 }: SearchResultsDisplayProps) {
   // Client-side filtering state
   const [clientFilteredServices, setClientFilteredServices] = useState<Service[]>([]);
@@ -170,6 +172,7 @@ export function SearchResultsDisplay({
         onClearAll={onClearAll || (() => {})}
         onClientFilter={handleClientFilter}
         onClearClientFilter={handleClearClientFilter}
+        onToggleSearchForm={onToggleSearchForm}
       />
 
       {/* Name Search and View Toggle */}

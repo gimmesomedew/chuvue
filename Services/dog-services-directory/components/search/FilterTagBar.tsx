@@ -22,6 +22,7 @@ interface FilterTagBarProps {
   onClearAll: () => void;
   onClientFilter: (serviceType: string) => void;
   onClearClientFilter: () => void;
+  onToggleSearchForm?: () => void;
 }
 
 export function FilterTagBar({
@@ -40,6 +41,7 @@ export function FilterTagBar({
   onClearAll,
   onClientFilter,
   onClearClientFilter,
+  onToggleSearchForm,
 }: FilterTagBarProps) {
   // Get unique service types from all search results (not just current page)
   const serviceTypesInResults = Array.from(new Set(allSearchResults.map(service => service.service_type)));
@@ -91,9 +93,11 @@ export function FilterTagBar({
                   key={serviceType}
                   onClick={() => {
                     if (isSelected) {
-                      onClearAll(); // Changed from onRemoveServiceType() to onClearAll()
+                      onClearAll();
+                      onToggleSearchForm?.(); // Hide search form when clearing
                     } else if (isClientFilterActive) {
-                      onClearAll(); // Changed from onClearClientFilter() to onClearAll()
+                      onClearAll();
+                      onToggleSearchForm?.(); // Hide search form when clearing
                     } else {
                       onClientFilter(serviceType);
                     }
@@ -119,7 +123,10 @@ export function FilterTagBar({
           <div className="flex flex-wrap gap-2">
             {selectedState && (
               <button
-                onClick={onClearAll} // Changed from onRemoveState to onClearAll
+                onClick={() => {
+                  onClearAll();
+                  onToggleSearchForm?.(); // Hide search form when clearing
+                }}
                 className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
               >
                 <Map className="h-3 w-3" />
@@ -132,7 +139,10 @@ export function FilterTagBar({
             
             {zipCode && (
               <button
-                onClick={onClearAll} // Changed from onRemoveZipCode to onClearAll
+                onClick={() => {
+                  onClearAll();
+                  onToggleSearchForm?.(); // Hide search form when clearing
+                }}
                 className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
               >
                 <Map className="h-3 w-3" />
@@ -144,7 +154,10 @@ export function FilterTagBar({
           
           {hasFilters && (
             <button
-              onClick={onClearAll}
+              onClick={() => {
+                onClearAll();
+                onToggleSearchForm?.(); // Hide search form when clearing
+              }}
               className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
             >
               Clear all

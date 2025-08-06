@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { SearchSection } from '@/components/search/SearchSection';
 import { SearchResultsDisplay } from '@/components/search/SearchResultsDisplay';
 import { FeaturedCarousel } from '@/components/services/FeaturedCarousel';
@@ -11,6 +12,8 @@ import { SearchState } from '@/hooks/useServicesQuery';
 import { useToast } from '@/components/ui/use-toast';
 
 export function HomeContent() {
+  const [isSearchFormCollapsed, setIsSearchFormCollapsed] = useState(false);
+  
   const {
     serviceDefinitions,
     isLoadingDefinitions,
@@ -97,6 +100,10 @@ export function HomeContent() {
         onSearch={handleSearchSubmit}
         resetSearch={resetSearch}
         initialSelectedServiceType={initialServiceType}
+        onToggleSearchForm={() => {
+          setIsSearchFormCollapsed(true);
+        }}
+        isCollapsed={isSearchFormCollapsed}
       />
       
       {/* Search Results Section */}
@@ -123,6 +130,9 @@ export function HomeContent() {
               onRemoveZipCode={handleRemoveZipCode}
               onClearAll={handleClearAll}
               onClientFilter={handleClientFilter}
+              onToggleSearchForm={() => {
+                setIsSearchFormCollapsed(true);
+              }}
             />
           </div>
         </section>
