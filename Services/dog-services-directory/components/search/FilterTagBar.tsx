@@ -118,41 +118,9 @@ export function FilterTagBar({
           </div>
         )}
 
-        {/* Location filters and clear all button */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-wrap gap-2">
-            {selectedState && (
-              <button
-                onClick={() => {
-                  onClearAll();
-                  onToggleSearchForm?.(); // Hide search form when clearing
-                }}
-                className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
-              >
-                <Map className="h-3 w-3" />
-                <span>
-                  {states.find(s => s.abbreviation === selectedState)?.name || selectedState}
-                </span>
-                <X className="h-3 w-3" />
-              </button>
-            )}
-            
-            {zipCode && (
-              <button
-                onClick={() => {
-                  onClearAll();
-                  onToggleSearchForm?.(); // Hide search form when clearing
-                }}
-                className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded-full text-sm font-medium transition-colors"
-              >
-                <Map className="h-3 w-3" />
-                <span>ZIP: {zipCode}</span>
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-          
-          {hasFilters && (
+        {/* Clear all button - location filters moved to header */}
+        {hasFilters && (
+          <div className="flex justify-end">
             <button
               onClick={() => {
                 onClearAll();
@@ -162,8 +130,8 @@ export function FilterTagBar({
             >
               Clear all
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

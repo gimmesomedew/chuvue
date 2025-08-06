@@ -154,6 +154,8 @@ export function SearchResultsDisplay({
         setSortByDistance={() => {}}
         isLoadingLocation={false}
         locationError={null}
+        onClearAll={onClearAll}
+        onToggleSearchForm={onToggleSearchForm}
       />
       
       <FilterTagBar
