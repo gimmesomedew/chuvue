@@ -26,7 +26,7 @@ function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
       <Link
         href={href || '#'}
         onClick={onClick}
-        className="group flex items-center gap-3 px-3 py-2" style={{ color: '#2C3D73' }}
+        className="group flex items-center gap-3 px-3 py-2 font-normal md:font-bold" style={{ color: '#2C3D73' }}
       >
         {Icon && (
           <motion.div
@@ -186,7 +186,7 @@ export function HamburgerMenu() {
                         </h3>
                       )}
 
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         {entries.map((entry) => {
                           // compute label modifications (badge)
                           let label = entry.label;
