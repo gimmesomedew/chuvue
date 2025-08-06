@@ -18,7 +18,7 @@ interface ServiceActionButtonsProps {
 }
 
 const IconWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-1.5 rounded-full transition-all duration-200 ${className}`}>
+  <div className={`p-2.5 rounded-full transition-all duration-200 ${className}`}>
     {children}
   </div>
 );
@@ -63,7 +63,7 @@ export function ServiceActionButtons({
   return (
     <TooltipProvider>
       <div className="border-t border-gray-100">
-        <div className="flex items-center justify-center gap-4 py-2 px-4">
+        <div className="flex items-center justify-center gap-6 py-3 px-4">
           {service.website_url && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -77,7 +77,7 @@ export function ServiceActionButtons({
                   className="text-primary-500 hover:text-primary-600 cursor-pointer"
                 >
                   <IconWrapper className="bg-primary-50 hover:bg-primary-100">
-                    <Link className="h-5 w-5" color="#22c55e" />
+                    <Link className="h-6 w-6" color="#22c55e" />
                   </IconWrapper>
                 </motion.a>
               </TooltipTrigger>
@@ -102,7 +102,7 @@ export function ServiceActionButtons({
                   className="text-emerald-500 hover:text-emerald-600 cursor-pointer"
                 >
                   <IconWrapper className="bg-emerald-50 hover:bg-emerald-100">
-                    <MapPlus className="h-5 w-5 text-secondary" />
+                    <MapPlus className="h-6 w-6 text-secondary" />
                   </IconWrapper>
                 </motion.a>
               </TooltipTrigger>
@@ -124,7 +124,7 @@ export function ServiceActionButtons({
                   } cursor-pointer`}
                 >
                   <IconWrapper className={`${isFavorited ? 'bg-red-50' : 'bg-gray-50 hover:bg-red-50'}`}>
-                    <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''}`} />
+                    <Heart className={`h-6 w-6 ${isFavorited ? 'fill-current' : ''}`} />
                   </IconWrapper>
                 </motion.button>
               </TooltipTrigger>
@@ -145,7 +145,7 @@ export function ServiceActionButtons({
                     className="text-blue-500 hover:text-blue-600 cursor-pointer"
                   >
                     <IconWrapper className="bg-blue-50 hover:bg-blue-100">
-                      <Pencil className="h-5 w-5" />
+                      <Pencil className="h-6 w-6" />
                     </IconWrapper>
                   </motion.button>
                 </TooltipTrigger>
@@ -165,7 +165,7 @@ export function ServiceActionButtons({
                     } cursor-pointer`}
                   >
                     <IconWrapper className={`${featured === 'Y' ? 'bg-amber-50' : 'bg-gray-50 hover:bg-amber-50'}`}>
-                      <Star className={`h-5 w-5 ${featured === 'Y' ? 'fill-current' : ''}`} />
+                      <Star className={`h-6 w-6 ${featured === 'Y' ? 'fill-current' : ''}`} />
                     </IconWrapper>
                   </motion.button>
                 </TooltipTrigger>
@@ -183,7 +183,7 @@ export function ServiceActionButtons({
                     className="text-red-500 hover:text-red-600 cursor-pointer"
                   >
                     <IconWrapper className="bg-red-50 hover:bg-red-100">
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-6 w-6" />
                     </IconWrapper>
                   </motion.button>
                 </TooltipTrigger>

@@ -11,6 +11,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { getAnalyticsSummary, getAnalyticsByDateRange } from '@/lib/analytics';
+import { CacheManagement } from './CacheManagement';
 
 interface AnalyticsData {
   summary: {
@@ -249,6 +250,9 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Cache Management */}
+      <CacheManagement />
     </div>
   );
 } 

@@ -16,6 +16,8 @@ interface SearchSectionProps {
   onSearch: (params: Partial<SearchState>) => void;
   resetSearch: () => void;
   initialSelectedServiceType?: string;
+  isCollapsed?: boolean;
+  onToggleSearchForm?: () => void;
 }
 
 const SearchSectionSkeleton = () => (
@@ -56,9 +58,15 @@ export function SearchSection({
   hasSearched,
   onSearch,
   resetSearch,
-  initialSelectedServiceType = ''
+  initialSelectedServiceType = '',
+  isCollapsed: externalCollapsed,
+  onToggleSearchForm
 }: SearchSectionProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  
+  // Use external collapsed state if provided, otherwise use internal state
+  const isCollapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+  const setIsCollapsed = externalCollapsed !== undefined ? (() => {}) : setInternalCollapsed;
 
   useEffect(() => {
     if (hasSearched) {
@@ -68,6 +76,7 @@ export function SearchSection({
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+    onToggleSearchForm?.();
   };
 
   if (isLoading) {

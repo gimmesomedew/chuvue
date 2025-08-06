@@ -7,7 +7,7 @@ import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
 import { SearchHeader } from './SearchHeader';
 import { FilterTagBar } from './FilterTagBar';
-import { NameSearch } from './NameSearch';
+import { AutocompleteSearch } from './AutocompleteSearch';
 import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
@@ -175,10 +175,11 @@ export function SearchResultsDisplay({
       {/* Name Search and View Toggle */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex-1">
-          <NameSearch
+          <AutocompleteSearch
             onSearch={handleNameSearch}
             onClear={handleClearNameSearch}
             isSearching={isNameSearching}
+            allSearchResults={allSearchResults}
           />
         </div>
         {nameSearchQuery && (

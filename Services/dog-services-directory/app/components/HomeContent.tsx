@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { SearchSection } from '@/components/search/SearchSection';
 import { SearchResultsDisplay } from '@/components/search/SearchResultsDisplay';
 import { FeaturedCarousel } from '@/components/services/FeaturedCarousel';
@@ -11,6 +12,8 @@ import { SearchState } from '@/hooks/useServicesQuery';
 import { useToast } from '@/components/ui/use-toast';
 
 export function HomeContent() {
+  const [isSearchFormCollapsed, setIsSearchFormCollapsed] = useState(false);
+  
   const {
     serviceDefinitions,
     isLoadingDefinitions,
@@ -81,6 +84,8 @@ export function HomeContent() {
       selectedState: '',
       zipCode: '',
     });
+    // Show the search form when clearing filters
+    setIsSearchFormCollapsed(false);
   };
 
   const handleClientFilter = (serviceType: string) => {
@@ -97,6 +102,7 @@ export function HomeContent() {
         onSearch={handleSearchSubmit}
         resetSearch={resetSearch}
         initialSelectedServiceType={initialServiceType}
+        isCollapsed={isSearchFormCollapsed}
       />
       
       {/* Search Results Section */}

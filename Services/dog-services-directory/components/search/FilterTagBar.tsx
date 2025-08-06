@@ -41,7 +41,7 @@ export function FilterTagBar({
   onClientFilter,
   onClearClientFilter,
 }: FilterTagBarProps) {
-  // Get unique service types from all search results (not just current page)
+  // Get unique service types from all search results (the actual results for this location)
   const serviceTypesInResults = Array.from(new Set(allSearchResults.map(service => service.service_type)));
   
   // Check if we have any filters
@@ -80,7 +80,7 @@ export function FilterTagBar({
         {/* Service type filters - allow multiple rows */}
         {serviceTypesInResults.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {/* Show all service types from the complete search results */}
+            {/* Show service types that are actually present in the search results */}
             {serviceTypesInResults.map((serviceType) => {
               const definition = serviceDefinitions.find(d => d.service_type === serviceType);
               const isSelected = selectedServiceType === serviceType;

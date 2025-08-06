@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { ServiceDefinition, Service } from './types';
 import { logServiceError } from './errorLogging';
+import { searchCache } from './cache';
 
 /**
  * Interface for service definition with count
@@ -335,6 +336,9 @@ export async function deleteService(serviceId: string): Promise<boolean> {
       await logServiceError(serviceError, 'delete_service', serviceId);
       return false;
     }
+
+    // Invalidate all search cache since a service was deleted
+    await searchCache.invalidateSearchResults();
     
     return true;
   } catch (error) {
@@ -378,6 +382,9 @@ export async function toggleServiceFeatured(serviceId: string): Promise<Service 
       console.error(`Error updating featured status for service ${serviceId}:`, updateError);
       return null;
     }
+
+    // Invalidate search cache since a service was updated
+    await searchCache.invalidateSearchResults();
     
     return updatedService as Service;
   } catch (error) {
@@ -397,7 +404,7 @@ export async function searchServices(
   perPage: number = 15
 ): Promise<{ services: Service[]; totalPages: number; total: number }> {
   try {
-    // If lat/lon provided, use RPC
+    // If lat/lon provided, use RPC (don't cache geolocation searches for now)
     if (latitude !== undefined && longitude !== undefined) {
       const { data, error } = await supabase
         .rpc('services_within_radius', {
@@ -422,6 +429,15 @@ export async function searchServices(
 
       return { services: paged as Service[], totalPages, total };
     }
+
+    // Check cache first for non-geolocation searches
+    const cachedResult = await searchCache.getSearchResults(serviceType, state, zipCode, page, perPage);
+    if (cachedResult) {
+      console.log('Cache hit for search:', { serviceType, state, zipCode, page, perPage });
+      return cachedResult;
+    }
+
+    console.log('Cache miss for search:', { serviceType, state, zipCode, page, perPage });
 
     // First, get the total count without pagination
     let countQuery = supabase
@@ -472,8 +488,8 @@ export async function searchServices(
     const to = from + perPage - 1;
     dataQuery = dataQuery.range(from, to);
 
-    // Sort by service type first, then by name for better distribution
-    dataQuery = dataQuery.order('service_type').order('name');
+    // Sort by name only
+    dataQuery = dataQuery.order('name');
 
     const { data, error } = await dataQuery;
 
@@ -483,11 +499,16 @@ export async function searchServices(
 
     const totalPages = count ? Math.ceil(count / perPage) : 0;
 
-    return {
+    const result = {
       services: data || [],
       totalPages,
       total: count || 0
     };
+
+    // Cache the result
+    await searchCache.setSearchResults(serviceType, state, zipCode, page, perPage, result);
+
+    return result;
   } catch (error) {
     throw error;
   }
@@ -505,7 +526,7 @@ export async function searchAllServices(
   radiusMiles: number = 25
 ): Promise<{ services: Service[]; total: number }> {
   try {
-    // If lat/lon provided, use RPC function
+    // If lat/lon provided, use RPC function (don't cache geolocation searches for now)
     if (latitude !== undefined && longitude !== undefined) {
       const { data, error } = await supabase.rpc('services_within_radius', {
         p_lat: latitude,
@@ -520,6 +541,15 @@ export async function searchAllServices(
         total: data?.length || 0
       };
     }
+
+    // Check cache first for non-geolocation searches
+    const cachedResult = await searchCache.getAllSearchResults(serviceType, state, zipCode);
+    if (cachedResult) {
+      console.log('Cache hit for all search results:', { serviceType, state, zipCode });
+      return cachedResult;
+    }
+
+    console.log('Cache miss for all search results:', { serviceType, state, zipCode });
 
     // Build query for all results
     let query = supabase
@@ -540,19 +570,44 @@ export async function searchAllServices(
       query = query.eq('zip_code', zipCode);
     }
 
-    // Sort by service type first, then by name
-    query = query.order('service_type').order('name');
+    // Sort by name only
+    query = query.order('name');
 
-    const { data, error } = await query;
+    // Handle Supabase's 1000 row limit by fetching in batches
+    let allData: Service[] = [];
+    let hasMore = true;
+    let offset = 0;
+    const limit = 1000;
 
-    if (error) {
-      throw error;
+    while (hasMore) {
+      const { data, error } = await query.range(offset, offset + limit - 1);
+      
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+        offset += limit;
+        
+        // If we got less than the limit, we've reached the end
+        if (data.length < limit) {
+          hasMore = false;
+        }
+      } else {
+        hasMore = false;
+      }
     }
 
-    return {
-      services: data || [],
-      total: data?.length || 0
+    const result = {
+      services: allData,
+      total: allData.length
     };
+
+    // Cache the result
+    await searchCache.setAllSearchResults(serviceType, state, zipCode, result);
+
+    return result;
   } catch (error) {
     throw error;
   }
