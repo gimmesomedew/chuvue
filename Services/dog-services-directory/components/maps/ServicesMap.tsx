@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { Service } from '@/lib/types';
 
 interface ServicesMapProps {
@@ -24,11 +25,7 @@ export function ServicesMap({ services, height = 400 }: ServicesMapProps) {
     return null;
   }
 
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-maps-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    // We do not request any additional libraries for now
-  });
+  const { isLoaded } = useGoogleMaps();
 
   // Compute a reasonable center – use the first service as default
   const center = useMemo(() => {

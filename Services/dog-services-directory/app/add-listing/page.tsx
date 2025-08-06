@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ClipboardList, MapPin, Phone, Share2, PawPrint } from 'lucide-react';
-import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
+import { Autocomplete } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,13 +21,7 @@ export default function AddListingPage() {
   const router = useRouter();
   const [serviceDefinitions, setServiceDefinitions] = useState<ServiceDefinition[]>([]);
 
-  // Google Places Autocomplete - Static libraries array to prevent re-renders
-  const libraries = ['places'] as const;
-  const { isLoaded: mapsLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: libraries as any,
-    id: 'google-places-script',
-  });
+  const { isLoaded: mapsLoaded } = useGoogleMaps();
 
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 

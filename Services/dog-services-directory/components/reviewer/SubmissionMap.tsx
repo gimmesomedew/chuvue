@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { MapPin } from 'lucide-react';
 
 interface SubmissionMapProps {
@@ -12,10 +13,7 @@ interface SubmissionMapProps {
 }
 
 export function SubmissionMap({ latitude, longitude, address, name }: SubmissionMapProps) {
-  const { isLoaded } = useJsApiLoader({
-    id: 'submission-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-  });
+  const { isLoaded } = useGoogleMaps();
 
   // Parse coordinates
   const coordinates = useMemo(() => {
