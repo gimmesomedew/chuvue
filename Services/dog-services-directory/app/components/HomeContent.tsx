@@ -102,6 +102,9 @@ export function HomeContent() {
         onSearch={handleSearchSubmit}
         resetSearch={resetSearch}
         initialSelectedServiceType={initialServiceType}
+        onToggleSearchForm={() => {
+          setIsSearchFormCollapsed(true);
+        }}
         isCollapsed={isSearchFormCollapsed}
       />
       
@@ -129,6 +132,9 @@ export function HomeContent() {
               onRemoveZipCode={handleRemoveZipCode}
               onClearAll={handleClearAll}
               onClientFilter={handleClientFilter}
+              onToggleSearchForm={() => {
+                setIsSearchFormCollapsed(true);
+              }}
             />
           </div>
         </section>

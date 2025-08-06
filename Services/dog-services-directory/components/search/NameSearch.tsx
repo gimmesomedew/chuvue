@@ -58,7 +58,7 @@ export function NameSearch({ onSearch, onClear, isSearching = false }: NameSearc
         onClick={handleSearch}
         disabled={!searchQuery.trim() || isSearching}
         size="sm"
-        className="bg-[#015A87] hover:bg-[#014a70] text-white"
+        className="bg-secondary hover:bg-secondary/90 text-white rounded-[40px]"
       >
         <Search className="h-4 w-4" />
       </Button>
