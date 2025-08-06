@@ -57,6 +57,9 @@ export function HomeContent() {
 
     setSearchState(params);
     await handleSearch(params);
+    
+    // Hide the search form after performing a search
+    setIsSearchFormCollapsed(true);
   };
 
   // Filter removal handlers
@@ -103,7 +106,7 @@ export function HomeContent() {
         resetSearch={resetSearch}
         initialSelectedServiceType={initialServiceType}
         onToggleSearchForm={() => {
-          setIsSearchFormCollapsed(true);
+          setIsSearchFormCollapsed(!isSearchFormCollapsed);
         }}
         isCollapsed={isSearchFormCollapsed}
       />
@@ -133,7 +136,7 @@ export function HomeContent() {
               onClearAll={handleClearAll}
               onClientFilter={handleClientFilter}
               onToggleSearchForm={() => {
-                setIsSearchFormCollapsed(true);
+                setIsSearchFormCollapsed(!isSearchFormCollapsed);
               }}
             />
           </div>

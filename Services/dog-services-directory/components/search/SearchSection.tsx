@@ -75,8 +75,13 @@ export function SearchSection({
   }, [hasSearched]);
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-    onToggleSearchForm?.();
+    if (externalCollapsed !== undefined) {
+      // If we have external state, only call the callback
+      onToggleSearchForm?.();
+    } else {
+      // If we're using internal state, toggle it
+      setInternalCollapsed(!internalCollapsed);
+    }
   };
 
   if (isLoading) {
