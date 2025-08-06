@@ -1,11 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { attemptGeocoding, getDefaultCoordinates } from '@/lib/geocoding';
+import { getDefaultCoordinates } from '@/lib/geocoding';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+async function generateCoordinates(address: string, city: string, state: string, zipCode: string) {
+  try {
+    const fullAddress = `${address}, ${city}, ${state} ${zipCode}`;
+    const encodedAddress = encodeURIComponent(fullAddress);
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Geocoding API request failed');
+    }
+
+    const data = await response.json();
+    
+    if (data.status !== 'OK') {
+      throw new Error(`Geocoding failed: ${data.status}`);
+    }
+
+    const { lat, lng } = data.results[0].geometry.location;
+    return { latitude: lat, longitude: lng, error: null };
+  } catch (error) {
+    return { 
+      latitude: null, 
+      longitude: null, 
+      error: error instanceof Error ? error.message : 'Failed to geocode address'
+    };
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,16 +48,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Attempt to geocode the address
-    const geocoded = await attemptGeocoding(address, city, state, zip_code);
-    
+    // Generate coordinates using Google Maps API
+    const { latitude: geoLat, longitude: geoLon, error: geocodingError } = await generateCoordinates(
+      address,
+      city,
+      state,
+      zip_code
+    );
+
     let latitude: number;
     let longitude: number;
     let needsReview: boolean;
 
-    if (geocoded.success && typeof geocoded.latitude === 'number' && typeof geocoded.longitude === 'number') {
-      latitude = geocoded.latitude;
-      longitude = geocoded.longitude;
+    if (geoLat !== null && geoLon !== null) {
+      latitude = geoLat;
+      longitude = geoLon;
       needsReview = false;
     } else {
       // Use default coordinates and flag for review
@@ -63,7 +97,7 @@ export async function POST(request: NextRequest) {
       needs_geocoding_review: needsReview,
       message: needsReview 
         ? 'Coordinates obtained using fallback method - please verify address accuracy' 
-        : 'Coordinates obtained successfully'
+        : 'Coordinates obtained successfully using Google Maps'
     });
 
   } catch (error) {

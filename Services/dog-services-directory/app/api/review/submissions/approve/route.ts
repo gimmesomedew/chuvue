@@ -13,7 +13,7 @@ async function generateCoordinates(address: string, city: string, state: string,
     const fullAddress = `${address}, ${city}, ${state} ${zipCode}`;
     const encodedAddress = encodeURIComponent(fullAddress);
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${process.env.GOOGLE_MAPS_API_KEY}`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
     );
     
     if (!response.ok) {

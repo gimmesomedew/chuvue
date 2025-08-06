@@ -31,8 +31,8 @@ export default function ReviewerLayout({ children }: ReviewerLayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-base-200">
-      <aside className="w-64 bg-base-100 border-r p-6 flex flex-col gap-2">
+    <div className="flex min-h-screen bg-gray-50">
+      <aside className="w-64 bg-white border-r border-gray-200 p-6 flex flex-col gap-2">
         <h2 className="text-xl font-bold mb-6">Reviewer Panel</h2>
         <nav className="flex flex-col gap-2 flex-1">
           {navLinks.map(link => (
@@ -41,7 +41,7 @@ export default function ReviewerLayout({ children }: ReviewerLayoutProps) {
               href={link.href}
               className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                 pathname === link.href
-                  ? 'bg-primary text-primary-content' : 'hover:bg-base-300'
+                  ? 'bg-primary text-white' : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
               {link.icon}
@@ -49,10 +49,10 @@ export default function ReviewerLayout({ children }: ReviewerLayoutProps) {
             </Link>
           ))}
         </nav>
-        <div className="mt-auto pt-4 border-t border-base-300">
+        <div className="mt-auto pt-4 border-t border-gray-200">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-base-300 text-base-content"
+            className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-gray-100 text-gray-700"
           >
             <Home className="w-5 h-5" />
             <span>Back to Home</span>

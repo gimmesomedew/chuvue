@@ -85,7 +85,7 @@ export function Header() {
                 {reviewerLinks.length > 0 && (
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="flex items-center text-gray-700 hover:text-emerald-600">Reviewer <ChevronDown className="h-4 w-4 ml-1"/></button>
+                      <button className="flex items-center text-white hover:text-secondary hover:bg-white/10 transition-colors">Reviewer <ChevronDown className="h-4 w-4 ml-1"/></button>
                     </PopoverTrigger>
                     <PopoverContent className="w-56 p-2 space-y-1">
                       {reviewerLinks.map((entry) => (
@@ -99,7 +99,7 @@ export function Header() {
                 {adminLinks.length > 0 && (
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="flex items-center text-purple-700 hover:text-purple-900">Admin <ChevronDown className="h-4 w-4 ml-1"/></button>
+                      <button className="flex items-center text-white hover:text-secondary hover:bg-white/10 transition-colors">Admin <ChevronDown className="h-4 w-4 ml-1"/></button>
                     </PopoverTrigger>
                     <PopoverContent className="w-60 p-2 space-y-1">
                       {adminLinks.map((entry) => (
