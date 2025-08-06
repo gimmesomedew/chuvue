@@ -121,7 +121,7 @@ export function HamburgerMenu() {
       {/* Hamburger button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 bg-secondary hover:bg-third text-white focus:outline-none border-2 border-white rounded-md"
+        className="p-2 bg-secondary hover:bg-third text-white focus:outline-none rounded-md"
         aria-label="Toggle menu"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
