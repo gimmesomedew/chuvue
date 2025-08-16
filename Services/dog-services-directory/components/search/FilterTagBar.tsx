@@ -10,6 +10,8 @@ interface FilterTagBarProps {
   selectedServiceType: string;
   selectedState: string;
   zipCode: string;
+  latitude?: number;
+  longitude?: number;
   serviceDefinitions: ServiceDefinition[];
   states: USState[];
   searchResults: Service[];
@@ -29,6 +31,8 @@ export function FilterTagBar({
   selectedServiceType,
   selectedState,
   zipCode,
+  latitude,
+  longitude,
   serviceDefinitions,
   states,
   searchResults,
@@ -57,7 +61,7 @@ export function FilterTagBar({
   });
   
   // Check if we have any filters
-  const hasFilters = selectedServiceType || selectedState || zipCode || isClientFiltered;
+  const hasFilters = selectedServiceType || selectedState || zipCode || (latitude && longitude) || isClientFiltered;
 
   if (!hasFilters) {
     return null;

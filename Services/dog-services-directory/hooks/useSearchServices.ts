@@ -14,6 +14,7 @@ interface SearchState {
   latitude?: number;
   longitude?: number;
   radiusMiles?: number;
+  cityState?: string;
 }
 
 interface SearchResults {
@@ -62,6 +63,7 @@ export function useSearchServices(): UseSearchServicesReturn {
     latitude: undefined,
     longitude: undefined,
     radiusMiles: undefined,
+    cityState: undefined,
   });
   
   // Search results state
@@ -290,6 +292,7 @@ export function useSearchServices(): UseSearchServicesReturn {
       latitude: undefined,
       longitude: undefined,
       radiusMiles: undefined,
+      cityState: undefined,
     });
     setSearchResults([]);
     setAllSearchResults([]);

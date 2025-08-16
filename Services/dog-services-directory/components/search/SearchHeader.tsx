@@ -12,6 +12,9 @@ interface SearchHeaderProps {
   selectedServiceType: string;
   selectedState: string;
   zipCode: string;
+  latitude?: number;
+  longitude?: number;
+  cityState?: string;
   serviceDefinitions: ServiceDefinition[];
   states: USState[];
   sortByDistance: boolean;
@@ -29,6 +32,9 @@ export function SearchHeader({
   selectedServiceType,
   selectedState,
   zipCode,
+  latitude,
+  longitude,
+  cityState,
   serviceDefinitions,
   states,
   sortByDistance,
@@ -62,8 +68,8 @@ export function SearchHeader({
             )}
           </h2>
           
-          {/* Location tag - only show state or zip code, not both */}
-          {(selectedState || zipCode) && (
+          {/* Location tag - show for state, zip code, or My Location */}
+          {(selectedState || zipCode || (latitude && longitude)) && (
             <button
               onClick={() => {
                 resetSearch?.();
@@ -75,7 +81,9 @@ export function SearchHeader({
               <span>
                 {selectedState 
                   ? states.find(s => s.abbreviation === selectedState)?.name || selectedState
-                  : `ZIP: ${zipCode}`
+                  : zipCode
+                  ? `ZIP: ${zipCode}`
+                  : cityState || 'My Location'
                 }
               </span>
               <X className="h-3 w-3" />

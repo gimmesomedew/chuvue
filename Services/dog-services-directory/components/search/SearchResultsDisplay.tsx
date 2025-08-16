@@ -24,6 +24,9 @@ interface SearchResultsDisplayProps {
   selectedServiceType: string;
   selectedState: string;
   zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  cityState?: string;
   serviceDefinitions: ServiceDefinition[];
   states: USState[];
   handlePageChange: (newPage: number) => void;
@@ -48,6 +51,9 @@ export function SearchResultsDisplay({
   selectedServiceType,
   selectedState,
   zipCode = '',
+  latitude,
+  longitude,
+  cityState,
   serviceDefinitions,
   states,
   handlePageChange,
@@ -148,6 +154,9 @@ export function SearchResultsDisplay({
         selectedServiceType={selectedServiceType}
         selectedState={selectedState}
         zipCode={zipCode}
+        latitude={latitude}
+        longitude={longitude}
+        cityState={cityState}
         serviceDefinitions={serviceDefinitions}
         states={states}
         sortByDistance={false}
@@ -163,6 +172,8 @@ export function SearchResultsDisplay({
         selectedServiceType={selectedServiceType}
         selectedState={selectedState}
         zipCode={zipCode}
+        latitude={latitude}
+        longitude={longitude}
         serviceDefinitions={serviceDefinitions}
         states={states}
         searchResults={searchResults}

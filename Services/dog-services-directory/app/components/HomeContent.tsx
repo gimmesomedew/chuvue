@@ -138,6 +138,9 @@ export function HomeContent() {
               selectedServiceType={searchState.selectedServiceType}
               selectedState={searchState.selectedState}
               zipCode={searchState.zipCode}
+              latitude={searchState.latitude}
+              longitude={searchState.longitude}
+              cityState={searchState.cityState}
               serviceDefinitions={serviceDefinitions}
               states={states}
               handlePageChange={handlePageChange}

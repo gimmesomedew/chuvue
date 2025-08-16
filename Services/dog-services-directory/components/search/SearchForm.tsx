@@ -79,6 +79,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
     latitude: undefined,
     longitude: undefined,
     radiusMiles: 25,
+    cityState: '',
   });
 
   // Update selectedServiceType if prop changes
@@ -166,7 +167,14 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
       toast.error('Please select a state before searching.');
       return;
     }
-    onSearch(formState);
+    
+    // Ensure cityState is included for geolocation searches
+    const searchParams = {
+      ...formState,
+      cityState: locationType === 'geo' ? formState.cityState : undefined
+    };
+    
+    onSearch(searchParams);
   };
 
   const handleLocationTypeChange = (type: LocationType) => {
@@ -178,11 +186,13 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
       latitude: undefined,
       longitude: undefined,
       radiusMiles: undefined,
+      cityState: type === 'geo' ? prev.cityState : '',
     }));
     
     // Clear user location when switching away from geo mode
     if (type !== 'geo') {
       clearLocation();
+      setCityState('');
     }
   };
 
@@ -195,12 +205,14 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
         latitude: undefined,
         longitude: undefined,
         radiusMiles: undefined,
+        cityState: '',
       } : {}),
     }));
     
     // Clear user location when manually changing location fields
     if (field === 'selectedState' || field === 'zipCode') {
       clearLocation();
+      setCityState('');
     }
   };
 
