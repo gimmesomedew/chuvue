@@ -175,14 +175,33 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
       ...prev,
       selectedState: type === 'state' ? prev.selectedState : '',
       zipCode: type === 'zip' ? prev.zipCode : '',
+      latitude: undefined,
+      longitude: undefined,
+      radiusMiles: undefined,
     }));
+    
+    // Clear user location when switching away from geo mode
+    if (type !== 'geo') {
+      clearLocation();
+    }
   };
 
   const handleChange = (field: string, value: string) => {
     setFormState((prev: any) => ({
       ...prev,
       [field]: value,
+      // Clear geolocation data when changing location fields
+      ...(field === 'selectedState' || field === 'zipCode' ? {
+        latitude: undefined,
+        longitude: undefined,
+        radiusMiles: undefined,
+      } : {}),
     }));
+    
+    // Clear user location when manually changing location fields
+    if (field === 'selectedState' || field === 'zipCode') {
+      clearLocation();
+    }
   };
 
   return (

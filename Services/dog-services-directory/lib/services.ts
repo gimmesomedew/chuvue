@@ -431,13 +431,13 @@ export async function searchServices(
     }
 
     // Check cache first for non-geolocation searches
-    const cachedResult = await searchCache.getSearchResults(serviceType, state, zipCode, page, perPage);
+    const cachedResult = await searchCache.getSearchResults(serviceType, state, zipCode, page, perPage, latitude, longitude, radiusMiles);
     if (cachedResult) {
-      console.log('Cache hit for search:', { serviceType, state, zipCode, page, perPage });
+      console.log('Cache hit for search:', { serviceType, state, zipCode, page, perPage, latitude, longitude, radiusMiles });
       return cachedResult;
     }
 
-    console.log('Cache miss for search:', { serviceType, state, zipCode, page, perPage });
+    console.log('Cache miss for search:', { serviceType, state, zipCode, page, perPage, latitude, longitude, radiusMiles });
 
     // First, get the total count without pagination
     let countQuery = supabase
@@ -506,7 +506,7 @@ export async function searchServices(
     };
 
     // Cache the result
-    await searchCache.setSearchResults(serviceType, state, zipCode, page, perPage, result);
+    await searchCache.setSearchResults(serviceType, state, zipCode, page, perPage, result, latitude, longitude, radiusMiles);
 
     return result;
   } catch (error) {
@@ -543,13 +543,13 @@ export async function searchAllServices(
     }
 
     // Check cache first for non-geolocation searches
-    const cachedResult = await searchCache.getAllSearchResults(serviceType, state, zipCode);
+    const cachedResult = await searchCache.getAllSearchResults(serviceType, state, zipCode, latitude, longitude, radiusMiles);
     if (cachedResult) {
-      console.log('Cache hit for all search results:', { serviceType, state, zipCode });
+      console.log('Cache hit for all search results:', { serviceType, state, zipCode, latitude, longitude, radiusMiles });
       return cachedResult;
     }
 
-    console.log('Cache miss for all search results:', { serviceType, state, zipCode });
+    console.log('Cache miss for all search results:', { serviceType, state, zipCode, latitude, longitude, radiusMiles });
 
     // Build query for all results
     let query = supabase
@@ -605,7 +605,7 @@ export async function searchAllServices(
     };
 
     // Cache the result
-    await searchCache.setAllSearchResults(serviceType, state, zipCode, result);
+    await searchCache.setAllSearchResults(serviceType, state, zipCode, result, latitude, longitude, radiusMiles);
 
     return result;
   } catch (error) {

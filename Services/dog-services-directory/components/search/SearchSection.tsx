@@ -157,8 +157,14 @@ export function SearchSection({
               <div className="text-center mt-4">
                 <button
                   type="button"
-                  onClick={resetSearch}
-                  className="text-secondary text-sm hover:underline"
+                  onClick={() => {
+                    resetSearch();
+                    // Force clear any cached location data
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('userCoordsCache');
+                    }
+                  }}
+                  className="text-primary text-sm hover:underline"
                 >
                   Reset Search
                 </button>

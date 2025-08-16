@@ -140,7 +140,7 @@ export default function Home() {
             >
               <motion.button 
                 whileHover={{ scale: 1.05 }}
-                className="text-emerald-500 text-sm hover:underline"
+                className="text-primary text-sm hover:underline"
               >
                 Reset Search
               </motion.button>

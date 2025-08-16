@@ -29,16 +29,32 @@ class MemoryCache {
   /**
    * Generate a cache key from search parameters
    */
-  generateKey(serviceType: string, state: string, zipCode: string, page: number, perPage: number): string {
-    const params = [serviceType, state, zipCode, page.toString(), perPage.toString()].filter(Boolean);
+  generateKey(serviceType: string, state: string, zipCode: string, page: number, perPage: number, latitude?: number, longitude?: number, radiusMiles?: number): string {
+    const params = [
+      serviceType, 
+      state, 
+      zipCode, 
+      page.toString(), 
+      perPage.toString(),
+      latitude !== undefined ? latitude.toString() : '',
+      longitude !== undefined ? longitude.toString() : '',
+      radiusMiles !== undefined ? radiusMiles.toString() : ''
+    ].filter(Boolean);
     return `search:${params.join(':')}`;
   }
 
   /**
    * Generate a cache key for all results (no pagination)
    */
-  generateAllResultsKey(serviceType: string, state: string, zipCode: string): string {
-    const params = [serviceType, state, zipCode].filter(Boolean);
+  generateAllResultsKey(serviceType: string, state: string, zipCode: string, latitude?: number, longitude?: number, radiusMiles?: number): string {
+    const params = [
+      serviceType, 
+      state, 
+      zipCode,
+      latitude !== undefined ? latitude.toString() : '',
+      longitude !== undefined ? longitude.toString() : '',
+      radiusMiles !== undefined ? radiusMiles.toString() : ''
+    ].filter(Boolean);
     return `search:all:${params.join(':')}`;
   }
 
@@ -148,15 +164,15 @@ const cache = new MemoryCache();
  */
 export interface SearchCache {
   // Paginated search results
-  getSearchResults(serviceType: string, state: string, zipCode: string, page: number, perPage: number): Promise<{ services: Service[]; totalPages: number; total: number } | null>;
-  setSearchResults(serviceType: string, state: string, zipCode: string, page: number, perPage: number, data: { services: Service[]; totalPages: number; total: number }): Promise<void>;
+  getSearchResults(serviceType: string, state: string, zipCode: string, page: number, perPage: number, latitude?: number, longitude?: number, radiusMiles?: number): Promise<{ services: Service[]; totalPages: number; total: number } | null>;
+  setSearchResults(serviceType: string, state: string, zipCode: string, page: number, perPage: number, data: { services: Service[]; totalPages: number; total: number }, latitude?: number, longitude?: number, radiusMiles?: number): Promise<void>;
   
   // All search results (for filtering)
-  getAllSearchResults(serviceType: string, state: string, zipCode: string): Promise<{ services: Service[]; total: number } | null>;
-  setAllSearchResults(serviceType: string, state: string, zipCode: string, data: { services: Service[]; total: number }): Promise<void>;
+  getAllSearchResults(serviceType: string, state: string, zipCode: string, latitude?: number, longitude?: number, radiusMiles?: number): Promise<{ services: Service[]; total: number } | null>;
+  setAllSearchResults(serviceType: string, state: string, zipCode: string, data: { services: Service[]; total: number }, latitude?: number, longitude?: number, radiusMiles?: number): Promise<void>;
   
   // Cache management
-  invalidateSearchResults(serviceType?: string, state?: string, zipCode?: string): Promise<void>;
+  invalidateSearchResults(serviceType?: string, state?: string, zipCode?: string, latitude?: number, longitude?: number, radiusMiles?: number): Promise<void>;
   getStats(): Promise<{ size: number; maxSize: number; hitRate: number }>;
   clear(): Promise<void>;
 }
@@ -170,9 +186,12 @@ class MemorySearchCache implements SearchCache {
     state: string, 
     zipCode: string, 
     page: number, 
-    perPage: number
+    perPage: number, 
+    latitude?: number, 
+    longitude?: number, 
+    radiusMiles?: number
   ): Promise<{ services: Service[]; totalPages: number; total: number } | null> {
-    const key = cache.generateKey(serviceType, state, zipCode, page, perPage);
+    const key = cache.generateKey(serviceType, state, zipCode, page, perPage, latitude, longitude, radiusMiles);
     return cache.get(key);
   }
 
@@ -182,18 +201,24 @@ class MemorySearchCache implements SearchCache {
     zipCode: string, 
     page: number, 
     perPage: number, 
-    data: { services: Service[]; totalPages: number; total: number }
+    data: { services: Service[]; totalPages: number; total: number },
+    latitude?: number, 
+    longitude?: number, 
+    radiusMiles?: number
   ): Promise<void> {
-    const key = cache.generateKey(serviceType, state, zipCode, page, perPage);
+    const key = cache.generateKey(serviceType, state, zipCode, page, perPage, latitude, longitude, radiusMiles);
     cache.set(key, data);
   }
 
   async getAllSearchResults(
     serviceType: string, 
     state: string, 
-    zipCode: string
+    zipCode: string, 
+    latitude?: number, 
+    longitude?: number, 
+    radiusMiles?: number
   ): Promise<{ services: Service[]; total: number } | null> {
-    const key = cache.generateAllResultsKey(serviceType, state, zipCode);
+    const key = cache.generateAllResultsKey(serviceType, state, zipCode, latitude, longitude, radiusMiles);
     return cache.get(key);
   }
 
@@ -201,13 +226,16 @@ class MemorySearchCache implements SearchCache {
     serviceType: string, 
     state: string, 
     zipCode: string, 
-    data: { services: Service[]; total: number }
+    data: { services: Service[]; total: number },
+    latitude?: number, 
+    longitude?: number, 
+    radiusMiles?: number
   ): Promise<void> {
-    const key = cache.generateAllResultsKey(serviceType, state, zipCode);
+    const key = cache.generateAllResultsKey(serviceType, state, zipCode, latitude, longitude, radiusMiles);
     cache.set(key, data);
   }
 
-  async invalidateSearchResults(serviceType?: string, state?: string, zipCode?: string): Promise<void> {
+  async invalidateSearchResults(serviceType?: string, state?: string, zipCode?: string, latitude?: number, longitude?: number, radiusMiles?: number): Promise<void> {
     // Clear all cache entries that match the provided parameters
     const keysToDelete: string[] = [];
     
@@ -221,6 +249,11 @@ class MemorySearchCache implements SearchCache {
         if (serviceType && parts[1] !== serviceType) shouldInvalidate = false;
         if (state && parts[2] !== state) shouldInvalidate = false;
         if (zipCode && parts[3] !== zipCode) shouldInvalidate = false;
+        
+        // Handle geolocation parameters (they come after the basic params)
+        if (latitude !== undefined && parts[5] !== latitude.toString()) shouldInvalidate = false;
+        if (longitude !== undefined && parts[6] !== longitude.toString()) shouldInvalidate = false;
+        if (radiusMiles !== undefined && parts[7] !== radiusMiles.toString()) shouldInvalidate = false;
         
         if (shouldInvalidate) {
           keysToDelete.push(key);

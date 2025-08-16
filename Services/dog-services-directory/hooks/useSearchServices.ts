@@ -5,6 +5,7 @@ import { SEARCH_CONSTANTS } from '@/lib/constants';
 import { handleSearchError, handleNetworkError, isNetworkError } from '@/lib/errorHandling';
 import { retryApiCall } from '@/lib/retry';
 import { Analytics } from '@/lib/analytics';
+import { searchCache } from '@/lib/cache';
 
 interface SearchState {
   selectedServiceType: string;
@@ -144,6 +145,14 @@ export function useSearchServices(): UseSearchServicesReturn {
     // Use the updated search state or params for the search
     const searchParams = params || searchState;
     
+    // Clear search cache when switching between different search types
+    // This prevents stale results from interfering with new searches
+    try {
+      await searchCache.clear();
+    } catch (error) {
+      console.warn('Failed to clear search cache:', error);
+    }
+    
     try {
       // Fetch paginated results
       const result = await retryApiCall(
@@ -279,6 +288,15 @@ export function useSearchServices(): UseSearchServicesReturn {
     setCurrentPage(1);
     setTotalPages(0);
     setTotalResults(0);
+    
+    // Clear user location cache from localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('userCoordsCache');
+      } catch (error) {
+        console.warn('Failed to clear user location cache:', error);
+      }
+    }
   };
   
   return {

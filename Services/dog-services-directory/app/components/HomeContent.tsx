@@ -66,18 +66,27 @@ export function HomeContent() {
   const handleRemoveServiceType = () => {
     setSearchState({
       selectedServiceType: '',
+      latitude: undefined,
+      longitude: undefined,
+      radiusMiles: undefined,
     });
   };
 
   const handleRemoveState = () => {
     setSearchState({
       selectedState: '',
+      latitude: undefined,
+      longitude: undefined,
+      radiusMiles: undefined,
     });
   };
 
   const handleRemoveZipCode = () => {
     setSearchState({
       zipCode: '',
+      latitude: undefined,
+      longitude: undefined,
+      radiusMiles: undefined,
     });
   };
 
@@ -86,6 +95,9 @@ export function HomeContent() {
       selectedServiceType: '',
       selectedState: '',
       zipCode: '',
+      latitude: undefined,
+      longitude: undefined,
+      radiusMiles: undefined,
     });
     // Show the search form when clearing filters
     setIsSearchFormCollapsed(false);
