@@ -306,6 +306,12 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
                         <Crosshair className="h-4 w-4 mr-1" /> Detect My Location
                       </button>
                     )}
+                    {/* Show radius indicator */}
+                    {userLocation && (
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        📍 25-mile radius
+                      </span>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

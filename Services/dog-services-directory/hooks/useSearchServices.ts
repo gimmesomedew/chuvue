@@ -110,6 +110,8 @@ export function useSearchServices(): UseSearchServicesReturn {
   // Fetch all search results for client-side filtering
   const fetchAllSearchResults = async (searchParams: SearchState) => {
     try {
+      console.log('🔍 fetchAllSearchResults called with:', searchParams);
+      
       const result = await retryApiCall(
         () => searchAllServices(
           searchParams.selectedServiceType || '',
@@ -123,7 +125,14 @@ export function useSearchServices(): UseSearchServicesReturn {
       );
       
       if (result.success && result.data) {
+        console.log('✅ fetchAllSearchResults success:', {
+          servicesCount: result.data.services.length,
+          total: result.data.total,
+          searchParams
+        });
         setAllSearchResults(result.data.services);
+      } else {
+        console.warn('❌ fetchAllSearchResults failed:', result.error);
       }
     } catch (error) {
       // Don't throw error for all results fetch, just log it

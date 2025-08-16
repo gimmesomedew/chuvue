@@ -43,8 +43,18 @@ export function FilterTagBar({
   onClearClientFilter,
   onToggleSearchForm,
 }: FilterTagBarProps) {
-  // Get unique service types from all search results (the actual results for this location)
+  
   const serviceTypesInResults = Array.from(new Set(allSearchResults.map(service => service.service_type)));
+  
+  // Debug logging
+  console.log('🔍 FilterTagBar Debug:', {
+    allSearchResultsLength: allSearchResults.length,
+    serviceTypesInResults,
+    selectedServiceType,
+    selectedState,
+    zipCode,
+    isClientFiltered
+  });
   
   // Check if we have any filters
   const hasFilters = selectedServiceType || selectedState || zipCode || isClientFiltered;
