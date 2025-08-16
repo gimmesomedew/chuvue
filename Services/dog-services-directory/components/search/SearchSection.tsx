@@ -92,8 +92,8 @@ export function SearchSection({
     <motion.section 
       initial={false}
       animate={{ 
-        paddingTop: hasSearched ? '1rem' : '4rem',
-        paddingBottom: hasSearched ? '1rem' : '4rem'
+        paddingTop: hasSearched ? '0.25rem' : '4rem',
+        paddingBottom: hasSearched ? '0.5rem' : '4rem'
       }}
       transition={{ duration: 0.5, ease: 'easeInOut' }}
       className="bg-gradient-to-b from-[#f3f9f4]/40 to-white relative"
@@ -102,38 +102,41 @@ export function SearchSection({
         <motion.div
           initial={false}
           animate={{ 
-            scale: hasSearched ? 0.9 : 1,
-            marginBottom: hasSearched ? '0.5rem' : '2rem'
+            scale: hasSearched ? 0.8 : 1,
+            marginBottom: hasSearched ? '0.125rem' : '2rem'
           }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
           style={{ transformOrigin: 'top center' }}
         >
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: ANIMATION_CONSTANTS.PAGE_TRANSITION_DURATION }}
-            className={`text-3xl md:text-4xl font-bold text-center mb-3 ${
-              hasSearched ? 'md:text-2xl' : 'md:text-4xl'
-            }`}
-          >
-            Explore All Available Dog Services
-          </motion.h1>
-          <AnimatePresence>
-            {!hasSearched && (
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ 
-                  duration: ANIMATION_CONSTANTS.PAGE_TRANSITION_DURATION, 
-                  delay: 0.2 
-                }}
-                className="text-[#11055F] text-center mb-4"
+          {/* Only show header when search form is not collapsed */}
+          {!isCollapsed && (
+            <>
+              <motion.h1 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: ANIMATION_CONSTANTS.PAGE_TRANSITION_DURATION }}
+                className="text-3xl md:text-4xl font-bold text-center mb-3"
               >
-                Find the perfect services for your furry friend across various locations and categories
-              </motion.p>
-            )}
-          </AnimatePresence>
+                Explore All Available Dog Services
+              </motion.h1>
+              <AnimatePresence>
+                {!hasSearched && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ 
+                      duration: ANIMATION_CONSTANTS.PAGE_TRANSITION_DURATION, 
+                      delay: 0.2 
+                    }}
+                    className="text-[#11055F] text-center mb-4"
+                  >
+                    Find the perfect services for your furry friend across various locations and categories
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </motion.div>
 
         <div className="relative">
@@ -173,7 +176,7 @@ export function SearchSection({
           </motion.div>
 
           {hasSearched && (
-            <div className="flex justify-center mt-4 mb-8">
+            <div className="flex justify-center mt-1 mb-2">
               <button
                 onClick={toggleCollapse}
                 className="inline-flex items-center gap-2 bg-secondary text-white rounded-full px-4 py-2 shadow-sm hover:bg-third hover:text-white transition-all"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SearchSection } from '@/components/search/SearchSection';
 import { SearchResultsDisplay } from '@/components/search/SearchResultsDisplay';
 import { FeaturedCarousel } from '@/components/services/FeaturedCarousel';
@@ -38,6 +38,17 @@ export function HomeContent() {
 
   const { toast } = useToast();
   const states = getSortedStates();
+
+  // Auto-scroll to search results when they appear
+  useEffect(() => {
+    if (hasSearched && searchResultsRef.current) {
+      // Smooth scroll to the search results section
+      searchResultsRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  }, [hasSearched]);
 
   const handleSearchSubmit = async (params: Partial<SearchState>) => {
     // Check if at least one search parameter is provided
@@ -125,7 +136,7 @@ export function HomeContent() {
       
       {/* Search Results Section */}
       {hasSearched && (
-        <section ref={searchResultsRef} className="py-16 bg-gray-50">
+        <section ref={searchResultsRef} className={`${searchResults.length > 0 ? 'pt-8 pb-16' : 'py-8'} bg-gray-50`}>
           <div className="container mx-auto px-4">
             {searchResults.length > 0 && <SignUpCallout />}
             <SearchResultsDisplay 
