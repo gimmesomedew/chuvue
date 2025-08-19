@@ -14,7 +14,7 @@ async function setupDatabase() {
     
     // Execute the schema
     console.log('📋 Creating database schema...')
-    await sql.unsafe(schema)
+    await sql(schema)
     console.log('✅ Database schema created successfully')
     
     // Insert sample data

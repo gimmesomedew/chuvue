@@ -11,6 +11,7 @@ import {
   Video,
   FileText,
   CheckCircle,
+  Settings,
   ArrowLeft
 } from 'lucide-react'
 
@@ -131,10 +132,10 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
     const newScreens = [...interactive.screens]
     const targetIndex = direction === 'up' ? screenIndex - 1 : screenIndex + 1
 
-    const temp = newScreens[screenIndex]
-    newScreens[screenIndex] = newScreens[targetIndex]
-    newScreens[targetIndex] = temp
+    // Swap screens
+    [newScreens[screenIndex], newScreens[targetIndex]] = [newScreens[targetIndex], newScreens[screenIndex]]
 
+    // Update order
     newScreens.forEach((screen, index) => {
       screen.order = index + 1
     })
@@ -280,6 +281,7 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Enhanced Background Pattern with Glass Morphism */}
       <div className="fixed inset-0 opacity-40">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(139,92,246,0.15)_0%,transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.15)_0%,transparent_50%)]"></div>
@@ -287,6 +289,7 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.08)_0%,transparent_50%)]"></div>
       </div>
 
+      {/* Floating Orbs for Enhanced Glass Effect */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/10 rounded-full blur-3xl animate-float"></div>
         <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/10 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
@@ -294,6 +297,7 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
       </div>
 
       <div className="relative z-10">
+        {/* Header */}
         <header className="glass-panel mx-6 mt-6 p-6 floating-element">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -325,6 +329,7 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
         </header>
 
         <div className="mx-6 mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Interactive Settings */}
           <div className="lg:col-span-1">
             <div className="glass-panel p-6 floating-element">
               <h2 className="text-xl font-semibold text-white mb-4">Interactive Settings</h2>
@@ -373,6 +378,7 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
               </div>
             </div>
 
+            {/* Screen List */}
             <div className="glass-panel p-6 mt-6 floating-element">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-white">Screens ({interactive.screens.length}/5)</h2>
@@ -416,6 +422,7 @@ export default function InteractiveEditor({ params }: { params: { id: string } }
             </div>
           </div>
 
+          {/* Screen Editor */}
           <div className="lg:col-span-3">
             <div className="glass-panel p-6 floating-element">
               {selectedScreen ? (
