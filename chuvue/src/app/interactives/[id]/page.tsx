@@ -260,6 +260,7 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                 </div>
               </div>
               <motion.button
+                onClick={() => window.location.href = `/interactives/${params.id}/create`}
                 className="glass-button px-6 py-3 flex items-center space-x-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
