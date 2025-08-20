@@ -1,8 +1,9 @@
 'use client';
 
-import { Service, ServiceDefinition } from '@/lib/types';
+import { Service, ServiceDefinition, Product } from '@/lib/types';
 import { USState } from '@/lib/states';
 import { ServicesList } from './ServicesList';
+import { UnifiedResultsList } from './UnifiedResultsList';
 import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
 import { SearchHeader } from './SearchHeader';
@@ -12,11 +13,11 @@ import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface SearchResultsDisplayProps {
-  searchResults: Service[];
-  allSearchResults: Service[];
+  searchResults: Array<Service | Product>;
+  allSearchResults: Array<Service | Product>;
   isSearching: boolean;
   totalResults: number;
   currentPage: number;
@@ -39,6 +40,8 @@ interface SearchResultsDisplayProps {
   onClientFilter?: (serviceType: string) => void;
   onClearClientFilter?: () => void;
   onToggleSearchForm?: () => void;
+  onProductFavorite?: (productId: number) => void;
+  favoritedProducts?: number[];
 }
 
 export function SearchResultsDisplay({
@@ -66,15 +69,17 @@ export function SearchResultsDisplay({
   onClientFilter,
   onClearClientFilter,
   onToggleSearchForm,
+  onProductFavorite,
+  favoritedProducts = [],
 }: SearchResultsDisplayProps) {
   // Client-side filtering state
-  const [clientFilteredServices, setClientFilteredServices] = useState<Service[]>([]);
+  const [clientFilteredResults, setClientFilteredResults] = useState<Array<Service | Product>>([]);
   const [isClientFiltered, setIsClientFiltered] = useState(false);
   const [activeClientFilter, setActiveClientFilter] = useState<string | null>(null);
 
   // Name search state
   const [nameSearchQuery, setNameSearchQuery] = useState('');
-  const [nameSearchResults, setNameSearchResults] = useState<Service[]>([]);
+  const [nameSearchResults, setNameSearchResults] = useState<Array<Service | Product>>([]);
   const [isNameSearching, setIsNameSearching] = useState(false);
 
   // Prefetch next page on hover
@@ -89,16 +94,16 @@ export function SearchResultsDisplay({
   // Client-side filtering handlers
   const handleClientFilter = (serviceType: string) => {
     const filtered = allSearchResults
-      .filter(service => service.service_type === serviceType)
+      .filter(result => 'service_type' in result && result.service_type === serviceType)
       .sort((a, b) => a.name.localeCompare(b.name));
-    setClientFilteredServices(filtered);
+    setClientFilteredResults(filtered);
     setIsClientFiltered(true);
     setActiveClientFilter(serviceType);
   };
 
   const handleClearClientFilter = () => {
     setIsClientFiltered(false);
-    setClientFilteredServices([]);
+    setClientFilteredResults([]);
     setActiveClientFilter(null);
   };
 
@@ -109,12 +114,12 @@ export function SearchResultsDisplay({
     
     // Search through all current search results (both paginated and all results)
     const allCurrentResults = [...searchResults, ...allSearchResults];
-    const uniqueResults = allCurrentResults.filter((service, index, self) => 
-      index === self.findIndex(s => s.id === service.id)
+    const uniqueResults = allCurrentResults.filter((result, index, self) => 
+      index === self.findIndex(r => r.id === result.id)
     );
     
-    const filtered = uniqueResults.filter(service =>
-      service.name.toLowerCase().includes(query.toLowerCase())
+    const filtered = uniqueResults.filter(result =>
+      result.name.toLowerCase().includes(query.toLowerCase())
     );
     
     setNameSearchResults(filtered);
@@ -126,18 +131,18 @@ export function SearchResultsDisplay({
     setNameSearchResults([]);
   };
 
-  // Determine which services to display
-  let displayServices: Service[];
+  // Determine which results to display
+  let displayResults: Array<Service | Product>;
   let displayTotal: number;
 
   if (nameSearchQuery) {
-    displayServices = nameSearchResults;
+    displayResults = nameSearchResults;
     displayTotal = nameSearchResults.length;
   } else if (isClientFiltered) {
-    displayServices = clientFilteredServices;
-    displayTotal = clientFilteredServices.length;
+    displayResults = clientFilteredResults;
+    displayTotal = clientFilteredResults.length;
   } else {
-    displayServices = searchResults;
+    displayResults = searchResults;
     displayTotal = totalResults;
   }
 
@@ -204,49 +209,51 @@ export function SearchResultsDisplay({
             Found {displayTotal} result{displayTotal !== 1 ? 's' : ''}
           </div>
         )}
-        <TooltipProvider>
-          <div className="flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Card view"
-                  onClick={() => setView('cards')}
-                  className={view === 'cards' ? 'bg-secondary text-white' : ''}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Grid View</p>
-              </TooltipContent>
-            </Tooltip>
+        <div className="flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Card view"
+                onClick={() => setView('cards')}
+                className={view === 'cards' ? 'bg-secondary text-white' : ''}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Grid View</p>
+            </TooltipContent>
+          </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Map view"
-                  onClick={() => setView('map')}
-                  className={view === 'map' ? 'bg-secondary text-white' : ''}
-                >
-                  <MapIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Map View</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Map view"
+                onClick={() => setView('map')}
+                className={view === 'map' ? 'bg-secondary text-white' : ''}
+              >
+                <MapIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Map View</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       {view === 'map' ? (
-        <ServicesMap services={displayServices} />
+        <ServicesMap services={displayResults.filter((result): result is Service => 'service_type' in result)} />
       ) : (
-        <ServicesList services={displayServices} />
+        <UnifiedResultsList 
+          results={displayResults}
+          onProductFavorite={onProductFavorite}
+          favoritedProducts={favoritedProducts}
+        />
       )}
 
       {/* Only show pagination when not client-filtered and not name-searching */}

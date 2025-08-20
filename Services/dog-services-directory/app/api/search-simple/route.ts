@@ -49,25 +49,46 @@ export async function POST(request: NextRequest) {
     const searchPattern = parseSearchQuery(query, serviceDefinitions || []);
     console.log('📋 Parsed Search Pattern:', searchPattern);
 
-    // Build the database query
-    let supabaseQuery = supabase
+    // Build the database query for services
+    let servicesQuery = supabase
       .from('services')
       .select('*');
 
+    // Debug: Log the base query
+    console.log('🔍 Base Services Query: SELECT * FROM services (no filters)');
+
     // Apply service type filter if specified
     if (searchPattern.serviceType) {
-      supabaseQuery = supabaseQuery.eq('service_type', searchPattern.serviceType);
-      console.log('🏷️ Filtering by service type:', searchPattern.serviceType);
+      servicesQuery = servicesQuery.eq('service_type', searchPattern.serviceType);
+      console.log('🏷️ Filtering services by service type:', searchPattern.serviceType);
+    } else {
+      console.log('⚠️ NO service type filter applied - will return ALL services!');
     }
+
+    // Build the database query for products
+    let productsQuery = supabase
+      .from('products')
+      .select(`
+        *,
+        categories:product_category_mappings(
+          category:product_categories(*)
+        )
+      `);
+
+    // Check if query might be product-related
+    const isProductQuery = isProductSearchQuery(query);
+    console.log('🛍️ Is product query:', isProductQuery);
 
     // Apply location filters based on search pattern
     if (searchPattern.locationType === 'state') {
       // State-based search (e.g., "in Indiana")
-      supabaseQuery = supabaseQuery.eq('state', searchPattern.locationValue);
+      servicesQuery = servicesQuery.eq('state', searchPattern.locationValue);
+      productsQuery = productsQuery.eq('state', searchPattern.locationValue);
       console.log('🗺️ Filtering by state:', searchPattern.locationValue);
     } else if (searchPattern.locationType === 'zip_code') {
       // Zip code-based search (e.g., "near 46240")
-      supabaseQuery = supabaseQuery.eq('zip_code', searchPattern.locationValue);
+      servicesQuery = servicesQuery.eq('zip_code', searchPattern.locationValue);
+      productsQuery = productsQuery.eq('zip_code', searchPattern.locationValue);
       console.log('📮 Filtering by zip code:', searchPattern.locationValue);
     } else if (searchPattern.locationType === 'near_me' && userLocation) {
       // Location-based search (e.g., "near me")
@@ -91,15 +112,39 @@ export async function POST(request: NextRequest) {
       
       console.log('📍 Radius search completed. Found', radiusResults?.length || 0, 'results within', radiusMiles, 'miles');
       
-      // Filter radius results by service type if specified
-      let filteredResults = radiusResults || [];
-      if (searchPattern.serviceType) {
-        filteredResults = filteredResults.filter((service: any) => service.service_type === searchPattern.serviceType);
-        console.log('🏷️ Filtered by service type:', searchPattern.serviceType, '- Found', filteredResults.length, 'matching results');
+      // For radius search, we need to handle both services and products
+      // Since the RPC function only works with services, we'll search products separately
+      
+      // Get products within radius (if they have coordinates)
+      let productsInRadius: any[] = [];
+      if (isProductQuery) {
+        const { data: productsData, error: productsError } = await productsQuery;
+        if (!productsError && productsData) {
+          productsInRadius = productsData.filter((product: any) => {
+            if (product.latitude && product.longitude) {
+              const distance = calculateDistance(
+                userLocation.lat,
+                userLocation.lng,
+                product.latitude,
+                product.longitude
+              );
+              product.distance = distance;
+              return distance <= radiusMiles;
+            }
+            return false;
+          });
+        }
       }
       
-      // Calculate distances for each result
-      filteredResults.forEach((service: any) => {
+      // Filter radius results by service type if specified
+      let filteredServices = radiusResults || [];
+      if (searchPattern.serviceType) {
+        filteredServices = filteredServices.filter((service: any) => service.service_type === searchPattern.serviceType);
+        console.log('🏷️ Filtered services by service type:', searchPattern.serviceType, '- Found', filteredServices.length, 'matching results');
+      }
+      
+      // Calculate distances for services
+      filteredServices.forEach((service: any) => {
         if (service.latitude && service.longitude) {
           service.distance = calculateDistance(
             userLocation.lat,
@@ -108,25 +153,27 @@ export async function POST(request: NextRequest) {
             service.longitude
           );
         } else {
-          service.distance = Infinity; // Put services without coordinates at the end
+          service.distance = Infinity;
         }
       });
-      console.log('📍 Calculated distances for', filteredResults.length, 'results');
       
-      // Sort by distance for location-based searches
-      filteredResults.sort((a: any, b: any) => {
+      // Combine and sort all results by distance
+      const allResults = [...filteredServices, ...productsInRadius];
+      allResults.sort((a: any, b: any) => {
         if (a.distance !== Infinity && b.distance !== Infinity) {
           return a.distance - b.distance; // Sort by distance (closest first)
         }
         if (a.distance === Infinity && b.distance === Infinity) {
           return a.name?.localeCompare(b.name) || 0; // Both have no distance, sort by name
         }
-        return a.distance === Infinity ? 1 : -1; // Services with distance come first
+        return a.distance === Infinity ? 1 : -1; // Items with distance come first
       });
-      console.log('📍 Sorted results by distance (closest first)');
+      
+      console.log('📍 Combined results - Services:', filteredServices.length, 'Products:', productsInRadius.length);
+      console.log('📍 Sorted all results by distance (closest first)');
       
       // Limit results to prevent overwhelming output
-      const limitedResults = filteredResults.slice(0, 100);
+      const limitedResults = allResults.slice(0, 100);
       
       // Return filtered radius results
       return NextResponse.json({
@@ -136,51 +183,204 @@ export async function POST(request: NextRequest) {
           originalQuery: query,
           parsedPattern: searchPattern,
           resultCount: limitedResults.length,
-          totalInRadius: filteredResults.length,
+          totalInRadius: allResults.length,
           searchType: 'simple_radius',
           filters: {
             serviceType: searchPattern.serviceType,
             locationType: 'near_me',
             radius: radiusMiles
+          },
+          breakdown: {
+            services: filteredServices.length,
+            products: productsInRadius.length
           }
         }
       });
     }
 
-    // Execute the query
-    console.log('🚀 Executing Supabase query...');
-    const { data: results, error } = await supabaseQuery;
-
-    if (error) {
-      console.error('❌ Supabase query error:', error);
-      return NextResponse.json(
-        { error: 'Database query failed', details: error.message },
-        { status: 500 }
-      );
+    // Execute the queries for both services and products
+    console.log('🚀 Executing Supabase queries for services and products...');
+    
+    // SMART SEARCH LOGIC: For product queries, prioritize products and limit services
+    let servicesLimit = 100; // Default limit for services
+    let productsLimit = 50;  // Default limit for products
+    
+    // Normalize query for intelligent filtering
+    const normalizedQuery = query.toLowerCase().trim();
+    
+    if (isProductQuery) {
+      console.log('🛍️ Product query detected - prioritizing products and limiting services');
+      
+      // Check if query explicitly mentions "products" - if so, return ONLY products
+      if (normalizedQuery.includes('product') || normalizedQuery.includes('products')) {
+        console.log('🛍️ Query explicitly mentions products - returning ONLY products, no services');
+        servicesLimit = 0;  // Return NO services
+        productsLimit = 100; // Return more products
+      } else {
+        // For product queries that don't explicitly mention "products", return limited related services
+        servicesLimit = 20;  // Only return top 20 most relevant services
+        productsLimit = 100; // Return more products
+        
+        // For product queries, try to find related services instead of random ones
+        if (!searchPattern.serviceType) {
+          console.log('🔍 Attempting to find related services for product query...');
+          
+          // Try to infer service type from product query
+          if (normalizedQuery.includes('supplement') || normalizedQuery.includes('vitamin') || normalizedQuery.includes('health')) {
+            // Health-related products -> show veterinarians
+            servicesQuery = servicesQuery.eq('service_type', 'veterinarian');
+            console.log('🏥 Product query suggests health products - filtering for veterinarians');
+          } else if (normalizedQuery.includes('food') || normalizedQuery.includes('nutrition')) {
+            // Food products -> show pet stores, vets, or groomers
+            servicesQuery = servicesQuery.in('service_type', ['veterinarian', 'groomer']);
+            console.log('🍖 Product query suggests food products - filtering for vets and groomers');
+          } else if (normalizedQuery.includes('gear') || normalizedQuery.includes('equipment') || normalizedQuery.includes('collar')) {
+            // Gear products -> show groomers, trainers, or pet stores
+            servicesQuery = servicesQuery.in('service_type', ['groomer', 'dog_trainer']);
+            console.log('🦮 Product query suggests gear products - filtering for groomers and trainers');
+          } else if (normalizedQuery.includes('therapy') || normalizedQuery.includes('calming')) {
+            // Therapy products -> show holistic vets or specialized services
+            servicesQuery = servicesQuery.eq('service_type', 'veterinarian');
+            console.log('🧘 Product query suggests therapy products - filtering for veterinarians');
+          } else {
+            console.log('⚠️ Could not determine related service type - will return limited random services');
+          }
+        } else {
+          console.log('🏷️ Service type filter already applied for product query');
+        }
+      }
+    }
+    
+    // Debug: Log the actual query objects being sent
+    console.log('🔍 Services Query Object:', {
+      table: 'services',
+      filters: {
+        serviceType: searchPattern.serviceType,
+        locationType: searchPattern.locationType,
+        locationValue: searchPattern.locationValue
+      },
+      limit: servicesLimit,
+      queryBuilder: servicesQuery
+    });
+    
+    console.log('🔍 Products Query Object:', {
+      table: 'products',
+      filters: {
+        locationType: searchPattern.locationType,
+        locationValue: searchPattern.locationValue
+      },
+      limit: productsLimit,
+      queryBuilder: productsQuery
+    });
+    
+    // Debug: Show what the query would look like if we could see the SQL
+    if (searchPattern.serviceType) {
+      console.log('🔍 Services SQL would be: SELECT * FROM services WHERE service_type = ? LIMIT ' + servicesLimit);
+    } else {
+      console.log('🔍 Services SQL would be: SELECT * FROM services LIMIT ' + servicesLimit);
+    }
+    
+    console.log('🔍 Products SQL would be: SELECT *, categories:product_category_mappings(category:product_categories(*)) FROM products LIMIT ' + productsLimit);
+    
+    // Apply limits to prevent overwhelming results
+    if (servicesLimit > 0) {
+      servicesQuery = servicesQuery.limit(servicesLimit);
+    }
+    productsQuery = productsQuery.limit(productsLimit);
+    
+    // Execute queries based on limits
+    let servicesResult: any = { data: [], error: null };
+    let productsResult: any = { data: [], error: null };
+    
+    if (servicesLimit > 0) {
+      [servicesResult, productsResult] = await Promise.all([
+        servicesQuery,
+        productsQuery
+      ]);
+    } else {
+      // Only query products when servicesLimit is 0
+      productsResult = await productsQuery;
     }
 
-    console.log('✅ Search completed. Found', results?.length || 0, 'results');
+    if (servicesResult.error) {
+      console.error('❌ Services query error:', servicesResult.error);
+    }
+    
+    if (productsResult.error) {
+      console.error('❌ Products query error:', productsResult.error);
+    }
+    
+    // Debug: Log raw results before transformation
+    console.log('🔍 Raw Services Result Count:', servicesResult.data?.length || 0);
+    console.log('🔍 Raw Products Result Count:', productsResult.data?.length || 0);
+    
+    // Debug: Show sample of first few results
+    if (servicesResult.data && servicesResult.data.length > 0) {
+      console.log('🔍 Sample Services (first 3):', servicesResult.data.slice(0, 3).map(s => ({ id: s.id, name: s.name, service_type: s.service_type })));
+    }
+    
+    if (productsResult.data && productsResult.data.length > 0) {
+      console.log('🔍 Sample Products (first 3):', productsResult.data.slice(0, 3).map(p => ({ id: p.id, name: p.name, categories: p.categories?.length || 0 })));
+    }
+
+    // Transform products to flatten categories
+    const transformedProducts = productsResult.data?.map((product: any) => ({
+      ...product,
+      categories: product.categories?.map((mapping: any) => mapping.category).filter(Boolean) || [],
+      type: 'product' // Mark as product for frontend
+    })) || [];
+
+    // Mark services for frontend
+    const transformedServices = (servicesResult.data || []).map((service: any) => ({
+      ...service,
+      type: 'service' // Mark as service for frontend
+    }));
+
+    // Combine results
+    const allResults = [...transformedServices, ...transformedProducts];
+    
+    console.log('✅ Search completed. Found', allResults.length, 'total results');
+    console.log('📊 Breakdown - Services:', transformedServices.length, 'Products:', transformedProducts.length);
+    
+    // Debug: Check if we're returning too many results
+    if (allResults.length > 100) {
+      console.warn('⚠️ WARNING: Returning', allResults.length, 'results - this might be too many!');
+      console.warn('⚠️ Consider adding more specific filters or implementing pagination');
+    }
+    
+    // Debug: Show what filters were actually applied
+    console.log('🔍 Final Filters Applied:', {
+      serviceType: searchPattern.serviceType || 'NONE (returns all services)',
+      locationType: searchPattern.locationType || 'NONE',
+      locationValue: searchPattern.locationValue || 'NONE',
+      isProductQuery: isProductSearchQuery(query),
+      query: query
+    });
     
     // Sort by name for non-location searches
-    if (results && results.length > 0) {
-      results.sort((a: any, b: any) => a.name?.localeCompare(b.name) || 0);
+    if (allResults.length > 0) {
+      allResults.sort((a: any, b: any) => a.name?.localeCompare(b.name) || 0);
       console.log('📝 Sorted results by name (alphabetical)');
     }
 
     // Return results with metadata
     return NextResponse.json({
       success: true,
-      results: results || [],
+      results: allResults,
       metadata: {
         originalQuery: query,
         parsedPattern: searchPattern,
-        resultCount: results?.length || 0,
+        resultCount: allResults.length,
         searchType: 'simple',
         filters: {
           serviceType: searchPattern.serviceType,
           locationType: searchPattern.locationType,
           locationValue: searchPattern.locationValue,
           radius: searchPattern.radius
+        },
+        breakdown: {
+          services: transformedServices.length,
+          products: transformedProducts.length
         }
       }
     });
@@ -419,4 +619,50 @@ function parseSearchQuery(query: string, serviceDefinitions: any[] = []) {
   }
 
   return result;
+}
+
+/**
+ * Check if query is likely for products rather than services
+ */
+function isProductSearchQuery(query: string): boolean {
+  const normalizedQuery = query.toLowerCase().trim();
+  
+  // Product-related keywords
+  const productKeywords = [
+    // Food and nutrition
+    'food', 'treat', 'supplement', 'vitamin', 'nutrition', 'kibble', 'raw food', 'wet food',
+    'probiotic', 'omega', 'fish oil', 'joint', 'hip', 'arthritis', 'senior', 'puppy',
+    
+    // Health and wellness
+    'calming', 'anxiety', 'stress', 'relax', 'sleep', 'immune', 'allergy', 'itch', 'skin',
+    'wound', 'healing', 'dental', 'teeth', 'breath', 'gum', 'anti-inflammatory', 'pain',
+    
+    // Equipment and gear
+    'collar', 'leash', 'harness', 'bed', 'crate', 'toy', 'ball', 'chew', 'bone', 'treat',
+    'bowl', 'feeder', 'water', 'fountain', 'grooming', 'brush', 'shampoo', 'conditioner',
+    
+    // Therapy and special care
+    'red light', 'therapy', 'massage', 'acupuncture', 'holistic', 'natural', 'organic',
+    'cbd', 'essential oil', 'aromatherapy', 'homeopathic', 'herbal'
+  ];
+  
+  // Check if query contains product-related keywords
+  for (const keyword of productKeywords) {
+    if (normalizedQuery.includes(keyword)) {
+      return true;
+    }
+  }
+  
+  // Check for specific product categories
+  const productCategories = [
+    'supplement', 'vitamin', 'treat', 'food', 'gear', 'equipment', 'therapy'
+  ];
+  
+  for (const category of productCategories) {
+    if (normalizedQuery.includes(category)) {
+      return true;
+    }
+  }
+  
+  return false;
 }

@@ -34,6 +34,8 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
+    // Disable image optimization for complex URLs to avoid 403 errors
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   // Add headers configuration

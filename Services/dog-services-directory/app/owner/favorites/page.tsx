@@ -10,7 +10,7 @@ import { ServiceCard } from '@/components/search/ServiceCard';
 import { ServicesMap } from '@/components/maps/ServicesMap';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export default function FavoritesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -53,38 +53,36 @@ export default function FavoritesPage() {
       <main className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">My Favorite Services</h1>
-          <TooltipProvider>
-            <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Card view"
-                    onClick={() => setView('cards')}
-                    className={view === 'cards' ? 'bg-emerald-50 text-emerald-600' : ''}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Grid View</p></TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Map view"
-                    onClick={() => setView('map')}
-                    className={view === 'map' ? 'bg-emerald-50 text-emerald-600' : ''}
-                  >
-                    <MapIcon className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Map View</p></TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
+          <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Card view"
+                  onClick={() => setView('cards')}
+                  className={view === 'cards' ? 'bg-emerald-50 text-emerald-600' : ''}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Grid View</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Map view"
+                  onClick={() => setView('map')}
+                  className={view === 'map' ? 'bg-emerald-50 text-emerald-600' : ''}
+                >
+                  <MapIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Map View</p></TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {loading ? (

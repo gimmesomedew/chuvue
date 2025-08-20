@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Dog Services Directory features a **comprehensive, natural language search system** that can interpret various types of user queries and return relevant results. This is now the **DEFAULT and ACTIVE search system** for the application.
+The Dog Services Directory features a **comprehensive, natural language search system** that can interpret various types of user queries and return relevant results. This system now supports **unified search for both services and products**, automatically detecting user intent and providing comprehensive results. This is now the **DEFAULT and ACTIVE search system** for the application.
 
 ## 🎯 Current Status
 
@@ -64,7 +64,48 @@ The system **dynamically detects service types** by querying the `service_defini
 
 **Note**: The actual service types available depend on what's defined in your `service_definitions` table. The system automatically adapts to your database content.
 
-### 2. Location-Based Searches
+### 2. Product Searches
+
+The system now supports **unified search for both services and products**, automatically detecting when users are looking for products vs. services.
+
+#### Product Detection:
+The system intelligently identifies product-related queries using keyword analysis and category matching.
+
+**Product Categories Available:**
+- **Nutritional, Food, Supplements** - Food and nutritional supplements for dogs
+- **Calming** - Products to help calm anxious dogs  
+- **Immune Support** - Products to boost immune system
+- **Multi-Vitamin Supplements** - Multi-vitamin products
+- **Anti-Inflammatory, Anti-Itch** - Products for inflammation and itching
+- **Skin and Wound Care** - Products for skin health and wound healing
+- **Teeth and Dental Care** - Dental hygiene products
+- **Gear** - Equipment, toys, and accessories
+- **Red Light Therapy** - Therapeutic red light products
+- **Other** - Miscellaneous products
+
+**Product Keywords That Trigger Product Search:**
+- **Food & Nutrition**: "food", "treat", "supplement", "vitamin", "nutrition", "kibble", "raw food", "wet food", "probiotic", "omega", "fish oil"
+- **Health & Wellness**: "calming", "anxiety", "stress", "immune", "allergy", "itch", "skin", "wound", "healing", "dental", "teeth", "anti-inflammatory", "pain"
+- **Equipment & Gear**: "collar", "leash", "harness", "bed", "crate", "toy", "ball", "chew", "bone", "bowl", "feeder", "grooming", "brush", "shampoo"
+- **Therapy & Special Care**: "red light", "therapy", "massage", "acupuncture", "holistic", "natural", "organic", "cbd", "essential oil", "aromatherapy"
+
+#### Examples:
+```
+✅ "dog food" → Returns products in Nutritional category
+✅ "calming supplements" → Returns products in Calming + Supplements
+✅ "red light therapy near me" → Returns products with location + Red Light Therapy
+✅ "collars and leashes" → Returns products in Gear category
+✅ "joint supplements" → Returns products in Immune Support category
+✅ "dental chews" → Returns products in Teeth and Dental Care category
+```
+
+**Unified Results:**
+- Products and services appear together in search results
+- Each result is marked as either 'service' or 'product'
+- Products include category information and verification status
+- Location-based search works for products with coordinates
+
+### 3. Location-Based Searches
 
 #### 2.1 State Searches
 
@@ -172,9 +213,9 @@ Search for services near the user's current location using GPS geolocation.
 ✅ "Convenient dog parks"
 ```
 
-### 3. Combined Searches
+### 4. Combined Searches
 
-The system can handle queries that combine service types with location specifications.
+The system can handle queries that combine service types, product categories, and location specifications.
 
 #### Examples:
 ```
@@ -184,6 +225,10 @@ The system can handle queries that combine service types with location specifica
 ✅ "Dog training nearby"
 ✅ "Local boarding services"
 ✅ "Dog parks in Indiana"
+✅ "Dog food in California"
+✅ "Calming supplements near me"
+✅ "Red light therapy in Texas"
+✅ "Joint supplements near 46240"
 ```
 
 ## Search Processing Logic
@@ -191,11 +236,12 @@ The system can handle queries that combine service types with location specifica
 ### Query Processing Order
 
 1. **Dynamic Service Definitions Fetch**: Queries `service_definitions` table for all available service types
-2. **Service Type Extraction**: Dynamically matches query against database service types and names
-3. **Location Type Detection**: Determines the type of location search (state, zip, proximity)
-4. **Location Value Extraction**: Gets specific location values (state, zip, etc.)
-5. **Database Query Construction**: Builds appropriate Supabase queries with dynamic filters
-6. **Result Processing**: Handles sorting, distance calculation, and formatting
+2. **Product Detection**: Analyzes query for product-related keywords and categories
+3. **Service Type Extraction**: Dynamically matches query against database service types and names
+4. **Location Type Detection**: Determines the type of location search (state, zip, proximity)
+5. **Location Value Extraction**: Gets specific location values (state, zip, etc.)
+6. **Database Query Construction**: Builds appropriate Supabase queries for both services and products
+7. **Result Processing**: Handles sorting, distance calculation, and formatting for unified results
 
 ### Location Priority Logic
 
@@ -231,6 +277,27 @@ The system processes location queries in this priority order:
 - Verification status
 - Action buttons (favorite, contact, etc.)
 
+### Unified Search Results
+
+**Combined Services and Products:**
+- **Single Search Interface**: One search box handles both services and products
+- **Smart Result Mixing**: Results automatically include relevant services and products
+- **Type Identification**: Each result clearly marked as 'service' or 'product'
+- **Category Information**: Products display their category with color-coded badges
+- **Verification Status**: Both services and products show verification status
+
+**Result Breakdown:**
+- **Services**: Traditional service listings (dog parks, groomers, vets, etc.)
+- **Products**: Product listings with categories, descriptions, and contact info
+- **Location Support**: Products with coordinates can be found in proximity searches
+- **Unified Sorting**: All results sorted together by relevance, distance, or name
+
+**Product-Specific Features:**
+- **Category Badges**: Color-coded category indicators
+- **Product Descriptions**: Detailed product information
+- **Contact Methods**: Website, phone, email for direct product inquiries
+- **Location Data**: Address, city, state, zip for local products
+
 ### Pagination
 
 **Client-Side Pagination:**
@@ -243,8 +310,15 @@ The system processes location queries in this priority order:
 
 ### Backend API Structure
 
+**Main Search Endpoint:**
+- **`/api/search-simple`** - Unified search for services and products
+
+**Product Management Endpoints:**
+- **`/api/products`** - CRUD operations for products
+- **`/api/product-categories`** - Fetch product categories
+
+**Request Format:**
 ```typescript
-// Request Format
 {
   query: string,          // User's search query
   userLocation?: {        // Optional for proximity searches
@@ -367,6 +441,33 @@ ORDER BY name;
 - Cached location data
 - Optimized re-renders
 
+### Response Format
+
+**Unified Search Response:**
+```typescript
+{
+  success: boolean,
+  results: Array<Service | Product>,
+  metadata: {
+    originalQuery: string,
+    parsedPattern: SearchPattern,
+    resultCount: number,
+    searchType: 'simple' | 'simple_radius',
+    filters: SearchFilters,
+    breakdown: {
+      services: number,
+      products: number
+    }
+  }
+}
+```
+
+**Result Types:**
+- **Services**: Include `type: 'service'` and service-specific fields
+- **Products**: Include `type: 'product'`, categories array, and product-specific fields
+- **Location Data**: Both types support coordinates and address information
+- **Verification**: Both types show verification status (is_verified or is_verified_gentle_care)
+
 ## Future Enhancements
 
 ### Planned Features
@@ -426,6 +527,23 @@ ORDER BY name;
 "Dog parks" → All dog parks
 "Groomers" → All groomers
 "Vets" → All veterinarians
+```
+
+### Product Searches
+```
+"Dog food" → Products in Nutritional category
+"Calming supplements" → Products in Calming + Supplements
+"Red light therapy" → Products in Red Light Therapy category
+"Collars and leashes" → Products in Gear category
+"Joint supplements" → Products in Immune Support category
+"Dental chews" → Products in Teeth and Dental Care category
+```
+
+### Combined Searches (Services + Products)
+```
+"Dog parks and food near me" → Dog parks + dog food products
+"Groomers and calming products in Indiana" → Grooming services + calming products
+"Vets and supplements near 46240" → Veterinary services + supplement products
 ```
 
 ### State-Based Searches

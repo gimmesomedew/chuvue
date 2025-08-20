@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Service } from '@/lib/types';
+import { Service, Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -13,15 +13,16 @@ interface AutocompleteSearchProps {
   isSearching?: boolean;
   placeholder?: string;
   className?: string;
-  allSearchResults: Service[];
+  allSearchResults: Array<Service | Product>;
 }
 
 interface Suggestion {
-  id: string;
+  id: string | number;
   name: string;
-  service_type: string;
-  city: string;
-  state: string;
+  type: 'service' | 'product';
+  service_type?: string;
+  city?: string;
+  state?: string;
 }
 
 export function AutocompleteSearch({ 
@@ -51,18 +52,20 @@ export function AutocompleteSearch({
       const query = searchQuery.toLowerCase();
       
       const filtered = allSearchResults
-        .filter(service => 
-          service.name.toLowerCase().includes(query) ||
-          service.city?.toLowerCase().includes(query) ||
-          service.service_type.toLowerCase().includes(query)
-        )
+        .filter(result => {
+          const nameMatch = result.name.toLowerCase().includes(query);
+          const cityMatch = 'city' in result && result.city?.toLowerCase().includes(query);
+          const serviceTypeMatch = 'service_type' in result && result.service_type.toLowerCase().includes(query);
+          return nameMatch || cityMatch || serviceTypeMatch;
+        })
         .slice(0, 8) // Limit to 8 suggestions
-        .map(service => ({
-          id: service.id,
-          name: service.name,
-          service_type: service.service_type,
-          city: service.city || '',
-          state: service.state || ''
+        .map(result => ({
+          id: result.id,
+          name: result.name,
+          type: ('service_type' in result ? 'service' : 'product') as 'service' | 'product',
+          service_type: 'service_type' in result ? result.service_type : undefined,
+          city: 'city' in result ? result.city : undefined,
+          state: 'state' in result ? result.state : undefined
         }));
 
       setSuggestions(filtered);

@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js';
 import { Analytics } from '@/lib/analytics';
 import { Service } from '@/lib/types';
 import { ServiceAction } from '@/types/service';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ServiceActionButtonsProps {
   service: Service;
@@ -61,9 +61,8 @@ export function ServiceActionButtons({
   };
 
   return (
-    <TooltipProvider>
-      <div className="border-t border-gray-100">
-        <div className="flex items-center justify-center gap-6 py-3 px-4">
+    <div className="border-t border-gray-100">
+      <div className="flex items-center justify-center gap-6 py-3 px-4">
           {service.website_url && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -195,6 +194,5 @@ export function ServiceActionButtons({
           )}
         </div>
       </div>
-    </TooltipProvider>
   );
 } 

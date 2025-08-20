@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { ServiceDefinition, Service } from '@/lib/types';
+import { ServiceDefinition, Service, Product } from '@/lib/types';
 import { USState } from '@/lib/states';
 import { Map } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -14,8 +14,8 @@ interface FilterTagBarProps {
   longitude?: number;
   serviceDefinitions: ServiceDefinition[];
   states: USState[];
-  searchResults: Service[];
-  allSearchResults: Service[];
+  searchResults: Array<Service | Product>;
+  allSearchResults: Array<Service | Product>;
   isClientFiltered: boolean;
   activeClientFilter: string | null;
   onRemoveServiceType: () => void;
@@ -48,7 +48,11 @@ export function FilterTagBar({
   onToggleSearchForm,
 }: FilterTagBarProps) {
   
-  const serviceTypesInResults = Array.from(new Set(allSearchResults.map(service => service.service_type)));
+  const serviceTypesInResults = Array.from(new Set(
+    allSearchResults
+      .filter((result): result is Service => 'service_type' in result)
+      .map(service => service.service_type)
+  ));
   
   // Debug logging
   console.log('🔍 FilterTagBar Debug:', {

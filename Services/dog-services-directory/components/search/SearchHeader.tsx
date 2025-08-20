@@ -62,9 +62,9 @@ export function SearchHeader({
                 Searching...
               </span>
             ) : totalResults > 0 ? (
-              `Found ${totalResults} service${totalResults !== 1 ? 's' : ''}`
+              `Found ${totalResults} result${totalResults !== 1 ? 's' : ''}`
             ) : (
-              'No services found'
+              'No results found'
             )}
           </h2>
           

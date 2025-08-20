@@ -194,20 +194,32 @@ export function FeaturedCarousel() {
                 >
                 <div className="relative h-56 w-full">
                   {service.image_url ? (
-                    <img 
-                      src={service.image_url} 
-                      alt={service.name} 
-                      className="object-cover w-full h-full"
-                      onError={(e) => {
-                        // Set default image on error
-                        (e.target as HTMLImageElement).src = '/images/paw-placeholder.svg';
-                        (e.target as HTMLImageElement).classList.add('image-placeholder');
-                      }}
-                    />
+                    <>
+                      <img 
+                        src={service.image_url} 
+                        alt={service.name} 
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          console.warn('Image failed to load:', service.image_url);
+                          // Hide the broken image and show placeholder
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const placeholder = target.parentElement?.querySelector('.image-placeholder') as HTMLElement;
+                          if (placeholder) {
+                            placeholder.style.display = 'flex';
+                          }
+                        }}
+                      />
+                      <div className="w-full h-full flex items-center justify-center bg-orange-100 image-placeholder absolute inset-0" style={{ display: 'none' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500">
+                          <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                        </svg>
+                      </div>
+                    </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-orange-100">
                       <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500">
-                        <path d="M22 8.35a10 10 0 0 0-20 0c0 .61.39 1.15 1 1.3 1.31.33 2.67.53 4.04.54.79.01 1.58-.07 2.37-.23l.32-.08a1 1 0 0 1 .82.2 1 1 0 0 1 .38.74v.16a2 2 0 0 0 2 2h.01a2 2 0 0 0 2-2v-.09a2.94 2.94 0 0 1 .6-1.8 2.99 2.99 0 0 1 2.4-.9c1.76.19 3.25.94 4.06 2.05a1 1 0 0 0 1.4.17.98.98 0 0 0 .17-1.4c-1.15-1.57-3.1-2.58-5.32-2.81a4.99 4.99 0 0 0-4.12 1.53 4.9 4.9 0 0 0-1.19 2.06v.09a5 5 0 0 1-5 5h-.01a5 5 0 0 1-5-5v-.08a2.98 2.98 0 0 0-2.45-2.94 2.99 2.99 0 0 0-3.55 2.92 14.09 14.09 0 0 0 28.18 0z"/>
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                       </svg>
                     </div>
                   )}
