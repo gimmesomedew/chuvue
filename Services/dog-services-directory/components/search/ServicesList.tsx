@@ -10,11 +10,19 @@ interface ServicesListProps {
 }
 
 export function ServicesList({ services }: ServicesListProps) {
+  // Check if services already have distance information from API
+  const hasApiDistance = services.length > 0 && 'distance' in services[0];
+  
+  // If API already calculated distances, use services as-is (they're already sorted)
+  // Otherwise, use the location sorting hook
   const {
     sortByDistance,
     userLocation,
     displayResults: locationSortedResults,
-  } = useLocationSorting(services);
+  } = useLocationSorting(hasApiDistance ? [] : services);
+
+  // Use API-sorted results if available, otherwise use hook-sorted results
+  const displayResults = hasApiDistance ? services : locationSortedResults;
 
   if (services.length === 0) {
     return (
@@ -32,11 +40,11 @@ export function ServicesList({ services }: ServicesListProps) {
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto w-full"
       style={{ maxWidth: '1400px' }}
     >
-      {locationSortedResults.map((service, index) => (
+      {displayResults.map((service, index) => (
         <div key={service.id} className="w-full mx-auto md:max-w-[400px] max-w-[400px] px-2">
           <ServiceCard
             service={service}
-            sortByDistance={sortByDistance}
+            sortByDistance={hasApiDistance || sortByDistance}
             userLocation={userLocation}
             delay={0.1 * (index % 3)}
           />

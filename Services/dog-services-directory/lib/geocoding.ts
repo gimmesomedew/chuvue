@@ -90,4 +90,79 @@ export function needsGeocodingReview(latitude: number | string, longitude: numbe
   const lng = typeof longitude === 'string' ? parseFloat(longitude) : longitude;
   
   return isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0;
+}
+
+/**
+ * Simple geocoding function for address strings
+ */
+export async function geocodeAddress(address: string): Promise<{
+  success: boolean;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    const res = await fetch(url, { 
+      headers: { 'User-Agent': 'DogServicesDirectory/1.0' } 
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      
+      if (data && data.length > 0) {
+        const result = data[0];
+        return {
+          success: true,
+          latitude: parseFloat(result.lat),
+          longitude: parseFloat(result.lon),
+          city: result.address?.city || result.address?.town,
+          state: result.address?.state,
+          zipCode: result.address?.postcode
+        };
+      }
+    }
+    
+    return { success: false };
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return { success: false };
+  }
+}
+
+/**
+ * Reverse geocoding function for coordinates to address
+ */
+export async function reverseGeocode(latitude: number, longitude: number): Promise<{
+  success: boolean;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`;
+    const res = await fetch(url, { 
+      headers: { 'User-Agent': 'DogServicesDirectory/1.0' } 
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      
+      if (data && data.address) {
+        return {
+          success: true,
+          city: data.address.city || data.address.town || data.address.village,
+          state: data.address.state,
+          zipCode: data.address.postcode
+        };
+      }
+    }
+    
+    return { success: false };
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    return { success: false };
+  }
 } 

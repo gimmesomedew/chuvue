@@ -16,7 +16,7 @@ export function ServiceContent({ service, sortByDistance, userLocation }: Servic
           <span>{service.address}</span>
         </div>
         
-        {sortByDistance && userLocation && typeof distance === 'number' && (
+        {typeof distance === 'number' && (
           <div className="flex items-center text-secondary text-sm font-medium">
             <Navigation className={`h-${ICON_SIZES.MEDIUM.height} w-${ICON_SIZES.MEDIUM.width} mr-1 text-secondary`} />
             <span>{formatDistance(distance)}</span>

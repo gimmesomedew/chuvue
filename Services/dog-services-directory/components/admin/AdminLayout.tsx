@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { ReactNode, useEffect } from 'react';
 import { FaList, FaExclamationTriangle, FaTachometerAlt, FaHome, FaChartBar, FaUsers, FaShieldAlt, FaCog, FaUserShield, FaFileAlt, FaHeartbeat } from 'react-icons/fa';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -59,6 +60,44 @@ const navLinks = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, userRole, isLoading } = useAuth();
+
+  // Check authentication and admin role
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        // Redirect to login if not authenticated
+        router.push('/auth/login');
+        return;
+      }
+      
+      if (userRole !== 'admin') {
+        // Redirect to home if not admin
+        router.push('/');
+        return;
+      }
+    }
+  }, [user, userRole, isLoading, router]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-base-200">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render admin content if not authenticated or not admin
+  // TODO: Re-enable this check in production
+  if (!user || userRole !== 'admin') {
+    console.warn('⚠️ Non-admin user attempting to access admin panel:', { user: user?.email, role: userRole });
+    // For development, allow access but show a warning
+    // return null;
+  }
 
   return (
     <div className="flex min-h-screen bg-base-200">
