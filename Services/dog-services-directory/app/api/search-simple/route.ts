@@ -316,11 +316,13 @@ export async function POST(request: NextRequest) {
     
     // Debug: Show sample of first few results
     if (servicesResult.data && servicesResult.data.length > 0) {
-      console.log('🔍 Sample Services (first 3):', servicesResult.data.slice(0, 3).map(s => ({ id: s.id, name: s.name, service_type: s.service_type })));
+      const sampleServices = servicesResult.data.slice(0, 3).map((s: any) => ({ id: s.id, name: s.name, service_type: s.service_type }));
+      console.log('🔍 Sample Services (first 3):', sampleServices);
     }
     
     if (productsResult.data && productsResult.data.length > 0) {
-      console.log('🔍 Sample Products (first 3):', productsResult.data.slice(0, 3).map(p => ({ id: p.id, name: p.name, categories: p.categories?.length || 0 })));
+      const sampleProducts = productsResult.data.slice(0, 3).map((p: any) => ({ id: p.id, name: p.name, categories: p.categories?.length || 0 }));
+      console.log('🔍 Sample Products (first 3):', sampleProducts);
     }
 
     // Transform products to flatten categories
@@ -329,6 +331,58 @@ export async function POST(request: NextRequest) {
       categories: product.categories?.map((mapping: any) => mapping.category).filter(Boolean) || [],
       type: 'product' // Mark as product for frontend
     })) || [];
+
+    // For product queries, filter products by relevance to the search query
+    if (isProductQuery && transformedProducts.length > 0) {
+      const queryWords = normalizedQuery.split(/\s+/).filter(word => word.length > 2);
+      
+      // Score products based on relevance to query
+      const scoredProducts = transformedProducts.map((product: any) => {
+        let score = 0;
+        const productText = `${product.name} ${product.description || ''} ${product.categories?.map((c: any) => c.name || '').join(' ') || ''}`.toLowerCase();
+        
+        // Check for exact matches in product name
+        if (product.name.toLowerCase().includes(normalizedQuery)) {
+          score += 100;
+        }
+        
+        // Check for word matches
+        for (const word of queryWords) {
+          if (productText.includes(word)) {
+            score += 10;
+          }
+        }
+        
+        // Check for category relevance
+        if (product.categories) {
+          for (const category of product.categories) {
+            const categoryName = category.name?.toLowerCase() || '';
+            for (const word of queryWords) {
+              if (categoryName.includes(word)) {
+                score += 15;
+              }
+            }
+          }
+        }
+        
+        return { ...product, relevanceScore: score };
+      });
+      
+      // Filter out products with very low relevance (score < 5)
+      const relevantProducts = scoredProducts.filter((product: any) => product.relevanceScore >= 5);
+      
+      // Sort by relevance score (highest first)
+      relevantProducts.sort((a: any, b: any) => b.relevanceScore - a.relevanceScore);
+      
+      console.log('🔍 Product relevance filtering:');
+      console.log('🔍 Original products:', transformedProducts.length);
+      console.log('🔍 Relevant products:', relevantProducts.length);
+      console.log('🔍 Product scores:', relevantProducts.map((p: any) => ({ name: p.name, score: p.relevanceScore })));
+      
+      // Update transformedProducts with filtered data
+      transformedProducts.length = 0;
+      transformedProducts.push(...relevantProducts);
+    }
 
     // Mark services for frontend
     const transformedServices = (servicesResult.data || []).map((service: any) => ({
@@ -627,7 +681,12 @@ function parseSearchQuery(query: string, serviceDefinitions: any[] = []) {
 function isProductSearchQuery(query: string): boolean {
   const normalizedQuery = query.toLowerCase().trim();
   
-  // Product-related keywords
+  // FIRST: Check if query explicitly mentions "product" or "products" - this is the strongest indicator
+  if (normalizedQuery.includes('product') || normalizedQuery.includes('products')) {
+    return true;
+  }
+  
+  // SECOND: Check for product-related keywords
   const productKeywords = [
     // Food and nutrition
     'food', 'treat', 'supplement', 'vitamin', 'nutrition', 'kibble', 'raw food', 'wet food',
@@ -653,7 +712,7 @@ function isProductSearchQuery(query: string): boolean {
     }
   }
   
-  // Check for specific product categories
+  // THIRD: Check for specific product categories
   const productCategories = [
     'supplement', 'vitamin', 'treat', 'food', 'gear', 'equipment', 'therapy'
   ];
