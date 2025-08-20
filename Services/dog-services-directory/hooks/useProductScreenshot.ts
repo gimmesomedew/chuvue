@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from '@/lib/toast';
+import { showToast } from '@/lib/toast';
 
 interface UseProductScreenshotReturn {
   isCapturing: boolean;
@@ -12,11 +12,7 @@ export function useProductScreenshot(): UseProductScreenshotReturn {
 
   const captureScreenshot = async (productId: number, websiteUrl: string): Promise<string | null> => {
     if (!websiteUrl) {
-      toast({
-        title: "No website URL",
-        description: "This product doesn't have a website to capture a screenshot from.",
-        variant: "destructive"
-      });
+      showToast.error("This product doesn't have a website to capture a screenshot from.");
       return null;
     }
 
@@ -42,11 +38,7 @@ export function useProductScreenshot(): UseProductScreenshotReturn {
         throw new Error(data.error || 'Failed to capture screenshot');
       }
 
-      toast({
-        title: "Screenshot captured!",
-        description: "The website screenshot has been saved successfully.",
-        variant: "default"
-      });
+      showToast.success("The website screenshot has been saved successfully.");
 
       console.log('✅ Screenshot captured successfully:', data.screenshot_url);
       return data.screenshot_url;
@@ -56,11 +48,7 @@ export function useProductScreenshot(): UseProductScreenshotReturn {
       
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
-      toast({
-        title: "Screenshot failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      showToast.error(errorMessage);
 
       return null;
     } finally {
@@ -69,11 +57,7 @@ export function useProductScreenshot(): UseProductScreenshotReturn {
   };
 
   const refreshScreenshot = async (productId: number, websiteUrl: string): Promise<string | null> => {
-    toast({
-      title: "Refreshing screenshot",
-      description: "Capturing a new screenshot of the website...",
-      variant: "default"
-    });
+    showToast.loading("Capturing a new screenshot of the website...");
 
     return captureScreenshot(productId, websiteUrl);
   };
