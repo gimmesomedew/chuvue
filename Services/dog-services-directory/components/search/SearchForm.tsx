@@ -220,7 +220,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
     <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-[#F8F9FA] p-4 md:p-8 rounded-lg shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Service Type Field */}
-        <div className="md:col-span-5 border border-primary rounded-md p-3">
+        <div className="md:col-span-5 border border-primary rounded-md p-3 md:p-3">
           <div className="flex items-center mb-2">
             {isLoading ? (
               <Search className="h-5 w-5 text-secondary mr-2 animate-spin" />
@@ -246,7 +246,7 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
         </div>
 
         {/* Location Field */}
-        <div className="md:col-span-7 border border-primary rounded-md p-3">
+        <div className="md:col-span-7 border border-primary rounded-md p-3 md:p-3">
           <div className="flex items-center mb-2">
             <MapPin className="h-5 w-5 text-secondary mr-2" />
             <span className="font-medium">What Location?</span>
@@ -338,18 +338,12 @@ export function SearchForm({ onSearch, initialSelectedServiceType = '' }: Search
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full max-w-[700px] bg-secondary hover:bg-secondary/90 text-white h-12 rounded-[40px]"
+          className="w-full max-w-[700px] bg-secondary hover:bg-secondary/90 text-white h-10 md:h-12 rounded-[40px] text-sm md:text-base"
         >
           {isLoading ? (
-            <>
-              <Search className="h-5 w-5 mr-2 animate-spin" />
-              Searching...
-            </>
+            <Search className="h-5 w-5 animate-spin" />
           ) : (
-            <>
-              <Search className="h-5 w-5 mr-2" />
-              Search
-            </>
+            <Search className="h-5 w-5" />
           )}
         </Button>
       </div>

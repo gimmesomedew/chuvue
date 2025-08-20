@@ -8,9 +8,10 @@ interface SearchFormV2Props {
   initialValue?: string;
   isLoading?: boolean;
   resetKey?: number; // Add this to force reset when needed
+  isPostSearch?: boolean; // New prop to indicate if this is after a search
 }
 
-export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, resetKey }: SearchFormV2Props) {
+export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, resetKey, isPostSearch = false }: SearchFormV2Props) {
   const [searchQuery, setSearchQuery] = useState(initialValue || '');
   const [isVisible, setIsVisible] = useState(false);
 
@@ -40,7 +41,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
 
   return (
     <div className={`max-w-4xl mx-auto transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
+      <form onSubmit={handleSubmit} className={`flex gap-4 ${isPostSearch ? 'flex-row' : 'flex-col md:flex-row'}`}>
         {/* Main Search Input */}
         <div className="relative flex-1">
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -59,7 +60,11 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
         <button
           type="submit"
           disabled={!searchQuery.trim() || isLoading}
-          className={`font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-lg whitespace-nowrap ${
+          className={`font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap ${
+            isPostSearch 
+              ? 'py-4 px-4 h-16 w-16' // Smaller square button for post-search
+              : 'py-4 px-8 text-lg' // Full button for initial search
+          } ${
             searchQuery.trim() && !isLoading
               ? 'bg-secondary hover:bg-pink-600 text-white'
               : 'bg-gray-400 text-gray-200 cursor-not-allowed'
@@ -70,7 +75,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
           ) : (
             <Search className="w-5 h-5" />
           )}
-          {isLoading ? 'Searching...' : 'Search Everything'}
+          {!isPostSearch && (isLoading ? 'Searching...' : 'Search Everything')}
         </button>
       </form>
     </div>
