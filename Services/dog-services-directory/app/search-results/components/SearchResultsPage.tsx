@@ -139,6 +139,7 @@ export function SearchResultsPage() {
   const [cityState, setCityState] = useState('');
   const [resetKey, setResetKey] = useState(0);
   const [favoritedProducts, setFavoritedProducts] = useState<number[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'services' | 'products'>('all');
 
   // Check if we have search parameters on page load
   useEffect(() => {
@@ -257,6 +258,7 @@ export function SearchResultsPage() {
           setTotalPages(Math.ceil(totalCount / itemsPerPage));
           setCurrentPage(1); // Reset to first page for new search
           setSearchMetadata(data.metadata);
+          setSelectedFilter('all'); // Reset filter to 'all' for new search
 
         // Set search criteria based on whether location was specified
         if (requestBody.userLocation) {
@@ -340,17 +342,24 @@ export function SearchResultsPage() {
     
     setCurrentPage(newPage);
     
+    // Get the appropriate results to paginate
+    const resultsToPaginate = selectedFilter === 'all' ? allSearchResults : 
+      selectedFilter === 'services' ? allSearchResults.filter(result => 'service_type' in result) :
+      allSearchResults.filter(result => 'product_type' in result);
+    
     // Client-side pagination - slice the results
     const itemsPerPage = 25;
     const startIndex = (newPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedResults = allSearchResults.slice(startIndex, endIndex);
+    const paginatedResults = resultsToPaginate.slice(startIndex, endIndex);
     
     console.log('Pagination calculation:', {
       newPage,
       startIndex,
       endIndex,
-      paginatedResultsCount: paginatedResults.length
+      paginatedResultsCount: paginatedResults.length,
+      filter: selectedFilter,
+      totalFilteredResults: resultsToPaginate.length
     });
     
     setSearchResults(paginatedResults);
@@ -412,6 +421,28 @@ export function SearchResultsPage() {
     // This would handle product favoriting if needed
   };
 
+  // Determine if services and products exist in search results
+  const hasServices = allSearchResults.some(result => 'service_type' in result);
+  const hasProducts = allSearchResults.some(result => 'product_type' in result);
+
+  // Filter results based on selected filter
+  const getFilteredResults = () => {
+    if (selectedFilter === 'all') {
+      return searchResults;
+    } else if (selectedFilter === 'services') {
+      return searchResults.filter(result => 'service_type' in result);
+    } else if (selectedFilter === 'products') {
+      return searchResults.filter(result => 'product_type' in result);
+    }
+    return searchResults;
+  };
+
+  // Handle filter change
+  const handleFilterChange = (filter: 'all' | 'services' | 'products') => {
+    setSelectedFilter(filter);
+    setCurrentPage(1); // Reset to first page when changing filters
+  };
+
   const resetSearch = () => {
     setSearchResults([]);
     setAllSearchResults([]);
@@ -425,6 +456,7 @@ export function SearchResultsPage() {
     setLatitude(undefined);
     setLongitude(undefined);
     setCityState('');
+    setSelectedFilter('all'); // Reset filter to 'all'
     
     // Clear URL parameters
     router.push('/search-results');
@@ -451,8 +483,8 @@ export function SearchResultsPage() {
               
               {/* Results Count and Location Tag */}
               <div className="flex items-center space-x-3">
-                <h1 className="text-2xl font-bold text-secondary">
-                  {searchResults.length > 0 ? `Found ${totalResults} result${totalResults !== 1 ? 's' : ''}` : 'Search Results'}
+                <h1 className="text-2xl font-bold text-primary">
+                  {searchResults.length > 0 ? `Found ${getFilteredResults().length} result${getFilteredResults().length !== 1 ? 's' : ''}` : 'Search Results'}
                 </h1>
                 
                 {/* Location Tag - show for state, zip code, or My Location */}
@@ -498,6 +530,53 @@ export function SearchResultsPage() {
                 resetKey={resetKey}
                 isPostSearch={true}
               />
+              
+              {/* Filter Tags */}
+              {searchResults.length > 0 && (
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-700">Filter by:</span>
+                  
+                  {/* All Results Tag */}
+                  <button
+                    onClick={() => handleFilterChange('all')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                      selectedFilter === 'all'
+                        ? 'bg-secondary text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    All ({allSearchResults.length})
+                  </button>
+                  
+                  {/* Services Tag - only show if services exist */}
+                  {hasServices && (
+                    <button
+                      onClick={() => handleFilterChange('services')}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                        selectedFilter === 'services'
+                          ? 'bg-secondary text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      Services ({allSearchResults.filter(result => 'service_type' in result).length})
+                    </button>
+                  )}
+                  
+                  {/* Products Tag - only show if products exist */}
+                  {hasProducts && (
+                    <button
+                      onClick={() => handleFilterChange('products')}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                        selectedFilter === 'products'
+                          ? 'bg-secondary text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      Products ({allSearchResults.filter(result => 'product_type' in result).length})
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -509,12 +588,12 @@ export function SearchResultsPage() {
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
               <SearchResultsDisplay
-                searchResults={searchResults}
+                searchResults={getFilteredResults()}
                 allSearchResults={allSearchResults}
                 isSearching={isSearching}
-                totalResults={totalResults}
+                totalResults={getFilteredResults().length}
                 currentPage={currentPage}
-                totalPages={totalPages}
+                totalPages={Math.ceil(getFilteredResults().length / 25)}
                 selectedServiceType={selectedServiceType}
                 selectedState={selectedState}
                 zipCode={zipCode}

@@ -41,7 +41,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
 
   return (
     <div className={`max-w-4xl mx-auto transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      <form onSubmit={handleSubmit} className="flex gap-4">
+      <form onSubmit={handleSubmit} className={`flex gap-4 ${isPostSearch ? 'flex-row' : 'flex-col md:flex-row'}`}>
         {/* Main Search Input */}
         <div className="relative flex-1">
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -60,11 +60,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
         <button
           type="submit"
           disabled={!searchQuery.trim() || isLoading}
-          className={`font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap ${
-            isPostSearch 
-              ? 'py-4 px-4 h-16 w-16' // Compact square button for post-search
-              : 'py-4 px-8 text-lg' // Full button for initial search
-          } ${
+          className={`font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap py-4 px-6 ${
             searchQuery.trim() && !isLoading
               ? 'bg-secondary hover:bg-pink-600 text-white'
               : 'bg-gray-400 text-gray-200 cursor-not-allowed'
