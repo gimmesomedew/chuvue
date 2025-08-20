@@ -9,7 +9,6 @@ interface LocationState {
   userLocation: GeolocationCoordinates | null;
   isLoading: boolean;
   error: string | null;
-  sortedResults: (Service | ServiceWithDistance)[];
 }
 
 // Define the action types
@@ -19,7 +18,6 @@ type LocationAction =
   | { type: 'LOCATION_ERROR'; payload: string }
   | { type: 'LOADING_START' }
   | { type: 'LOADING_END' }
-  | { type: 'UPDATE_SORTED_RESULTS'; payload: (Service | ServiceWithDistance)[] }
   | { type: 'RESET' };
 
 // Initial state
@@ -28,7 +26,6 @@ const initialState: LocationState = {
   userLocation: null,
   isLoading: false,
   error: null,
-  sortedResults: [],
 };
 
 // Reducer function
@@ -44,8 +41,6 @@ function locationReducer(state: LocationState, action: LocationAction): Location
       return { ...state, isLoading: true };
     case 'LOADING_END':
       return { ...state, isLoading: false };
-    case 'UPDATE_SORTED_RESULTS':
-      return { ...state, sortedResults: action.payload };
     case 'RESET':
       return initialState;
     default:
@@ -111,13 +106,8 @@ export function useLocationSorting(searchResults: Service[]) {
     return [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
   }, [searchResults, state.sortByDistance, state.userLocation]);
   
-  // Update the state with the memoized results
-  useEffect(() => {
-    dispatch({ type: 'UPDATE_SORTED_RESULTS', payload: sortedResults });
-  }, [sortedResults]);
-  
-  // Display results based on sorting preference
-  const displayResults = state.sortedResults.length > 0 ? state.sortedResults : searchResults;
+  // Display results based on sorting preference - use the memoized results directly
+  const displayResults = sortedResults;
   
   return {
     ...state,
