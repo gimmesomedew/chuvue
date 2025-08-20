@@ -44,14 +44,14 @@ export interface MenuEntry {
 export const menuEntries: MenuEntry[] = [
   // ----- Base (general navigation) -----
   {
-    label: 'HOME',
+    label: '<-BACK DPA',
     href: 'https://www.dogparkadventures.com/',
     icon: Home,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
     section: 'base',
   },
   {
-    label: 'FIND A BUSINESS',
+    label: 'FIND A SERVICE OR PRODUCT',
     href: '/',
     icon: Navigation,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
