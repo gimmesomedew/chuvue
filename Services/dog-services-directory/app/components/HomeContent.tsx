@@ -32,8 +32,8 @@ export function HomeContent() {
 
   return (
     <>
-      {/* Hero Section with New Dynamic Search */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-16 md:py-24">
+      {/* Hero Section with Search */}
+      <section className="bg-white py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Find Everything Your Dog Needs
@@ -52,12 +52,12 @@ export function HomeContent() {
             <p className="text-gray-600 mb-4 font-bold">Popular Searches:</p>
             <div className="flex flex-wrap justify-center gap-3">
               {tagsLoading ? (
-                // Loading skeleton for tags
+                // Loading skeleton for tags - use deterministic widths to avoid hydration mismatch
                 Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={index}
                     className="px-4 py-2 bg-gray-200 rounded-full animate-pulse"
-                    style={{ width: `${Math.random() * 100 + 120}px` }}
+                    style={{ width: `${120 + (index * 15)}px` }}
                   />
                 ))
               ) : (
@@ -65,7 +65,7 @@ export function HomeContent() {
                   <button
                     key={index}
                     onClick={(e) => handleTagClick(tag, e)}
-                    className="px-4 py-2 bg-white text-gray-700 rounded-full border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 text-sm"
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 text-sm"
                   >
                     {tag}
                   </button>
@@ -76,54 +76,75 @@ export function HomeContent() {
         </div>
       </section>
 
-      {/* Business CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Are You a Dog Service Provider?</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join our directory and connect with pet owners in your area. It's free to list your services!
-          </p>
-          <a
-            href="/add-listing"
-            className="inline-block bg-secondary text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-pink-600 transition-colors duration-200"
-          >
-            Add Your Service
-          </a>
+      {/* Statistics Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
+            <div>
+              <div className="text-4xl font-bold text-secondary mb-2">5K+</div>
+              <div className="text-gray-600">Services Listed</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-secondary mb-2">2K+</div>
+              <div className="text-gray-600">Products Listed</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-secondary mb-2">50</div>
+              <div className="text-gray-600">States Covered</div>
+            </div>
+          </div>
         </div>
       </section>
       
       {/* How It Works Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <span className="text-2xl font-bold text-white">1</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Search</h3>
-              <p className="text-gray-600">Find dog services, parks, and products in your area</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Search Your Area</h3>
+              <p className="text-gray-600">Enter your ZIP code or city to find services nearby</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <span className="text-2xl font-bold text-white">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Discover</h3>
-              <p className="text-gray-600">Browse detailed information and reviews</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Browse & Compare</h3>
+              <p className="text-gray-600">View ratings, photos, and details for each service</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
+                <span className="text-2xl font-bold text-white">3</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Connect</h3>
-              <p className="text-gray-600">Contact service providers directly</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Connect & Book</h3>
+              <p className="text-gray-600">Contact providers directly or book appointments online</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Business CTA Section */}
+      <section className="py-16 bg-secondary">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-2xl mx-auto">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-6">Own a Dog Business?</h2>
+            <p className="text-xl text-white/90 mb-8">
+              Join our platform and connect with dog owners in your area. Grow your business with our comprehensive listing platform.
+            </p>
+            <a
+              href="/add-listing"
+              className="inline-block bg-white text-secondary px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
+            >
+              Sign Up Your Business
+            </a>
           </div>
         </div>
       </section>
