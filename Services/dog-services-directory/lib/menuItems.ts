@@ -44,7 +44,7 @@ export interface MenuEntry {
 export const menuEntries: MenuEntry[] = [
   // ----- Base (general navigation) -----
   {
-    label: '<-BACK DPA',
+    label: '<-BACK DOG PARK ADVENTURES',
     href: 'https://www.dogparkadventures.com/',
     icon: Home,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],

@@ -41,7 +41,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
 
   return (
     <div className={`max-w-4xl mx-auto transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-      <form onSubmit={handleSubmit} className={`flex gap-4 ${isPostSearch ? 'flex-row' : 'flex-col md:flex-row'}`}>
+      <form onSubmit={handleSubmit} className="flex gap-4">
         {/* Main Search Input */}
         <div className="relative flex-1">
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -51,7 +51,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search products, services, dog parks... or anything"
+            placeholder={isPostSearch ? "Search again..." : "Search products, services, dog parks... or anything"}
             className="w-full pl-12 pr-4 py-4 text-lg border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all duration-200"
           />
         </div>
@@ -62,7 +62,7 @@ export function SearchFormV2({ onSearch, initialValue = '', isLoading = false, r
           disabled={!searchQuery.trim() || isLoading}
           className={`font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap ${
             isPostSearch 
-              ? 'py-4 px-4 h-16 w-16' // Smaller square button for post-search
+              ? 'py-4 px-4 h-16 w-16' // Compact square button for post-search
               : 'py-4 px-8 text-lg' // Full button for initial search
           } ${
             searchQuery.trim() && !isLoading

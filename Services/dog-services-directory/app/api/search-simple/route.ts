@@ -316,13 +316,11 @@ export async function POST(request: NextRequest) {
     
     // Debug: Show sample of first few results
     if (servicesResult.data && servicesResult.data.length > 0) {
-      const sampleServices = servicesResult.data.slice(0, 3).map((s: any) => ({ id: s.id, name: s.name, service_type: s.service_type }));
-      console.log('🔍 Sample Services (first 3):', sampleServices);
+      console.log('🔍 Sample Services (first 3):', servicesResult.data.slice(0, 3).map((s: any) => ({ id: s.id, name: s.name, service_type: s.service_type })));
     }
     
     if (productsResult.data && productsResult.data.length > 0) {
-      const sampleProducts = productsResult.data.slice(0, 3).map((p: any) => ({ id: p.id, name: p.name, categories: p.categories?.length || 0 }));
-      console.log('🔍 Sample Products (first 3):', sampleProducts);
+      console.log('🔍 Sample Products (first 3):', productsResult.data.slice(0, 3).map((p: any) => ({ id: p.id, name: p.name, categories: p.categories?.length || 0 })));
     }
 
     // Transform products to flatten categories

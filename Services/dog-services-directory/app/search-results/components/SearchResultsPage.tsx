@@ -138,6 +138,7 @@ export function SearchResultsPage() {
   const [longitude, setLongitude] = useState<number>();
   const [cityState, setCityState] = useState('');
   const [resetKey, setResetKey] = useState(0);
+  const [favoritedProducts, setFavoritedProducts] = useState<number[]>([]);
 
   // Check if we have search parameters on page load
   useEffect(() => {
@@ -162,7 +163,7 @@ export function SearchResultsPage() {
         const locationResult = resolveLocationFromQuery(searchQuery);
         
         // Create base request body
-        let requestBody: any = {
+        const requestBody: any = {
           query: searchQuery
         };
         
@@ -399,6 +400,18 @@ export function SearchResultsPage() {
     // This would toggle the search form if needed
   };
 
+  const handleClearClientFilter = () => {
+    // This would clear client-side filters if needed
+  };
+
+  const handleFilterByServiceType = (serviceType: string) => {
+    // This would filter by service type if needed
+  };
+
+  const handleProductFavorite = (productId: number) => {
+    // This would handle product favoriting if needed
+  };
+
   const resetSearch = () => {
     setSearchResults([]);
     setAllSearchResults([]);
@@ -419,27 +432,82 @@ export function SearchResultsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Search Section */}
-      <section className="bg-white border-b border-gray-200 py-6">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <SearchFormV2
-              onSearch={handleSearchSubmit}
-              initialValue={searchParams.get('q') || ''}
-              isLoading={isSearching}
-              resetKey={resetKey}
-            />
+      {/* Main Container with Clean Layout */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4 py-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            
+            {/* Top Section: Back Link, Heading, and Location Tag */}
+            <div className="flex items-center justify-start space-x-6">
+              {/* Back Link to Home */}
+              <a
+                href="/"
+                className="inline-flex items-center text-secondary hover:text-pink-600 transition-colors duration-200 font-medium"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </a>
+              
+              {/* Results Count and Location Tag */}
+              <div className="flex items-center space-x-3">
+                <h1 className="text-2xl font-bold text-secondary">
+                  {searchResults.length > 0 ? `Found ${totalResults} result${totalResults !== 1 ? 's' : ''}` : 'Search Results'}
+                </h1>
+                
+                {/* Location Tag - show for state, zip code, or My Location */}
+                {(selectedState || zipCode || (latitude && longitude)) && (
+                  <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>
+                      {selectedState 
+                        ? getSortedStates().find(s => s.abbreviation === selectedState)?.name || selectedState
+                        : zipCode
+                        ? `ZIP: ${zipCode}`
+                        : cityState || 'My Location'
+                      }
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSelectedState('');
+                        setZipCode('');
+                        setLatitude(undefined);
+                        setLongitude(undefined);
+                        setCityState('');
+                      }}
+                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Search Form Section */}
+            <div className="border-t border-gray-200 pt-6">
+              <SearchFormV2
+                onSearch={handleSearchSubmit}
+                initialValue={searchParams.get('q') || ''}
+                isLoading={isSearching}
+                resetKey={resetKey}
+                isPostSearch={true}
+              />
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Search Results Section */}
       {searchResults.length > 0 && (
         <section className="py-8">
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
-
-              
               <SearchResultsDisplay
                 searchResults={searchResults}
                 allSearchResults={allSearchResults}
@@ -461,8 +529,12 @@ export function SearchResultsPage() {
                 onRemoveState={handleRemoveState}
                 onRemoveZipCode={handleRemoveZipCode}
                 onClearAll={handleClearAll}
+                onFilterByServiceType={handleFilterByServiceType}
                 onClientFilter={handleClientFilter}
+                onClearClientFilter={handleClearClientFilter}
                 onToggleSearchForm={handleToggleSearchForm}
+                onProductFavorite={handleProductFavorite}
+                favoritedProducts={favoritedProducts}
               />
             </div>
           </div>

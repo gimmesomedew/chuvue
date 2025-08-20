@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
 import { Product } from '@/lib/types';
 import { ProductCategoryBadge } from './ProductCategoryBadge';
@@ -18,7 +18,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 interface ProductCardProps {
   product: Product;
@@ -27,7 +27,7 @@ interface ProductCardProps {
   className?: string;
 }
 
-export function ProductCard({ 
+function ProductCardComponent({ 
   product, 
   onFavorite, 
   isFavorited = false,
@@ -38,11 +38,11 @@ export function ProductCard({
 
   const hasLocation = product.latitude && product.longitude;
 
-  const handleFavorite = () => {
+  const handleFavorite = useCallback(() => {
     if (onFavorite) {
       onFavorite(product.id);
     }
-  };
+  }, [onFavorite, product.id]);
 
   const truncateDescription = (text: string, maxLength: number = 120) => {
     if (text.length <= maxLength) return text;
@@ -197,120 +197,92 @@ export function ProductCard({
         <div className="flex items-center justify-center gap-6 py-3 px-4">
           {/* Website Link */}
           {product.website && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.a
-                  href={product.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-primary-500 hover:text-primary-600 cursor-pointer"
-                >
-                  <div className="p-2.5 rounded-full transition-all duration-200 bg-primary-50 hover:bg-primary-100">
-                    <Link className="h-6 w-6" color="#22c55e" />
-                  </div>
-                </motion.a>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Visit Website</p>
-              </TooltipContent>
-            </Tooltip>
+            <motion.a
+              href={product.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="text-primary-500 hover:text-primary-600 cursor-pointer"
+              title="Visit Website"
+            >
+              <div className="p-2.5 rounded-full transition-all duration-200 bg-primary-50 hover:bg-primary-100">
+                <Link className="h-6 w-6" color="#22c55e" />
+              </div>
+            </motion.a>
           )}
 
           {/* Map Location */}
           {product.latitude && product.longitude && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    `${product.name} ${product.location_address || ''} ${product.city || ''} ${product.state || ''} ${product.zip_code || ''}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-emerald-500 hover:text-emerald-600 cursor-pointer"
-                >
-                  <div className="p-2.5 rounded-full transition-all duration-200 bg-emerald-50 hover:bg-emerald-100">
-                    <MapPlus className="h-6 w-6 text-secondary" />
-                  </div>
-                </motion.a>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View on Map</p>
-              </TooltipContent>
-            </Tooltip>
+            <motion.a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                `${product.name} ${product.location_address || ''} ${product.city || ''} ${product.state || ''} ${product.zip_code || ''}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="text-emerald-500 hover:text-emerald-600 cursor-pointer"
+              title="View on Map"
+            >
+              <div className="p-2.5 rounded-full transition-all duration-200 bg-emerald-50 hover:bg-emerald-100">
+                <MapPlus className="h-6 w-6 text-secondary" />
+              </div>
+            </motion.a>
           )}
 
           {/* Email */}
           {product.email && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.a
-                  href={`mailto:${product.email}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-purple-500 hover:text-purple-600 cursor-pointer"
-                >
-                  <div className="p-2.5 rounded-full transition-all duration-200 bg-purple-50 hover:bg-purple-100">
-                    <Mail className="h-6 w-6" />
-                  </div>
-                </motion.a>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Send Email</p>
-              </TooltipContent>
-            </Tooltip>
+            <motion.a
+              href={`mailto:${product.email}`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="text-purple-500 hover:text-purple-600 cursor-pointer"
+              title="Send Email"
+            >
+              <div className="p-2.5 rounded-full transition-all duration-200 bg-purple-50 hover:bg-purple-100">
+                <Mail className="h-6 w-6" />
+              </div>
+            </motion.a>
           )}
 
           {/* Phone */}
           {product.contact_number && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.a
-                  href={`tel:${product.contact_number}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="text-green-500 hover:text-green-600 cursor-pointer"
-                >
-                  <div className="p-2.5 rounded-full transition-all duration-200 bg-green-50 hover:bg-green-100">
-                    <Phone className="h-6 w-6" />
-                  </div>
-                </motion.a>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Call Phone</p>
-              </TooltipContent>
-            </Tooltip>
+            <motion.a
+              href={`tel:${product.contact_number}`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="text-green-500 hover:text-green-600 cursor-pointer"
+              title="Call Phone"
+            >
+              <div className="p-2.5 rounded-full transition-all duration-200 bg-green-50 hover:bg-green-100">
+                <Phone className="h-6 w-6" />
+              </div>
+            </motion.a>
           )}
 
           {/* Favorite Button */}
           {onFavorite && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <motion.button
-                  onClick={handleFavorite}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`${
-                    isFavorited ? 'text-red-500' : 'text-red-400 hover:text-red-500'
-                  } cursor-pointer`}
-                >
-                  <div className={`p-2.5 rounded-full transition-all duration-200 ${
-                    isFavorited ? 'bg-red-50' : 'bg-gray-50 hover:bg-red-50'
-                  }`}>
-                    <Heart className={`h-6 w-6 ${isFavorited ? 'fill-current' : ''}`} />
-                  </div>
-                </motion.button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}</p>
-              </TooltipContent>
-            </Tooltip>
+            <motion.button
+              onClick={handleFavorite}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className={`${
+                isFavorited ? 'text-red-500' : 'text-red-400 hover:text-red-500'
+              } cursor-pointer`}
+              title={isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
+            >
+              <div className={`p-2.5 rounded-full transition-all duration-200 ${
+                isFavorited ? 'bg-red-50' : 'bg-gray-50 hover:bg-red-50'
+              }`}>
+                <Heart className={`h-6 w-6 ${isFavorited ? 'fill-current' : ''}`} />
+              </div>
+            </motion.button>
           )}
         </div>
       </div>
     </Card>
   );
 }
+
+export const ProductCard = memo(ProductCardComponent);

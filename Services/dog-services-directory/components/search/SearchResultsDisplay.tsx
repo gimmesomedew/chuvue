@@ -6,7 +6,6 @@ import { ServicesList } from './ServicesList';
 import { UnifiedResultsList } from './UnifiedResultsList';
 import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
-import { SearchHeader } from './SearchHeader';
 import { FilterTagBar } from './FilterTagBar';
 import { AutocompleteSearch } from './AutocompleteSearch';
 import { ServicesMap } from '@/components/maps/ServicesMap';
@@ -153,26 +152,6 @@ export function SearchResultsDisplay({
 
   return (
     <div className="space-y-6">
-      <SearchHeader
-        isSearching={isSearching}
-        totalResults={displayTotal}
-        selectedServiceType={selectedServiceType}
-        selectedState={selectedState}
-        zipCode={zipCode}
-        latitude={latitude}
-        longitude={longitude}
-        cityState={cityState}
-        serviceDefinitions={serviceDefinitions}
-        states={states}
-        sortByDistance={false}
-        setSortByDistance={() => {}}
-        isLoadingLocation={false}
-        locationError={null}
-        onClearAll={onClearAll}
-        onToggleSearchForm={onToggleSearchForm}
-        resetSearch={resetSearch}
-      />
-      
       <FilterTagBar
         selectedServiceType={selectedServiceType}
         selectedState={selectedState}
