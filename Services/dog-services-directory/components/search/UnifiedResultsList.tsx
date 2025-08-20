@@ -53,18 +53,6 @@ export function UnifiedResultsList({
       transition={{ duration: 0.5 }}
       className="space-y-8"
     >
-      {/* Results Summary */}
-      <div className="text-center text-sm text-gray-600">
-        <p>
-          Found {results.length} total result{results.length !== 1 ? 's' : ''}
-          {services.length > 0 && products.length > 0 && (
-            <span className="ml-2">
-              ({services.length} service{services.length !== 1 ? 's' : ''}, {products.length} product{products.length !== 1 ? 's' : ''})
-            </span>
-          )}
-        </p>
-      </div>
-
       {/* Services Section */}
       {services.length > 0 && (
         <div className="space-y-4">

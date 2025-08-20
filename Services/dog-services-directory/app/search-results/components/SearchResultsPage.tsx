@@ -344,8 +344,20 @@ export function SearchResultsPage() {
     
     // Get the appropriate results to paginate
     const resultsToPaginate = selectedFilter === 'all' ? allSearchResults : 
-      selectedFilter === 'services' ? allSearchResults.filter(result => 'service_type' in result) :
-      allSearchResults.filter(result => 'product_type' in result);
+      selectedFilter === 'services' ? allSearchResults.filter(result => 
+        'service_type' in result || 
+        'serviceType' in result || 
+        result.type === 'service' ||
+        result.category === 'service'
+      ) :
+      allSearchResults.filter(result => 
+        'product_type' in result || 
+        'productType' in result || 
+        result.type === 'product' ||
+        result.category === 'product' ||
+        'price' in result ||
+        'sku' in result
+      );
     
     // Client-side pagination - slice the results
     const itemsPerPage = 25;
@@ -422,17 +434,55 @@ export function SearchResultsPage() {
   };
 
   // Determine if services and products exist in search results
-  const hasServices = allSearchResults.some(result => 'service_type' in result);
-  const hasProducts = allSearchResults.some(result => 'product_type' in result);
+  const hasServices = allSearchResults.some(result => 
+    'service_type' in result || 
+    'serviceType' in result || 
+    result.type === 'service' ||
+    result.category === 'service'
+  );
+  
+  const hasProducts = allSearchResults.some(result => 
+    'product_type' in result || 
+    'productType' in result || 
+    result.type === 'product' ||
+    result.category === 'product' ||
+    'price' in result ||
+    'sku' in result
+  );
+
+  // Debug logging to understand result structure
+  useEffect(() => {
+    if (allSearchResults.length > 0) {
+      console.log('=== RESULT STRUCTURE DEBUG ===');
+      console.log('First result:', allSearchResults[0]);
+      console.log('All result keys:', allSearchResults.map(r => Object.keys(r)));
+      console.log('Has services:', hasServices);
+      console.log('Has products:', hasProducts);
+      console.log('Service results:', allSearchResults.filter(r => 'service_type' in r || 'serviceType' in r || r.type === 'service' || r.category === 'service'));
+      console.log('Product results:', allSearchResults.filter(r => 'product_type' in r || 'productType' in r || r.type === 'product' || r.category === 'product' || 'price' in r || 'sku' in r));
+    }
+  }, [allSearchResults, hasServices, hasProducts]);
 
   // Filter results based on selected filter
   const getFilteredResults = () => {
     if (selectedFilter === 'all') {
       return searchResults;
     } else if (selectedFilter === 'services') {
-      return searchResults.filter(result => 'service_type' in result);
+      return searchResults.filter(result => 
+        'service_type' in result || 
+        'serviceType' in result || 
+        result.type === 'service' ||
+        result.category === 'service'
+      );
     } else if (selectedFilter === 'products') {
-      return searchResults.filter(result => 'product_type' in result);
+      return searchResults.filter(result => 
+        'product_type' in result || 
+        'productType' in result || 
+        result.type === 'product' ||
+        result.category === 'product' ||
+        'price' in result ||
+        'sku' in result
+      );
     }
     return searchResults;
   };
@@ -558,7 +608,12 @@ export function SearchResultsPage() {
                           : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
                     >
-                      Services ({allSearchResults.filter(result => 'service_type' in result).length})
+                      Services ({allSearchResults.filter(result => 
+                        'service_type' in result || 
+                        'serviceType' in result || 
+                        result.type === 'service' ||
+                        result.category === 'service'
+                      ).length})
                     </button>
                   )}
                   
@@ -572,7 +627,14 @@ export function SearchResultsPage() {
                           : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
                     >
-                      Products ({allSearchResults.filter(result => 'product_type' in result).length})
+                      Products ({allSearchResults.filter(result => 
+                        'product_type' in result || 
+                        'productType' in result || 
+                        result.type === 'product' ||
+                        result.category === 'product' ||
+                        'price' in result ||
+                        'sku' in result
+                      ).length})
                     </button>
                   )}
                 </div>

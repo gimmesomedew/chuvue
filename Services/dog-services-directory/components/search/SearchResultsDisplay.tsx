@@ -7,7 +7,6 @@ import { UnifiedResultsList } from './UnifiedResultsList';
 import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
 import { FilterTagBar } from './FilterTagBar';
-import { AutocompleteSearch } from './AutocompleteSearch';
 import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
@@ -76,19 +75,14 @@ export function SearchResultsDisplay({
   const [isClientFiltered, setIsClientFiltered] = useState(false);
   const [activeClientFilter, setActiveClientFilter] = useState<string | null>(null);
 
-  // Name search state
-  const [nameSearchQuery, setNameSearchQuery] = useState('');
-  const [nameSearchResults, setNameSearchResults] = useState<Array<Service | Product>>([]);
-  const [isNameSearching, setIsNameSearching] = useState(false);
+  // Toggle between card and map views
+  const [view, setView] = useState<'cards' | 'map'>('cards');
 
   // Prefetch next page on hover
   const handlePageHover = (pageNumber: number) => {
     // This is a placeholder for now since we don't have access to prefetchNextPage
     // We can add it later if needed
   };
-
-  // Toggle between card and map views
-  const [view, setView] = useState<'cards' | 'map'>('cards');
 
   // Client-side filtering handlers
   const handleClientFilter = (serviceType: string) => {
@@ -106,38 +100,11 @@ export function SearchResultsDisplay({
     setActiveClientFilter(null);
   };
 
-  // Name search handlers
-  const handleNameSearch = (query: string) => {
-    setIsNameSearching(true);
-    setNameSearchQuery(query);
-    
-    // Search through all current search results (both paginated and all results)
-    const allCurrentResults = [...searchResults, ...allSearchResults];
-    const uniqueResults = allCurrentResults.filter((result, index, self) => 
-      index === self.findIndex(r => r.id === result.id)
-    );
-    
-    const filtered = uniqueResults.filter(result =>
-      result.name.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setNameSearchResults(filtered);
-    setIsNameSearching(false);
-  };
-
-  const handleClearNameSearch = () => {
-    setNameSearchQuery('');
-    setNameSearchResults([]);
-  };
-
   // Determine which results to display
   let displayResults: Array<Service | Product>;
   let displayTotal: number;
 
-  if (nameSearchQuery) {
-    displayResults = nameSearchResults;
-    displayTotal = nameSearchResults.length;
-  } else if (isClientFiltered) {
+  if (isClientFiltered) {
     displayResults = clientFilteredResults;
     displayTotal = clientFilteredResults.length;
   } else {
@@ -173,21 +140,8 @@ export function SearchResultsDisplay({
         onToggleSearchForm={onToggleSearchForm}
       />
 
-      {/* Name Search and View Toggle */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex-1">
-          <AutocompleteSearch
-            onSearch={handleNameSearch}
-            onClear={handleClearNameSearch}
-            isSearching={isNameSearching}
-            allSearchResults={allSearchResults}
-          />
-        </div>
-        {nameSearchQuery && (
-          <div className="text-sm text-gray-600 whitespace-nowrap">
-            Found {displayTotal} result{displayTotal !== 1 ? 's' : ''}
-          </div>
-        )}
+      {/* View Toggle */}
+      <div className="flex justify-end">
         <div className="flex gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -235,8 +189,8 @@ export function SearchResultsDisplay({
         />
       )}
 
-      {/* Only show pagination when not client-filtered and not name-searching */}
-      {!isClientFiltered && !nameSearchQuery && (
+      {/* Only show pagination when not client-filtered */}
+      {!isClientFiltered && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
