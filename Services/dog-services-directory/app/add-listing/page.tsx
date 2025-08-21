@@ -305,7 +305,7 @@ export default function AddListingPage() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <section className="bg-gradient-to-r from-primary to-secondary py-12 text-center text-white shadow-md">
-        <h1 className="text-4xl font-bold mb-2">Add a New Listing</h1>
+        <h1 className="text-4xl font-bold mb-2">Register Your Business</h1>
         <p className="text-lg opacity-90">
           {isProductSubmission() 
             ? 'Share your pet products with our community' 
@@ -355,11 +355,11 @@ export default function AddListingPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <ClipboardList className="w-5 h-5 text-secondary" />
-              {isProductSubmission() ? 'Product Details' : 'Service Details'}
+              {isProductSubmission() ? 'Product Details' : 'Product or Service Details'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
-                <Label>Service Type</Label>
+                <Label>Product or Service Type</Label>
                 <select 
                   name="service_type" 
                   value={form.service_type} 
@@ -387,7 +387,7 @@ export default function AddListingPage() {
                 <Label>Description</Label>
                 <Textarea 
                   name="description" 
-                  placeholder={isProductSubmission() ? "Describe your products, services, and what makes your business special" : "Provide a brief description of the service"} 
+                  placeholder={isProductSubmission() ? "Describe your products, services, and what makes your business special" : "Provide a brief description of the products or services you offer"} 
                   value={form.description} 
                   onChange={handleChange} 
                   required 
