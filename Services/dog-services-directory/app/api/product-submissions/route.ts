@@ -110,8 +110,7 @@ export async function POST(request: NextRequest) {
           latitude: latitude ? parseFloat(latitude) : null,
           longitude: longitude ? parseFloat(longitude) : null,
           is_verified_gentle_care,
-          image_url,
-          user_id
+          image_url
         }
       ])
       .select()
