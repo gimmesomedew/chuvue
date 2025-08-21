@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
         )
       `);
 
-    // Check if query might be product-related
+    // Check if query might be product-related (legacy - will be replaced by intelligent logic)
     const isProductQuery = isProductSearchQuery(query);
-    console.log('🛍️ Is product query:', isProductQuery);
+    console.log('🛍️ Is product query (legacy):', isProductQuery);
 
     // Apply location filters based on search pattern
     if (searchPattern.locationType === 'state') {
@@ -115,9 +115,10 @@ export async function POST(request: NextRequest) {
       // For radius search, we need to handle both services and products
       // Since the RPC function only works with services, we'll search products separately
       
-      // Get products within radius (if they have coordinates)
+      // Get products within radius (if they have coordinates and match product categories)
       let productsInRadius: any[] = [];
-      if (isProductQuery) {
+      const hasProductCategories = await checkProductCategoryMatch(query);
+      if (hasProductCategories) {
         const { data: productsData, error: productsError } = await productsQuery;
         if (!productsError && productsData) {
           productsInRadius = productsData.filter((product: any) => {
@@ -198,57 +199,53 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Execute the queries for both services and products
-    console.log('🚀 Executing Supabase queries for services and products...');
-    
-    // SMART SEARCH LOGIC: For product queries, prioritize products and limit services
-    let servicesLimit = 100; // Default limit for services
-    let productsLimit = 50;  // Default limit for products
+    // INTELLIGENT SEARCH LOGIC: Only search when we have specific matches
+    let servicesLimit = 0; // Default: NO services (only search if service type detected)
+    let productsLimit = 0; // Default: NO products (only search if product category detected)
     
     // Normalize query for intelligent filtering
     const normalizedQuery = query.toLowerCase().trim();
     
-    if (isProductQuery) {
-      console.log('🛍️ Product query detected - prioritizing products and limiting services');
-      
-      // Check if query explicitly mentions "products" - if so, return ONLY products
-      if (normalizedQuery.includes('product') || normalizedQuery.includes('products')) {
-        console.log('🛍️ Query explicitly mentions products - returning ONLY products, no services');
-        servicesLimit = 0;  // Return NO services
-        productsLimit = 100; // Return more products
-      } else {
-        // For product queries that don't explicitly mention "products", return limited related services
-        servicesLimit = 20;  // Only return top 20 most relevant services
-        productsLimit = 100; // Return more products
-        
-        // For product queries, try to find related services instead of random ones
-        if (!searchPattern.serviceType) {
-          console.log('🔍 Attempting to find related services for product query...');
-          
-          // Try to infer service type from product query
-          if (normalizedQuery.includes('supplement') || normalizedQuery.includes('vitamin') || normalizedQuery.includes('health')) {
-            // Health-related products -> show veterinarians
-            servicesQuery = servicesQuery.eq('service_type', 'veterinarian');
-            console.log('🏥 Product query suggests health products - filtering for veterinarians');
-          } else if (normalizedQuery.includes('food') || normalizedQuery.includes('nutrition')) {
-            // Food products -> show pet stores, vets, or groomers
-            servicesQuery = servicesQuery.in('service_type', ['veterinarian', 'groomer']);
-            console.log('🍖 Product query suggests food products - filtering for vets and groomers');
-          } else if (normalizedQuery.includes('gear') || normalizedQuery.includes('equipment') || normalizedQuery.includes('collar')) {
-            // Gear products -> show groomers, trainers, or pet stores
-            servicesQuery = servicesQuery.in('service_type', ['groomer', 'dog_trainer']);
-            console.log('🦮 Product query suggests gear products - filtering for groomers and trainers');
-          } else if (normalizedQuery.includes('therapy') || normalizedQuery.includes('calming')) {
-            // Therapy products -> show holistic vets or specialized services
-            servicesQuery = servicesQuery.eq('service_type', 'veterinarian');
-            console.log('🧘 Product query suggests therapy products - filtering for veterinarians');
-          } else {
-            console.log('⚠️ Could not determine related service type - will return limited random services');
-          }
-        } else {
-          console.log('🏷️ Service type filter already applied for product query');
+    // Check if query explicitly mentions "product" or "products"
+    const isExplicitProductQuery = normalizedQuery.includes('product') || normalizedQuery.includes('products');
+    
+    // Check if we have a specific service type to search for
+    if (searchPattern.serviceType) {
+      servicesLimit = 100; // Search for services of this specific type
+      console.log('🏷️ Service type detected:', searchPattern.serviceType, '- will search services');
+    }
+    
+    // Check if we have specific product categories to search for
+    const hasProductCategories = await checkProductCategoryMatch(query);
+    if (hasProductCategories || isExplicitProductQuery) {
+      productsLimit = 100; // Search for products in these categories
+      console.log('🛍️ Product categories detected or explicit product query - will search products');
+    }
+    
+    // If no specific search criteria, return nothing
+    if (servicesLimit === 0 && productsLimit === 0) {
+      console.log('⚠️ No specific search criteria detected - returning empty results');
+      return NextResponse.json({
+        success: true,
+        results: [],
+        metadata: {
+          originalQuery: query,
+          parsedPattern: searchPattern,
+          resultCount: 0,
+          searchType: 'simple',
+          filters: {
+            serviceType: searchPattern.serviceType,
+            locationType: searchPattern.locationType,
+            locationValue: searchPattern.locationValue,
+            radius: searchPattern.radius
+          },
+          breakdown: {
+            services: 0,
+            products: 0
+          },
+          message: 'No specific search criteria found. Try searching for a service type (e.g., "groomer", "vet") or product category (e.g., "supplements", "toys").'
         }
-      }
+      });
     }
     
     // Debug: Log the actual query objects being sent
@@ -331,7 +328,7 @@ export async function POST(request: NextRequest) {
     })) || [];
 
     // For product queries, filter products by relevance to the search query
-    if (isProductQuery && transformedProducts.length > 0) {
+    if (productsLimit > 0 && transformedProducts.length > 0) {
       const queryWords = normalizedQuery.split(/\s+/).filter(word => word.length > 2);
       
       // Score products based on relevance to query
@@ -383,10 +380,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark services for frontend
-    const transformedServices = (servicesResult.data || []).map((service: any) => ({
+    const transformedServices = (servicesLimit > 0 && servicesResult.data) ? (servicesResult.data || []).map((service: any) => ({
       ...service,
       type: 'service' // Mark as service for frontend
-    }));
+    })) : [];
 
     // Combine results
     const allResults = [...transformedServices, ...transformedProducts];
@@ -402,10 +399,11 @@ export async function POST(request: NextRequest) {
     
     // Debug: Show what filters were actually applied
     console.log('🔍 Final Filters Applied:', {
-      serviceType: searchPattern.serviceType || 'NONE (returns all services)',
+      serviceType: searchPattern.serviceType || 'NONE (no service search)',
       locationType: searchPattern.locationType || 'NONE',
       locationValue: searchPattern.locationValue || 'NONE',
-      isProductQuery: isProductSearchQuery(query),
+      servicesLimit: servicesLimit,
+      productsLimit: productsLimit,
       query: query
     });
     
@@ -674,7 +672,49 @@ function parseSearchQuery(query: string, serviceDefinitions: any[] = []) {
 }
 
 /**
+ * Check if query matches any product categories in the database
+ */
+async function checkProductCategoryMatch(query: string): Promise<boolean> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    
+    // Get all product categories
+    const { data: categories, error } = await supabase
+      .from('product_categories')
+      .select('name, description');
+    
+    if (error || !categories) {
+      console.warn('⚠️ Could not fetch product categories:', error);
+      return false;
+    }
+    
+    const normalizedQuery = query.toLowerCase().trim();
+    
+    // Check if query matches any category name or description
+    for (const category of categories) {
+      const categoryName = category.name?.toLowerCase() || '';
+      const categoryDesc = category.description?.toLowerCase() || '';
+      
+      if (normalizedQuery.includes(categoryName) || categoryName.includes(normalizedQuery) ||
+          normalizedQuery.includes(categoryDesc) || categoryDesc.includes(normalizedQuery)) {
+        console.log('🎯 Product category match found:', category.name);
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('❌ Error checking product categories:', error);
+    return false;
+  }
+}
+
+/**
  * Check if query is likely for products rather than services
+ * @deprecated This function is too broad and catches generic terms. Use checkProductCategoryMatch instead.
  */
 function isProductSearchQuery(query: string): boolean {
   const normalizedQuery = query.toLowerCase().trim();
@@ -691,7 +731,7 @@ function isProductSearchQuery(query: string): boolean {
     'probiotic', 'omega', 'fish oil', 'joint', 'hip', 'arthritis', 'senior', 'puppy',
     
     // Health and wellness
-    'calming', 'anxiety', 'stress', 'relax', 'sleep', 'immune', 'allergy', 'itch', 'skin',
+    'calming', 'calm', 'anxiety', 'stress', 'relax', 'sleep', 'immune', 'allergy', 'itch', 'skin',
     'wound', 'healing', 'dental', 'teeth', 'breath', 'gum', 'anti-inflammatory', 'pain',
     
     // Equipment and gear
