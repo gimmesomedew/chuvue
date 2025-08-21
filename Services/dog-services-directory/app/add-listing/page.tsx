@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { ClipboardList, MapPin, Phone } from 'lucide-react';
+import { ClipboardList, MapPin, Phone, Share2, PawPrint } from 'lucide-react';
 import { Autocomplete } from '@react-google-maps/api';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { useAuth } from '@/contexts/AuthContext';
@@ -77,6 +77,11 @@ export default function AddListingPage() {
     email: '',
     // Product-specific fields
     selectedCategories: [] as number[],
+    facebook_url: '',
+    instagram_url: '',
+    twitter_url: '',
+    pets_name: '',
+    pet_description: '',
   });
   const [loading, setLoading] = useState(false);
   const [isLoadingDefinitions, setIsLoadingDefinitions] = useState(true);
@@ -163,6 +168,23 @@ export default function AddListingPage() {
         showToast.error('Please select at least one product category');
         return;
       }
+    } else {
+      if (!form.address.trim()) {
+        showToast.error('Address is required for service listings.');
+        return;
+      }
+      if (!form.city.trim()) {
+        showToast.error('City is required for service listings.');
+        return;
+      }
+      if (!form.state.trim()) {
+        showToast.error('State is required for service listings.');
+        return;
+      }
+      if (!form.zip_code.trim()) {
+        showToast.error('Zip Code is required for service listings.');
+        return;
+      }
     }
     
     setLoading(true);
@@ -226,7 +248,12 @@ export default function AddListingPage() {
         contact_phone: '', 
         website_url: '', 
         email: '', 
-        selectedCategories: []
+        selectedCategories: [],
+        facebook_url: '',
+        instagram_url: '',
+        twitter_url: '',
+        pets_name: '',
+        pet_description: '',
       });
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : 'Submission failed');
@@ -290,16 +317,33 @@ export default function AddListingPage() {
       {/* Progress Indicator */}
       <nav className="max-w-4xl mx-auto w-full -mt-6 mb-8 px-4">
         <ol className="flex justify-between bg-white shadow rounded-lg p-4">
-          {[
-            { label: isProductSubmission() ? 'Product Details' : 'Service Details', icon: ClipboardList },
-            { label: 'Location', icon: MapPin },
-            { label: 'Contact', icon: Phone },
-          ].map(({ label, icon: Icon }) => (
-            <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
-              <Icon className="w-5 h-5 mb-1 text-secondary" />
-              <span className="hidden sm:inline-block text-center">{label}</span>
-            </li>
-          ))}
+          {(() => {
+            if (isProductSubmission()) {
+              return [
+                { label: 'Product Details', icon: ClipboardList },
+                { label: 'Location (Optional)', icon: MapPin },
+                { label: 'Contact', icon: Phone },
+              ].map(({ label, icon: Icon }) => (
+                <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
+                  <Icon className="w-5 h-5 mb-1 text-secondary" />
+                  <span className="hidden sm:inline-block text-center">{label}</span>
+                </li>
+              ));
+            } else {
+              return [
+                { label: 'Service Details', icon: ClipboardList },
+                { label: 'Location', icon: MapPin },
+                { label: 'Contact', icon: Phone },
+                { label: 'Social', icon: Share2 },
+                { label: 'Pet Info', icon: PawPrint },
+              ].map(({ label, icon: Icon }) => (
+                <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
+                  <Icon className="w-5 h-5 mb-1 text-secondary" />
+                  <span className="hidden sm:inline-block text-center">{label}</span>
+                </li>
+              ));
+            }
+          })()}
         </ol>
       </nav>
 
@@ -404,7 +448,7 @@ export default function AddListingPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-secondary" />
-              Location (Optional)
+              {isProductSubmission() ? 'Location (Optional)' : 'Location'}
             </h2>
             <div className="grid grid-cols-1 gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -418,24 +462,25 @@ export default function AddListingPage() {
                         onChange={handleChange}
                         placeholder="Start typing address"
                         autoComplete="off"
+                        required={!isProductSubmission()}
                       />
                     </Autocomplete>
                   ) : (
-                    <Input name="address" value={form.address} onChange={handleChange} />
+                    <Input name="address" value={form.address} onChange={handleChange} required={!isProductSubmission()} />
                   )}
                 </div>
               </div>
               {/* City, State, Zip in one row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2"><Label>City</Label><Input name="city" placeholder="City" value={form.city} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>City</Label><Input name="city" placeholder="City" value={form.city} onChange={handleChange} required={!isProductSubmission()} /></div>
                 <div className="space-y-2">
                   <Label>State</Label>
-                  <select name="state" value={form.state} onChange={handleChange} className="select select-bordered w-full h-10">
+                  <select name="state" value={form.state} onChange={handleChange} className="select select-bordered w-full h-10" required={!isProductSubmission()}>
                     <option value="">Select</option>
                     {US_STATES.map((st)=>(<option key={st.abbreviation} value={st.abbreviation}>{st.name}</option>))}
                   </select>
                 </div>
-                <div className="space-y-2"><Label>Zip Code</Label><Input name="zip_code" placeholder="ZIP" value={form.zip_code} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Zip Code</Label><Input name="zip_code" placeholder="ZIP" value={form.zip_code} onChange={handleChange} required={!isProductSubmission()} /></div>
               </div>
               {/* latitude & longitude are auto-filled; keep as hidden inputs */}
               <input type="hidden" name="latitude" value={form.latitude} readOnly />
@@ -457,6 +502,35 @@ export default function AddListingPage() {
               <div className="space-y-2 md:col-span-2"><Label>Website URL *</Label><Input name="website_url" placeholder="https://" value={form.website_url} onChange={handleChange} required /></div>
             </div>
           </section>
+
+          {/* Social Links - Only for services */}
+          {!isProductSubmission() && getSection('showSocial') && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-secondary" />
+                Social Links
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2"><Label>Facebook URL</Label><Input name="facebook_url" placeholder="https://facebook.com/..." value={form.facebook_url} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Instagram URL</Label><Input name="instagram_url" placeholder="https://instagram.com/..." value={form.instagram_url} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Twitter URL</Label><Input name="twitter_url" placeholder="https://twitter.com/..." value={form.twitter_url} onChange={handleChange} /></div>
+              </div>
+            </section>
+          )}
+
+          {/* Pet Information - Only for services */}
+          {!isProductSubmission() && getSection('showPetInfo') && (
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <PawPrint className="w-5 h-5 text-secondary" />
+                Pet Information (optional)
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2"><Label>Pet&apos;s Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
+                <div className="space-y-2"><Label>Pet Description</Label><Textarea name="pet_description" placeholder="Tell us a bit about your pet..." value={form.pet_description} onChange={handleChange} /></div>
+              </div>
+            </section>
+          )}
 
           <div className="flex justify-end space-x-4">
             <button 
