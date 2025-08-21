@@ -6,7 +6,9 @@ import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { showToast } from '@/lib/toast';
-import { getSectionedEntries, MenuSection } from '@/lib/menuItems';
+import { getSectionedEntries, MenuSection, MenuEntry } from '@/lib/menuItems';
+import { Shield } from 'lucide-react'; // Added Shield import
+import type { UserRole } from '@/lib/supabase';
 
 // Menu item component
 type MenuItemProps = {
@@ -17,6 +19,11 @@ type MenuItemProps = {
 };
 
 function MenuItem({ icon: Icon, label, href, onClick }: MenuItemProps) {
+  // Handle divider case
+  if (label === '---') {
+    return <div className="border-t border-gray-300 my-2" />;
+  }
+
   return (
     <motion.div
       whileHover={{ x: 5 }}
@@ -49,16 +56,53 @@ export function HamburgerMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
   const { userRole, signOut, unreadMessageCount } = useAuth();
 
-  const sectionsOrder: MenuSection[] = ['base', 'review', 'admin', 'account', 'legal'];
+  const sectionsOrder: MenuSection[] = ['base', 'account', 'legal'];
   const sectionHeadings: Record<MenuSection, string> = {
     base: '',
-    review: 'Reviewer',
-    admin: 'Admin',
     account: 'Account',
     legal: 'Legal'
   } as const;
 
   const sectionedEntries = getSectionedEntries(userRole);
+  
+  // Create enhanced account section with role-specific entries
+  const enhancedAccountEntries: MenuEntry[] = [
+    // Administrator Dashboard - only visible to admins
+    ...(userRole === 'admin' ? [{
+      label: 'Administrator Dashboard',
+      href: '/admin',
+      icon: Shield,
+      roles: ['admin' as UserRole],
+      section: 'account' as MenuSection,
+    }] : []),
+    
+    // Reviewer Dashboard - visible to both reviewers and admins
+    ...((userRole === 'reviewer' || userRole === 'admin') ? [{
+      label: 'Reviewer Dashboard',
+      href: '/review/pending',
+      icon: Shield,
+      roles: ['reviewer' as UserRole, 'admin' as UserRole],
+      section: 'account' as MenuSection,
+    }] : []),
+    
+    // Divider if we have role-specific entries
+    ...((userRole === 'reviewer' || userRole === 'admin') ? [{
+      label: '---',
+      href: '#',
+      icon: Shield, // Use Shield as placeholder icon
+      roles: ['reviewer' as UserRole, 'admin' as UserRole],
+      section: 'account' as MenuSection,
+    }] : []),
+    
+    // Regular account entries
+    ...(sectionedEntries.account || [])
+  ];
+
+  // Create enhanced sections object
+  const enhancedSections = {
+    ...sectionedEntries,
+    account: enhancedAccountEntries
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -169,7 +213,7 @@ export function HamburgerMenu() {
 
               <nav className="space-y-6">
                 {sectionsOrder.map((sectionKey) => {
-                  const entries = sectionedEntries[sectionKey] || [];
+                  const entries = enhancedSections[sectionKey] || [];
                   if (entries.length === 0) return null;
 
                   return (
@@ -177,7 +221,7 @@ export function HamburgerMenu() {
                       {sectionHeadings[sectionKey] && (
                         <h3
                           className={
-                            sectionKey === 'admin'
+                            sectionKey === 'account'
                               ? 'text-sm font-medium text-purple-700 uppercase tracking-wider'
                               : 'text-sm font-medium text-gray-500 uppercase tracking-wider'
                           }

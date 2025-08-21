@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { HamburgerMenu } from "./HamburgerMenu";
 import { Button } from "@/components/ui/button";
-import { LogIn, UserPlus, User, ChevronDown } from "lucide-react";
+import { LogIn, UserPlus, User, ChevronDown, Shield, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProfileImage } from "@/types/profile";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
-
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getSectionedEntries } from "@/lib/menuItems";
@@ -22,8 +21,6 @@ export function Header() {
 
   const baseLinks = (sections.base || []).filter((e) => e.label !== 'Add Listing');
   const addListingEntry = (sections.base || []).find((e) => e.label === 'Add Listing');
-  const reviewerLinks = sections.review || [];
-  const adminLinks = sections.admin || [];
   const accountLinks = sections.account || [];
 
   return (
@@ -81,34 +78,6 @@ export function Header() {
                   </Button>
                 )}
 
-                {/* Reviewer Dropdown */}
-                {reviewerLinks.length > 0 && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="flex items-center text-white hover:text-secondary hover:bg-white/10 transition-colors">Reviewer <ChevronDown className="h-4 w-4 ml-1"/></button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-56 p-2 space-y-1">
-                      {reviewerLinks.map((entry) => (
-                        <Link key={entry.label} href={entry.href} className="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1">{entry.label}</Link>
-                      ))}
-                    </PopoverContent>
-                  </Popover>
-                )}
-
-                {/* Admin Dropdown */}
-                {adminLinks.length > 0 && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="flex items-center text-white hover:text-secondary hover:bg-white/10 transition-colors">Admin <ChevronDown className="h-4 w-4 ml-1"/></button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-60 p-2 space-y-1">
-                      {adminLinks.map((entry) => (
-                        <Link key={entry.label} href={entry.href} className="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1">{entry.label}</Link>
-                      ))}
-                    </PopoverContent>
-                  </Popover>
-                )}
-
                 {/* Avatar Dropdown */}
                 <Popover>
                   <Tooltip>
@@ -125,7 +94,35 @@ export function Header() {
                       <p>{profile?.pet_name || 'My Profile'}</p>
                     </TooltipContent>
                   </Tooltip>
-                  <PopoverContent className="w-44 p-2 space-y-1">
+                  <PopoverContent className="w-56 p-2 space-y-1">
+                    {/* Administrator Dashboard - only visible to admins */}
+                    {userRole === 'admin' && (
+                      <Link 
+                        href="/admin" 
+                        className="flex items-center gap-2 text-sm hover:bg-gray-100 rounded px-2 py-1 text-gray-700"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Administrator Dashboard
+                      </Link>
+                    )}
+                    
+                    {/* Reviewer Dashboard - visible to both reviewers and admins */}
+                    {(userRole === 'reviewer' || userRole === 'admin') && (
+                      <Link 
+                        href="/review/pending" 
+                        className="flex items-center gap-2 text-sm hover:bg-gray-100 rounded px-2 py-1 text-gray-700"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Reviewer Dashboard
+                      </Link>
+                    )}
+                    
+                    {/* Divider if we have role-specific links */}
+                    {((userRole === 'reviewer' || userRole === 'admin')) && (
+                      <div className="border-t border-gray-200 my-1"></div>
+                    )}
+                    
+                    {/* Regular account links */}
                     {accountLinks.filter((e)=>e.label!=='Sign Out').map((entry)=>(
                       <Link key={entry.label} href={entry.href} className="block text-sm hover:bg-gray-100 rounded px-2 py-1">{entry.label}</Link>
                     ))}

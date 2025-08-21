@@ -15,9 +15,13 @@ import {
   HeartOff,
   Link,
   MapPlus,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Pencil
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { EditProductModal } from './EditProductModal';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 interface ProductCardProps {
@@ -35,6 +39,10 @@ function ProductCardComponent({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const { userRole } = useAuth();
+  const isAdminOrReviewer = userRole === 'admin' || userRole === 'reviewer';
 
   const hasLocation = product.latitude && product.longitude;
 
@@ -43,6 +51,17 @@ function ProductCardComponent({
       onFavorite(product.id);
     }
   }, [onFavorite, product.id]);
+
+  const handleEdit = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = (updatedProduct: Product) => {
+    // Update the product in the parent component if needed
+    // For now, we'll just close the modal
+    setIsEditModalOpen(false);
+    // You might want to add a callback prop to handle updates
+  };
 
   const truncateDescription = (text: string, maxLength: number = 120) => {
     if (text.length <= maxLength) return text;
@@ -195,6 +214,28 @@ function ProductCardComponent({
       {/* Action Icons Section */}
       <div className="border-t border-gray-100 flex-shrink-0">
         <div className="flex items-center justify-center gap-6 py-3 px-4">
+          {/* Edit Button - Only for admins and reviewers */}
+          {isAdminOrReviewer && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={handleEdit}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-blue-500 hover:text-blue-600 cursor-pointer"
+                  title="Edit Product"
+                >
+                  <div className="p-2.5 rounded-full transition-all duration-200 bg-blue-50 hover:bg-blue-100">
+                    <Pencil className="h-6 w-6" />
+                  </div>
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Product</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
           {/* Website Link */}
           {product.website && (
             <motion.a
@@ -281,6 +322,14 @@ function ProductCardComponent({
           )}
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        product={product}
+        onUpdate={handleUpdate}
+      />
     </Card>
   );
 }

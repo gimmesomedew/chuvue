@@ -9,16 +9,11 @@ import {
   Navigation,
   Mail,
   Briefcase,
-  Search,
-  Shield,
   User,
   Heart,
-  Settings,
   LogOut,
   LogIn,
   UserPlus,
-  Palette,
-  AlertTriangle,
   FileText,
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
@@ -26,7 +21,7 @@ import { LucideIcon } from 'lucide-react';
 import type { UserRole } from './supabase';
 
 // Logical groupings so menus can be rendered with headings
-export type MenuSection = 'base' | 'review' | 'admin' | 'account' | 'legal';
+export type MenuSection = 'base' | 'account' | 'legal';
 
 export interface MenuEntry {
   label: string;
@@ -44,14 +39,14 @@ export interface MenuEntry {
 export const menuEntries: MenuEntry[] = [
   // ----- Base (general navigation) -----
   {
-    label: '<-BACK DOG PARK ADVENTURES',
+    label: 'Home',
     href: 'https://www.dogparkadventures.com/',
     icon: Home,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
     section: 'base',
   },
   {
-    label: 'FIND A SERVICE OR PRODUCT',
+    label: 'Search',
     href: '/',
     icon: Navigation,
     roles: ['guest', 'pet_owner', 'service_provider', 'reviewer', 'admin'],
@@ -72,7 +67,7 @@ export const menuEntries: MenuEntry[] = [
     section: 'base',
   },
   {
-    label: 'ADD YOUR BUSINESS',
+    label: 'Register Business',
     href: '/add-listing',
     icon: Briefcase,
     roles: ['guest', 'pet_owner', 'service_provider'],
@@ -93,101 +88,6 @@ export const menuEntries: MenuEntry[] = [
     icon: UserPlus,
     roles: ['guest'],
     section: 'account',
-  },
-
-  // ----- Reviewer-only -----
-  {
-    label: 'Pending Submissions',
-    href: '/review/pending',
-    icon: Shield,
-    roles: ['reviewer', 'admin'],
-    section: 'review',
-  },
-  {
-    label: 'Approved Listings',
-    href: '/review/approved',
-    icon: Shield,
-    roles: ['reviewer', 'admin'],
-    section: 'review',
-  },
-  {
-    label: 'Rejected Submissions',
-    href: '/review/rejected',
-    icon: Shield,
-    roles: ['reviewer', 'admin'],
-    section: 'review',
-  },
-  {
-    label: 'Add Listing',
-    href: '/add-listing',
-    icon: Briefcase,
-    roles: ['reviewer', 'admin'],
-    section: 'review',
-  },
-
-  // ----- Admin-only -----
-  {
-    label: 'User Management',
-    href: '/admin/users',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Error Logs',
-    href: '/admin/error-logs',
-    icon: AlertTriangle,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Color Reference',
-    href: '/design/color-reference',
-    icon: Palette,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Service Submissions',
-    href: '/admin/services',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Site Analytics',
-    href: '/admin/analytics',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'System Settings',
-    href: '/admin/settings',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Reviewer Management',
-    href: '/admin/reviewers',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Reports & Exports',
-    href: '/admin/reports',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
-  },
-  {
-    label: 'Platform Health',
-    href: '/admin/health',
-    icon: Shield,
-    roles: ['admin'],
-    section: 'admin',
   },
 
   // ----- Account (logged-in users) -----

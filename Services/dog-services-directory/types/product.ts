@@ -6,12 +6,14 @@ export interface Product {
   contact_number?: string;
   email?: string;
   location_address?: string;
+  address_line_2?: string;
   city?: string;
   state?: string;
   zip_code?: string;
   latitude?: number;
   longitude?: number;
   is_verified_gentle_care: boolean;
+  image_url?: string;
   created_at: string;
   updated_at: string;
   categories?: ProductCategory[];
@@ -38,12 +40,14 @@ export interface ProductSearchResult {
   contact_number?: string;
   email?: string;
   location_address?: string;
+  address_line_2?: string;
   city?: string;
   state?: string;
   zip_code?: string;
   latitude?: number;
   longitude?: number;
   is_verified_gentle_care: boolean;
+  image_url?: string;
   categories: ProductCategory[];
   distance?: number; // For location-based searches
   type: 'product'; // To distinguish from services

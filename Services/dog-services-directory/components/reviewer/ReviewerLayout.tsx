@@ -12,7 +12,12 @@ interface ReviewerLayoutProps {
 const navLinks = [
   {
     href: '/review/pending',
-    label: 'Pending',
+    label: 'Pending Services',
+    icon: <ClipboardList className="w-5 h-5" />,
+  },
+  {
+    href: '/review/product-submissions',
+    label: 'Pending Products',
     icon: <ClipboardList className="w-5 h-5" />,
   },
   {
@@ -33,7 +38,7 @@ export default function ReviewerLayout({ children }: ReviewerLayoutProps) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <aside className="w-64 bg-white border-r border-gray-200 p-6 flex flex-col gap-2">
-        <h2 className="text-xl font-bold mb-6">Reviewer Panel</h2>
+        <h2 className="text-xl font-bold mb-6">Reviewer Dashboard</h2>
         <nav className="flex flex-col gap-2 flex-1">
           {navLinks.map(link => (
             <Link

@@ -110,7 +110,8 @@ export async function POST(request: NextRequest) {
           latitude: latitude ? parseFloat(latitude) : null,
           longitude: longitude ? parseFloat(longitude) : null,
           is_verified_gentle_care,
-          image_url
+          image_url,
+          status: 'pending' // Set status to pending for review
         }
       ])
       .select()
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: 'Product submission created successfully',
+      message: 'Product submission created successfully and is pending review',
       data: product
     }, { status: 201 });
 

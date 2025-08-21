@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Service } from '@/lib/types';
 import { showToast } from '@/lib/toast';
 import { supabase } from '@/lib/supabase';
-import { Upload } from 'lucide-react';
+import { Camera, Loader2, Upload } from 'lucide-react';
 
 export interface EditServiceModalProps {
   isOpen: boolean;
@@ -28,6 +28,8 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
     website_url: service.website_url || '',
     image_url: service.image_url || '',
   });
+
+  const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +79,126 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
       showToast.error('Failed to upload image');
     } finally {
       e.target.value = '';
+    }
+  };
+
+  const handleCaptureScreenshot = async () => {
+    if (!formData.website_url) {
+      showToast.error('Please enter a website URL first');
+      return;
+    }
+
+    setIsCapturingScreenshot(true);
+    try {
+      console.log('Starting screenshot capture for:', formData.website_url);
+      
+      const res = await fetch('/api/services/screenshot-working', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: service.id,
+          websiteUrl: formData.website_url
+        }),
+      });
+
+      console.log('Screenshot API response status:', res.status);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Screenshot API error:', errorData);
+        throw new Error(errorData.error || 'Screenshot capture failed');
+      }
+
+      const json = await res.json();
+      console.log('Screenshot API success response:', json);
+      
+      setFormData(prev => ({ ...prev, image_url: json.screenshotUrl }));
+      showToast.success('Website screenshot captured successfully!');
+    } catch (error) {
+      console.error('Screenshot capture error:', error);
+      showToast.error(`Failed to capture screenshot: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsCapturingScreenshot(false);
+    }
+  };
+
+  const handleExtractLogo = async () => {
+    if (!formData.website_url) {
+      showToast.error('Please enter a website URL first');
+      return;
+    }
+
+    setIsCapturingScreenshot(true);
+    try {
+      console.log('Starting logo extraction for:', formData.website_url);
+      
+      const res = await fetch('/api/services/extract-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: service.id,
+          websiteUrl: formData.website_url
+        }),
+      });
+
+      console.log('Logo extraction API response status:', res.status);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Logo extraction API error:', errorData);
+        throw new Error(errorData.error || 'Logo extraction failed');
+      }
+
+      const json = await res.json();
+      console.log('Logo extraction API success response:', json);
+      
+      setFormData(prev => ({ ...prev, image_url: json.imageUrl }));
+      showToast.success('Logo extracted successfully!');
+    } catch (error) {
+      console.error('Logo extraction error:', error);
+      showToast.error(`Failed to extract logo: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsCapturingScreenshot(false);
+    }
+  };
+
+  const handleExtractRichData = async () => {
+    if (!formData.website_url) {
+      showToast.error('Please enter a website URL first');
+      return;
+    }
+
+    setIsCapturingScreenshot(true);
+    try {
+      console.log('Starting rich data extraction for:', formData.website_url);
+      
+      const res = await fetch('/api/services/extract-rich-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: service.id,
+          websiteUrl: formData.website_url
+        }),
+      });
+
+      console.log('Rich data extraction API response status:', res.status);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Rich data extraction API error:', errorData);
+        throw new Error(errorData.error || 'Rich data extraction failed');
+      }
+
+      const json = await res.json();
+      console.log('Rich data extraction API success response:', json);
+      
+      setFormData(prev => ({ ...prev, image_url: json.imageUrl }));
+      showToast.success('Rich data extracted successfully!');
+    } catch (error) {
+      console.error('Rich data extraction error:', error);
+      showToast.error(`Failed to extract rich data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsCapturingScreenshot(false);
     }
   };
 
@@ -183,7 +305,7 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
               placeholder="Image URL"
               type="url"
             />
-            <div className="mt-2">
+            <div className="mt-2 flex gap-2">
               <label className="flex items-center gap-2 cursor-pointer text-sm text-emerald-600 hover:text-emerald-700">
                 <Upload className="h-4 w-4" /> Upload Image
                 <input
@@ -193,13 +315,85 @@ export function EditServiceModal({ isOpen, onClose, service, onUpdate }: EditSer
                   onChange={handleImageUpload}
                 />
               </label>
+                {formData.website_url && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCaptureScreenshot}
+                      disabled={isCapturingScreenshot}
+                      className="flex items-center gap-2 text-sm"
+                      title="Capture a full screenshot of the website"
+                    >
+                      {isCapturingScreenshot ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Capturing...
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="h-4 w-4" />
+                          Capture Screenshot
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExtractLogo}
+                      disabled={isCapturingScreenshot}
+                      className="flex items-center gap-2 text-sm"
+                      title="Extract logo and brand images from the website (requires Browserless.io API key)"
+                    >
+                      {isCapturingScreenshot ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Extracting...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          Extract Logo
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExtractRichData}
+                      disabled={isCapturingScreenshot}
+                      className="flex items-center gap-2 text-sm"
+                      title="Extract Open Graph images and rich link previews from the website"
+                    >
+                      {isCapturingScreenshot ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Extracting...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          Extract Rich Data
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
             </div>
+            {formData.website_url && !formData.image_url && (
+              <p className="text-xs text-gray-500 mt-1">
+                💡 No image? Use "Capture Screenshot" to automatically capture the website!
+              </p>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white">
               Save Changes
             </Button>
           </div>

@@ -66,6 +66,7 @@ export interface Product {
   contact_number?: string;
   email?: string;
   location_address?: string;
+  address_line_2?: string;
   city?: string;
   state?: string;
   zip_code?: string;
