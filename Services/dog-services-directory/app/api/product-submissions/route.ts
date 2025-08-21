@@ -9,6 +9,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('Product submission request body:', body);
+    
     const {
       name,
       description,
@@ -27,8 +29,15 @@ export async function POST(request: NextRequest) {
       selectedCategories = []
     } = body;
 
+    console.log('Extracted fields:', {
+      name, description, website, contact_number, email, 
+      location_address, city, state, zip_code, latitude, longitude,
+      is_verified_gentle_care, image_url, user_id, selectedCategories
+    });
+
     // Validate required fields for products
     if (!name || !description || !website) {
+      console.log('Missing required fields:', { name: !!name, description: !!description, website: !!website });
       return NextResponse.json(
         { error: 'Missing required fields: name, description, website' },
         { status: 400 }
@@ -37,6 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Validate that at least one category is selected
     if (!selectedCategories || selectedCategories.length === 0) {
+      console.log('No categories selected');
       return NextResponse.json(
         { error: 'At least one product category must be selected' },
         { status: 400 }
@@ -45,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Validate state format if provided (2 characters)
     if (state && state.length !== 2) {
+      console.log('Invalid state format:', state);
       return NextResponse.json(
         { error: 'State must be a 2-character abbreviation' },
         { status: 400 }
@@ -56,6 +67,7 @@ export async function POST(request: NextRequest) {
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.log('Invalid coordinates:', { latitude, longitude });
         return NextResponse.json(
           { error: 'Invalid latitude or longitude values' },
           { status: 400 }
@@ -63,9 +75,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('Attempting to insert into products table...');
+    
     // Insert the product submission
     const { data: product, error: productError } = await supabase
-      .from('product_submissions')
+      .from('products')
       .insert([
         {
           name,
@@ -88,15 +102,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (productError) {
-      console.error('Database error:', productError);
+      console.error('Database error inserting product:', productError);
       return NextResponse.json(
-        { error: 'Failed to create product submission' },
+        { error: `Failed to create product submission: ${productError.message}` },
         { status: 500 }
       );
     }
 
+    console.log('Product inserted successfully:', product);
+
     // Create category mappings if categories are selected
     if (selectedCategories.length > 0 && product) {
+      console.log('Creating category mappings for categories:', selectedCategories);
+      
       const categoryMappings = selectedCategories.map((categoryId: number) => ({
         product_id: product.id,
         category_id: categoryId
@@ -110,6 +128,8 @@ export async function POST(request: NextRequest) {
         console.error('Error creating category mappings:', mappingError);
         // Don't fail the entire request if category mapping fails
         // The product was created successfully
+      } else {
+        console.log('Category mappings created successfully');
       }
     }
 
@@ -121,7 +141,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Product submission error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
@@ -136,7 +156,7 @@ export async function GET(request: NextRequest) {
 
     // Get product submissions with pagination
     const { data, error, count } = await supabase
-      .from('product_submissions')
+      .from('products')
       .select('*', { count: 'exact' })
       .range(offset, offset + limit - 1)
       .order('created_at', { ascending: false });
