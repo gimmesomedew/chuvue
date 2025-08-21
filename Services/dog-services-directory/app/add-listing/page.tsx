@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { ClipboardList, MapPin, Phone, Share2, PawPrint } from 'lucide-react';
+import { ClipboardList, MapPin, Phone } from 'lucide-react';
 import { Autocomplete } from '@react-google-maps/api';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { useAuth } from '@/contexts/AuthContext';
@@ -67,7 +67,6 @@ export default function AddListingPage() {
     name: '',
     description: '',
     address: '',
-    address_line_2: '',
     city: '',
     state: '',
     zip_code: '',
@@ -76,11 +75,8 @@ export default function AddListingPage() {
     contact_phone: '',
     website_url: '',
     email: '',
-    facebook_url: '',
-    instagram_url: '',
-    twitter_url: '',
-    pets_name: '',
-    pet_description: '',
+    // Product-specific fields
+    selectedCategories: [] as number[],
   });
   const [loading, setLoading] = useState(false);
   const [isLoadingDefinitions, setIsLoadingDefinitions] = useState(true);
@@ -149,20 +145,67 @@ export default function AddListingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      const res = await fetch('/api/service-submissions', {
+      let endpoint = '/api/service-submissions';
+      let requestBody = { ...form, user_id: user ? user.id : null };
+
+      if (isProductSubmission()) {
+        // Product submission
+        endpoint = '/api/product-submissions';
+        requestBody = {
+          name: form.name,
+          description: form.description,
+          website: form.website_url,
+          contact_number: form.contact_phone,
+          email: form.email,
+          location_address: form.address,
+          city: form.city,
+          state: form.state,
+          zip_code: form.zip_code,
+          latitude: form.latitude,
+          longitude: form.longitude,
+          selectedCategories: form.selectedCategories,
+          user_id: user ? user.id : null
+        } as any; // Type assertion to avoid TypeScript errors
+      } else {
+        // Service submission (existing logic)
+        requestBody = { ...form, user_id: user ? user.id : null };
+      }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, user_id: user ? user.id : null }),
+        body: JSON.stringify(requestBody),
       });
+
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Submission failed');
       }
-      showToast.success('Listing submitted for review!');
+
+      const successMessage = isProductSubmission() 
+        ? 'Product listing submitted for review!' 
+        : 'Service listing submitted for review!';
+      
+      showToast.success(successMessage);
       router.push('/submission/confirmation');
+      
+      // Reset form
       setForm({
-        service_type: '', name: '', description: '', address: '', address_line_2: '', city: '', state: '', zip_code: '', latitude: '', longitude: '', contact_phone: '', website_url: '', email: '', facebook_url: '', instagram_url: '', twitter_url: '', pets_name: '', pet_description: '',
+        service_type: '', 
+        name: '', 
+        description: '', 
+        address: '', 
+        city: '', 
+        state: '', 
+        zip_code: '', 
+        latitude: '', 
+        longitude: '', 
+        contact_phone: '', 
+        website_url: '', 
+        email: '', 
+        selectedCategories: []
       });
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : 'Submission failed');
@@ -200,23 +243,36 @@ export default function AddListingPage() {
     return true;
   };
 
+  // Helper to check if current service type is for products
+  const isProductSubmission = () => {
+    return form.service_type === 'pet_products';
+  };
+
+  // Helper to check if current service type is for services
+  const isServiceSubmission = () => {
+    return form.service_type && form.service_type !== 'pet_products';
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <section className="bg-gradient-to-r from-primary to-secondary py-12 text-center text-white shadow-md">
         <h1 className="text-4xl font-bold mb-2">Add a New Listing</h1>
-        <p className="text-lg opacity-90">Share your dog service with our community</p>
+        <p className="text-lg opacity-90">
+          {isProductSubmission() 
+            ? 'Share your pet products with our community' 
+            : 'Share your dog service with our community'
+          }
+        </p>
       </section>
 
       {/* Progress Indicator */}
       <nav className="max-w-4xl mx-auto w-full -mt-6 mb-8 px-4">
         <ol className="flex justify-between bg-white shadow rounded-lg p-4">
           {[
-            { label: 'Service Details', icon: ClipboardList },
+            { label: isProductSubmission() ? 'Product Details' : 'Service Details', icon: ClipboardList },
             { label: 'Location', icon: MapPin },
             { label: 'Contact', icon: Phone },
-            { label: 'Social', icon: Share2 },
-            { label: 'Pet Info', icon: PawPrint },
           ].map(({ label, icon: Icon }) => (
             <li key={label} className="flex-1 flex flex-col items-center text-sm font-medium text-gray-600">
               <Icon className="w-5 h-5 mb-1 text-secondary" />
@@ -234,7 +290,7 @@ export default function AddListingPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <ClipboardList className="w-5 h-5 text-secondary" />
-              Service Details
+              {isProductSubmission() ? 'Product Details' : 'Service Details'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
@@ -258,8 +314,68 @@ export default function AddListingPage() {
                   <p className="text-sm text-gray-500 mt-1">Loading service types...</p>
                 )}
               </div>
-              <div className="space-y-2 md:col-span-2"><Label>Business Name</Label><Input name="name" placeholder="e.g., Central Bark Dog Park" value={form.name} onChange={handleChange} required /></div>
-              <div className="space-y-2 md:col-span-2"><Label>Description</Label><Textarea name="description" placeholder="Provide a brief description of the service" value={form.description} onChange={handleChange} required /></div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>{isProductSubmission() ? 'Product/Business Name' : 'Business Name'}</Label>
+                <Input name="name" placeholder={isProductSubmission() ? "e.g., Pawsome Pet Supplies" : "e.g., Central Bark Dog Park"} value={form.name} onChange={handleChange} required />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Description</Label>
+                <Textarea 
+                  name="description" 
+                  placeholder={isProductSubmission() ? "Describe your products, services, and what makes your business special" : "Provide a brief description of the service"} 
+                  value={form.description} 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+              
+              {/* Product-specific fields */}
+              
+              {/* Product Categories */}
+              {isProductSubmission() && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Product Categories</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      { id: 1, name: 'Nutritional, Food, Supplements', color: '#10B981' },
+                      { id: 2, name: 'Calming', color: '#8B5CF6' },
+                      { id: 3, name: 'Immune Support', color: '#F59E0B' },
+                      { id: 4, name: 'Multi-Vitamin Supplements', color: '#3B82F6' },
+                      { id: 5, name: 'Anti-Inflammatory, Anti-Itch', color: '#EF4444' },
+                      { id: 6, name: 'Skin and Wound Care', color: '#EC4899' },
+                      { id: 7, name: 'Teeth and Dental Care', color: '#06B6D4' },
+                      { id: 8, name: 'Gear', color: '#6366F1' },
+                      { id: 9, name: 'Red Light Therapy', color: '#DC2626' },
+                      { id: 10, name: 'Other', color: '#6B7280' }
+                    ].map((category) => (
+                      <label key={category.id} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={form.selectedCategories.includes(category.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setForm(prev => ({
+                                ...prev,
+                                selectedCategories: [...prev.selectedCategories, category.id]
+                              }));
+                            } else {
+                              setForm(prev => ({
+                                ...prev,
+                                selectedCategories: prev.selectedCategories.filter(id => id !== category.id)
+                              }));
+                            }
+                          }}
+                          className="rounded border-gray-300 text-secondary focus:ring-secondary"
+                        />
+                        <span className="text-sm text-gray-700">{category.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Select all categories that apply to your products
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 
@@ -287,15 +403,6 @@ export default function AddListingPage() {
                   ) : (
                     <Input name="address" value={form.address} onChange={handleChange} required />
                   )}
-                </div>
-                <div className="space-y-2">
-                  <Label>Address Line 2 (Optional)</Label>
-                  <Input
-                    name="address_line_2"
-                    value={form.address_line_2}
-                    onChange={handleChange}
-                    placeholder="Apt, Suite, Unit, etc."
-                  />
                 </div>
               </div>
               {/* City, State, Zip in one row */}
@@ -331,35 +438,6 @@ export default function AddListingPage() {
             </div>
           </section>
 
-          {/* Social Links */}
-          {getSection('showSocial') && (
-            <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Share2 className="w-5 h-5 text-secondary" />
-                Social Links
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2"><Label>Facebook URL</Label><Input name="facebook_url" placeholder="https://facebook.com/..." value={form.facebook_url} onChange={handleChange} /></div>
-                <div className="space-y-2"><Label>Instagram URL</Label><Input name="instagram_url" placeholder="https://instagram.com/..." value={form.instagram_url} onChange={handleChange} /></div>
-                <div className="space-y-2"><Label>Twitter URL</Label><Input name="twitter_url" placeholder="https://twitter.com/..." value={form.twitter_url} onChange={handleChange} /></div>
-              </div>
-            </section>
-          )}
-
-          {/* Pet Information */}
-          {getSection('showPetInfo') && (
-            <section>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <PawPrint className="w-5 h-5 text-secondary" />
-                Pet Information (optional)
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2"><Label>Pet&apos;s Name</Label><Input name="pets_name" placeholder="Buddy" value={form.pets_name} onChange={handleChange} /></div>
-                <div className="space-y-2"><Label>Pet Description</Label><Textarea name="pet_description" placeholder="Tell us a bit about your pet..." value={form.pet_description} onChange={handleChange} /></div>
-              </div>
-            </section>
-          )}
-
           <div className="flex justify-end space-x-4">
             <button 
               type="button" 
@@ -373,7 +451,7 @@ export default function AddListingPage() {
               className="btn btn-primary bg-primary hover:bg-third" 
               disabled={loading || isLoadingDefinitions}
             >
-              {loading ? 'Submitting...' : 'Submit Listing'}
+              {loading ? 'Submitting...' : (isProductSubmission() ? 'Submit Product Listing' : 'Submit Service Listing')}
             </button>
           </div>
         </form>
