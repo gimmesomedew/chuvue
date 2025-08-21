@@ -75,11 +75,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('Attempting to insert into products table...');
+    console.log('Attempting to insert into product_submissions table...');
+    
+    // First, let's test if we can access the table
+    const { data: testData, error: testError } = await supabase
+      .from('product_submissions')
+      .select('id')
+      .limit(1);
+    
+    if (testError) {
+      console.error('Error accessing product_submissions table:', testError);
+      return NextResponse.json(
+        { error: `Cannot access product_submissions table: ${testError.message}` },
+        { status: 500 }
+      );
+    }
+    
+    console.log('Table access test successful');
     
     // Insert the product submission
     const { data: product, error: productError } = await supabase
-      .from('products')
+      .from('product_submissions')
       .insert([
         {
           name,
@@ -156,7 +172,7 @@ export async function GET(request: NextRequest) {
 
     // Get product submissions with pagination
     const { data, error, count } = await supabase
-      .from('products')
+      .from('product_submissions')
       .select('*', { count: 'exact' })
       .range(offset, offset + limit - 1)
       .order('created_at', { ascending: false });
