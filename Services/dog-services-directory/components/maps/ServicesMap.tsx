@@ -14,27 +14,27 @@ interface ServicesMapProps {
  * Requires the environment variable NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to be set.
  */
 export function ServicesMap({ services, height = 400 }: ServicesMapProps) {
+  // All hooks must be called at the top level, before any conditional returns
+  const { isLoaded } = useGoogleMaps();
+  
+  // State for currently selected marker
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+
   // Filter out services that do not have valid coordinates
   const validServices = useMemo(
     () => services.filter((s) => typeof s.latitude === 'number' && typeof s.longitude === 'number'),
     [services]
   );
 
-  // Early-return if no coordinates to show
-  if (validServices.length === 0) {
-    return null;
-  }
-
-  const { isLoaded } = useGoogleMaps();
-
   // Compute a reasonable center – use the first service as default
   const center = useMemo(() => {
+    if (validServices.length === 0) return null;
     const { latitude, longitude } = validServices[0];
     return { lat: latitude as number, lng: longitude as number };
   }, [validServices]);
 
-  // State for currently selected marker
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  // Map container style
+  const containerStyle = useMemo(() => ({ width: '100%', height }), [height]);
 
   // Reset selection if the services array changes and no longer contains the previously selected service
   useEffect(() => {
@@ -44,8 +44,10 @@ export function ServicesMap({ services, height = 400 }: ServicesMapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [services]);
 
-  // Map container style
-  const containerStyle = useMemo(() => ({ width: '100%', height }), [height]);
+  // Early-return if no coordinates to show
+  if (validServices.length === 0) {
+    return null;
+  }
 
   if (!isLoaded) {
     return (
@@ -53,6 +55,11 @@ export function ServicesMap({ services, height = 400 }: ServicesMapProps) {
         <p className="text-gray-500">Loading map…</p>
       </div>
     );
+  }
+
+  // Early-return if no center coordinates
+  if (!center) {
+    return null;
   }
 
   return (

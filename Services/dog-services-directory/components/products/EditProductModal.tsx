@@ -38,7 +38,7 @@ export function EditProductModal({ isOpen, onClose, product, onUpdate }: EditPro
     // Ensure website URL has proper protocol
     let processedFormData = { ...formData };
     if (processedFormData.website && !processedFormData.website.startsWith('http://') && !processedFormData.website.startsWith('https://')) {
-      processedFormData.website = `https://${processedFormData.website}`;
+      processedFormData = { ...processedFormData, website: `https://${processedFormData.website}` };
     }
     
     try {
