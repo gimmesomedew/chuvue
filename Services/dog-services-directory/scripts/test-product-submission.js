@@ -52,19 +52,19 @@ const TEST_SCENARIOS = [
   {
     name: "Valid product with all fields",
     data: TEST_PRODUCTS.valid,
-    expectedStatus: 200,
+    expectedStatus: 201,
     description: "Submit a complete product with all required and optional fields"
   },
   {
     name: "Minimal required fields only",
     data: TEST_PRODUCTS.minimal,
-    expectedStatus: 200,
+    expectedStatus: 201,
     description: "Submit product with only required fields (name, description, website, categories)"
   },
   {
     name: "Product with location data",
     data: TEST_PRODUCTS.withLocation,
-    expectedStatus: 200,
+    expectedStatus: 201,
     description: "Submit product with complete location information"
   },
   {
@@ -98,6 +98,12 @@ const TEST_SCENARIOS = [
     description: "Should fail with invalid website URL format"
   },
   {
+    name: "Valid website URL formats",
+    data: { ...TEST_PRODUCTS.valid, website: "https://example.com" },
+    expectedStatus: 201,
+    description: "Should accept valid HTTPS URLs"
+  },
+  {
     name: "Very long product name",
     data: { 
       ...TEST_PRODUCTS.valid, 
@@ -112,7 +118,7 @@ const TEST_SCENARIOS = [
       ...TEST_PRODUCTS.valid, 
       description: "Product with special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?`~" 
     },
-    expectedStatus: 200,
+    expectedStatus: 201,
     description: "Should handle special characters in description"
   }
 ];

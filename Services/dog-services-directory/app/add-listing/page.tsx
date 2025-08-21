@@ -85,6 +85,11 @@ export default function AddListingPage() {
   });
   const [loading, setLoading] = useState(false);
   const [isLoadingDefinitions, setIsLoadingDefinitions] = useState(true);
+  const [urlValidation, setUrlValidation] = useState({
+    isValid: true,
+    message: '',
+    isTouched: false
+  });
 
   // Fetch service definitions
   useEffect(() => {
@@ -143,8 +148,47 @@ export default function AddListingPage() {
     }
   }, [form.address, form.city, form.state, form.zip_code]);
 
+  // URL validation function
+  function validateUrl(url: string): { isValid: boolean; message: string } {
+    if (!url.trim()) {
+      return { isValid: false, message: 'Website URL is required' };
+    }
+    
+    // Check if URL starts with http:// or https://
+    if (!url.match(/^https?:\/\//)) {
+      return { isValid: false, message: 'Website URL must start with http:// or https://' };
+    }
+    
+    try {
+      const urlObj = new URL(url);
+      // Check if it's a valid URL structure
+      if (!urlObj.hostname || urlObj.hostname.length < 3) {
+        return { isValid: false, message: 'Please enter a valid website URL' };
+      }
+      
+      // Check for common TLDs or allow any valid domain
+      if (urlObj.hostname.includes('.')) {
+        return { isValid: true, message: '' };
+      } else {
+        return { isValid: false, message: 'Please enter a valid website URL with domain' };
+      }
+    } catch (error) {
+      return { isValid: false, message: 'Please enter a valid website URL' };
+    }
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    
+    // Special handling for website URL validation
+    if (e.target.name === 'website_url') {
+      const validation = validateUrl(e.target.value);
+      setUrlValidation({
+        isValid: validation.isValid,
+        message: validation.message,
+        isTouched: true
+      });
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -162,6 +206,10 @@ export default function AddListingPage() {
       }
       if (!form.website_url.trim()) {
         showToast.error('Website URL is required');
+        return;
+      }
+      if (!urlValidation.isValid) {
+        showToast.error(urlValidation.message || 'Please enter a valid website URL');
         return;
       }
       if (form.selectedCategories.length === 0) {
@@ -499,7 +547,23 @@ export default function AddListingPage() {
               <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" placeholder="example@domain.com" value={form.email} onChange={handleChange} />
                 <p className="text-sm text-gray-500">Optional: Providing an email allows us to create an account so you can manage your listing.</p>
               </div>
-              <div className="space-y-2 md:col-span-2"><Label>Website URL *</Label><Input name="website_url" placeholder="https://" value={form.website_url} onChange={handleChange} required /></div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Website URL *</Label>
+                <Input 
+                  name="website_url" 
+                  placeholder="https://" 
+                  value={form.website_url} 
+                  onChange={handleChange} 
+                  required 
+                  className={`${urlValidation.isTouched && !urlValidation.isValid ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                />
+                {urlValidation.isTouched && !urlValidation.isValid && (
+                  <p className="text-sm text-red-500 mt-1">{urlValidation.message}</p>
+                )}
+                {urlValidation.isTouched && urlValidation.isValid && (
+                  <p className="text-sm text-green-500 mt-1">✓ Valid website URL</p>
+                )}
+              </div>
             </div>
           </section>
 
@@ -511,9 +575,42 @@ export default function AddListingPage() {
                 Social Links
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2"><Label>Facebook URL</Label><Input name="facebook_url" placeholder="https://facebook.com/..." value={form.facebook_url} onChange={handleChange} /></div>
-                <div className="space-y-2"><Label>Instagram URL</Label><Input name="instagram_url" placeholder="https://instagram.com/..." value={form.instagram_url} onChange={handleChange} /></div>
-                <div className="space-y-2"><Label>Twitter URL</Label><Input name="twitter_url" placeholder="https://twitter.com/..." value={form.twitter_url} onChange={handleChange} /></div>
+                <div className="space-y-2">
+                  <Label>Facebook URL</Label>
+                  <Input 
+                    name="facebook_url" 
+                    placeholder="https://facebook.com/..." 
+                    value={form.facebook_url} 
+                    onChange={handleChange} 
+                  />
+                  {form.facebook_url && !validateUrl(form.facebook_url).isValid && (
+                    <p className="text-xs text-red-500 mt-1">Please enter a valid URL</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Instagram URL</Label>
+                  <Input 
+                    name="instagram_url" 
+                    placeholder="https://instagram.com/..." 
+                    value={form.instagram_url} 
+                    onChange={handleChange} 
+                  />
+                  {form.instagram_url && !validateUrl(form.instagram_url).isValid && (
+                    <p className="text-xs text-red-500 mt-1">Please enter a valid URL</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Twitter URL</Label>
+                  <Input 
+                    name="twitter_url" 
+                    placeholder="https://twitter.com/..." 
+                    value={form.twitter_url} 
+                    onChange={handleChange} 
+                  />
+                  {form.twitter_url && !validateUrl(form.twitter_url).isValid && (
+                    <p className="text-xs text-red-500 mt-1">Please enter a valid URL</p>
+                  )}
+                </div>
               </div>
             </section>
           )}
