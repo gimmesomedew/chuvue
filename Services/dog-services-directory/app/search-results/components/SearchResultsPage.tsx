@@ -686,22 +686,43 @@ export function SearchResultsPage() {
       {!isSearching && searchResults.length === 0 && searchParams.get('q') && (
         <section className="py-16">
           <div className="container mx-auto px-4 text-center">
-            <div className="max-w-md mx-auto">
+            <div className="max-w-2xl mx-auto">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-8">
                 We couldn't find any services matching "{searchParams.get('q')}". Try adjusting your search terms.
               </p>
-              <button
-                onClick={resetSearch}
-                className="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors duration-200"
-              >
-                Try a new search
-              </button>
+              
+              {/* Popular Searches */}
+              <div className="mt-8">
+                <p className="text-gray-600 mb-4 font-bold">Popular Searches:</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {[
+                    'Dog Parks close to me',
+                    'Dog Parks in Indiana',
+                    'Groomers in Indianapolis',
+                    'Veterinarians in Indiana',
+                    'Dog Trainers near me',
+                    'Boarding & Daycare'
+                  ].map((search, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('q', search);
+                        router.push(`/search-results?${params.toString()}`);
+                      }}
+                      className="px-4 py-2 bg-white text-gray-700 rounded-full border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 text-sm"
+                    >
+                      {search}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
