@@ -144,6 +144,27 @@ export default function AddListingPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    // Validate required fields for product submissions
+    if (isProductSubmission()) {
+      if (!form.name.trim()) {
+        showToast.error('Product name is required');
+        return;
+      }
+      if (!form.description.trim()) {
+        showToast.error('Product description is required');
+        return;
+      }
+      if (!form.website_url.trim()) {
+        showToast.error('Website URL is required');
+        return;
+      }
+      if (form.selectedCategories.length === 0) {
+        showToast.error('Please select at least one product category');
+        return;
+      }
+    }
+    
     setLoading(true);
     
     try {
@@ -334,7 +355,7 @@ export default function AddListingPage() {
               {/* Product Categories */}
               {isProductSubmission() && (
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Product Categories</Label>
+                  <Label>Product Categories *</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {[
                       { id: 1, name: 'Nutritional, Food, Supplements', color: '#10B981' },
@@ -372,7 +393,7 @@ export default function AddListingPage() {
                     ))}
                   </div>
                   <p className="text-xs text-gray-500">
-                    Select all categories that apply to your products
+                    * Select at least one category that applies to your products
                   </p>
                 </div>
               )}
@@ -383,7 +404,7 @@ export default function AddListingPage() {
           <section>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-secondary" />
-              Location
+              Location (Optional)
             </h2>
             <div className="grid grid-cols-1 gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -397,25 +418,24 @@ export default function AddListingPage() {
                         onChange={handleChange}
                         placeholder="Start typing address"
                         autoComplete="off"
-                        required
                       />
                     </Autocomplete>
                   ) : (
-                    <Input name="address" value={form.address} onChange={handleChange} required />
+                    <Input name="address" value={form.address} onChange={handleChange} />
                   )}
                 </div>
               </div>
               {/* City, State, Zip in one row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2"><Label>City</Label><Input name="city" placeholder="City" value={form.city} onChange={handleChange} required /></div>
+                <div className="space-y-2"><Label>City</Label><Input name="city" placeholder="City" value={form.city} onChange={handleChange} /></div>
                 <div className="space-y-2">
                   <Label>State</Label>
-                  <select name="state" value={form.state} onChange={handleChange} className="select select-bordered w-full h-10" required>
+                  <select name="state" value={form.state} onChange={handleChange} className="select select-bordered w-full h-10">
                     <option value="">Select</option>
                     {US_STATES.map((st)=>(<option key={st.abbreviation} value={st.abbreviation}>{st.name}</option>))}
                   </select>
                 </div>
-                <div className="space-y-2"><Label>Zip Code</Label><Input name="zip_code" placeholder="ZIP" value={form.zip_code} onChange={handleChange} required /></div>
+                <div className="space-y-2"><Label>Zip Code</Label><Input name="zip_code" placeholder="ZIP" value={form.zip_code} onChange={handleChange} /></div>
               </div>
               {/* latitude & longitude are auto-filled; keep as hidden inputs */}
               <input type="hidden" name="latitude" value={form.latitude} readOnly />
@@ -434,7 +454,7 @@ export default function AddListingPage() {
               <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" placeholder="example@domain.com" value={form.email} onChange={handleChange} />
                 <p className="text-sm text-gray-500">Optional: Providing an email allows us to create an account so you can manage your listing.</p>
               </div>
-              <div className="space-y-2 md:col-span-2"><Label>Website URL</Label><Input name="website_url" placeholder="https://" value={form.website_url} onChange={handleChange} /></div>
+              <div className="space-y-2 md:col-span-2"><Label>Website URL *</Label><Input name="website_url" placeholder="https://" value={form.website_url} onChange={handleChange} required /></div>
             </div>
           </section>
 

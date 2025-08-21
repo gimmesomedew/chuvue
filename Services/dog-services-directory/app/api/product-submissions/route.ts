@@ -27,16 +27,24 @@ export async function POST(request: NextRequest) {
       selectedCategories = []
     } = body;
 
-    // Validate required fields
-    if (!name || !location_address || !city || !state || !zip_code) {
+    // Validate required fields for products
+    if (!name || !description || !website) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, location_address, city, state, zip_code' },
+        { error: 'Missing required fields: name, description, website' },
         { status: 400 }
       );
     }
 
-    // Validate state format (2 characters)
-    if (state.length !== 2) {
+    // Validate that at least one category is selected
+    if (!selectedCategories || selectedCategories.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one product category must be selected' },
+        { status: 400 }
+      );
+    }
+
+    // Validate state format if provided (2 characters)
+    if (state && state.length !== 2) {
       return NextResponse.json(
         { error: 'State must be a 2-character abbreviation' },
         { status: 400 }
@@ -65,10 +73,10 @@ export async function POST(request: NextRequest) {
           website,
           contact_number,
           email,
-          location_address,
-          city,
-          state,
-          zip_code,
+          location_address: location_address || null,
+          city: city || null,
+          state: state || null,
+          zip_code: zip_code || null,
           latitude: latitude ? parseFloat(latitude) : null,
           longitude: longitude ? parseFloat(longitude) : null,
           is_verified_gentle_care,
