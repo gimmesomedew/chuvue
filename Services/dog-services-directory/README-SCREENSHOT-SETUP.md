@@ -40,7 +40,7 @@ The screenshot capture feature allows reviewers and administrators to automatica
 2. **Get your API key** from the dashboard
 3. **Add to environment variables**:
    ```bash
-   BROWSERLESS_API_KEY=your_api_key_here
+   BROWSERLESS_API_KEY=2SuPXcIN9ncg8709b7d9ae68bb95e6c7142a5fd33b8838cf4your_api_key_here
    ```
 
 **Pros**: 

@@ -4,10 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --no-lint",
-    "build:lint": "next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:products": "node scripts/run-all-tests.js",
+    "test:products:api": "node scripts/test-product-submission.js",
+    "test:products:frontend": "node scripts/test-form-validation.js",
+    "test:products:database": "node scripts/test-database-integration.js",
+    "test:products:quick": "node scripts/test-product-submission.js && node scripts/test-database-integration.js"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.3.1",
