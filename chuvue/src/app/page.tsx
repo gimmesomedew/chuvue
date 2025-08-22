@@ -127,7 +127,7 @@ export default function Dashboard() {
       module: 'Receiving Feedback',
       time: '15 minutes ago',
       status: 'started',
-      color: 'bg-accent-blue'
+      color: 'bg-slate-600'
     },
     {
       id: '3',
@@ -155,20 +155,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Enhanced Background Pattern with Glass Morphism */}
-      <div className="fixed inset-0 opacity-40">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(139,92,246,0.15)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.15)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,rgba(59,130,246,0.1)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.08)_0%,transparent_50%)]"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
+      {/* Enhanced Background Pattern with Glass Morphism - Darker Theme */}
+      <div className="fixed inset-0 opacity-30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(139,92,246,0.08)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.06)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,rgba(75,85,99,0.05)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
       </div>
 
-      {/* Floating Orbs for Enhanced Glass Effect */}
+      {/* Floating Orbs for Enhanced Glass Effect - Darker Theme */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/10 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-accent-blue/10 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/5 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-slate-600/8 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
       </div>
 
       {/* Sidebar */}
@@ -188,7 +188,7 @@ export default function Dashboard() {
             transition={{ duration: 0.5 }}
           >
             <motion.div 
-              className="w-10 h-10 bg-gradient-to-br from-accent-green to-primary-500 rounded-full flex items-center justify-center glass-hover"
+              className="w-10 h-10 bg-gradient-to-br from-accent-green to-slate-700 rounded-full flex items-center justify-center glass-hover"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
@@ -214,7 +214,7 @@ export default function Dashboard() {
                 <p className="text-gray-300 text-lg">Here's what's happening with your interactive learning system today</p>
               </motion.div>
               <motion.button 
-                className="glass-button flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-accent-purple to-primary-600 hover:from-accent-purple/80 hover:to-primary-600/80 glow-effect"
+                className="glass-button flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-accent-purple/20 to-slate-800/40 hover:from-accent-purple/30 hover:to-slate-800/60 border-accent-purple/30 glow-effect"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
@@ -343,7 +343,7 @@ export default function Dashboard() {
                       <span className={`text-xs px-2 py-1 rounded-full ${
                         interactive.status === 'active' 
                           ? 'bg-accent-green/20 text-accent-green' 
-                          : 'bg-accent-blue/20 text-accent-blue'
+                          : 'bg-slate-600/20 text-slate-300'
                       }`}>
                         {interactive.status === 'active' ? 'Active' : 'Draft'}
                       </span>
@@ -359,7 +359,7 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold text-white mb-6">Quick Actions</h2>
               <div className="space-y-4">
                 <button 
-                  className="w-full glass-button flex items-center justify-center space-x-2 bg-gradient-to-r from-accent-purple to-primary-600 hover:from-accent-purple/80 hover:to-primary-600/80 py-3 glow-effect"
+                  className="w-full glass-button flex items-center justify-center space-x-2 bg-gradient-to-r from-accent-purple/20 to-slate-800/40 hover:from-accent-purple/30 hover:to-slate-800/60 border-accent-purple/30 py-3 glow-effect"
                   onClick={() => window.location.href = '/interactives'}
                 >
                   <Plus className="w-4 h-4" />
@@ -381,7 +381,7 @@ export default function Dashboard() {
                   
                   <button className="w-full p-4 rounded-xl glass-light hover:glass-hover transition-all duration-300 text-left">
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded-lg bg-accent-blue/20 text-accent-blue">
+                      <div className="p-2 rounded-lg bg-slate-600/20 text-slate-300">
                         <BarChart3 className="w-5 h-5" />
                       </div>
                       <div>
@@ -413,7 +413,7 @@ export default function Dashboard() {
                 <div className="p-3 rounded-xl glass-light">
                   <p className="text-gray-400 text-sm">Average Study Time</p>
                   <p className="text-white font-medium">Per interactive session</p>
-                  <p className="text-accent-blue text-sm">24 minutes</p>
+                  <p className="text-slate-300 text-sm">24 minutes</p>
                 </div>
                 
                 <div className="mt-6 p-4 rounded-xl glass-dark border border-accent-purple/20 glow-effect">
@@ -434,7 +434,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-center space-x-3 p-3 rounded-xl glass-light hover:glass-hover transition-all duration-300">
-                    <div className="w-8 h-8 bg-gradient-to-br from-accent-green to-primary-500 rounded-full flex items-center justify-center glass-hover">
+                    <div className="w-8 h-8 bg-gradient-to-br from-accent-green to-slate-700 rounded-full flex items-center justify-center glass-hover">
                       <span className="text-white font-bold text-xs">{activity.name.charAt(0)}</span>
                     </div>
                     <div className="flex-1">

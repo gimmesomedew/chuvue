@@ -33,7 +33,7 @@ const navigationItems = [
     icon: Puzzle,
     href: '/interactives',
     active: false,
-    color: 'text-accent-blue'
+    color: 'text-slate-300'
   },
   {
     id: 'students',
@@ -92,7 +92,7 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         {!isCollapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent-purple to-primary-500 rounded-lg flex items-center justify-center glass-hover">
+            <div className="w-8 h-8 bg-gradient-to-br from-accent-purple to-slate-700 rounded-lg flex items-center justify-center glass-hover">
               <span className="text-white font-bold text-sm">C</span>
             </div>
             <span className="text-white font-bold text-lg">ChuVue</span>

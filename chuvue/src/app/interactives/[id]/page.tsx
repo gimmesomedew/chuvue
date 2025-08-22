@@ -157,7 +157,7 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
       case 'Draft':
         return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
       case 'New':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+        return 'bg-slate-600/20 text-slate-300 border-slate-600/30'
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
     }
@@ -196,20 +196,20 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Enhanced Background Pattern with Glass Morphism */}
-      <div className="fixed inset-0 opacity-40">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(139,92,246,0.15)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.15)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,rgba(59,130,246,0.1)_0%,transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.08)_0%,transparent_50%)]"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
+      {/* Enhanced Background Pattern with Glass Morphism - Darker Theme */}
+      <div className="fixed inset-0 opacity-30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(139,92,246,0.08)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.06)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,rgba(75,85,99,0.05)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
       </div>
 
-      {/* Floating Orbs for Enhanced Glass Effect */}
+      {/* Floating Orbs for Enhanced Glass Effect - Darker Theme */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/10 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-accent-blue/10 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/5 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-slate-600/8 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
       </div>
 
       {/* Sidebar */}
@@ -229,7 +229,7 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
             transition={{ duration: 0.5 }}
           >
             <motion.div 
-              className="w-10 h-10 bg-gradient-to-br from-accent-green to-primary-500 rounded-full flex items-center justify-center glass-hover"
+              className="w-10 h-10 bg-gradient-to-br from-accent-green to-slate-700 rounded-full flex items-center justify-center glass-hover"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
