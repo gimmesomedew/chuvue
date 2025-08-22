@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Sidebar from '../../components/Sidebar'
 import { 
@@ -47,42 +47,59 @@ interface Activity {
 
 export default function ConceptsHub() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [learningConcepts, setLearningConcepts] = useState<LearningConcept[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [newConcept, setNewConcept] = useState({
+    title: '',
+    description: '',
+    category: 'Personal Development'
+  })
+  const [isCreating, setIsCreating] = useState(false)
 
-  const learningConcepts: LearningConcept[] = [
-    {
-      id: '1',
-      title: 'Coachability',
-      description: 'Interactive modules focusing on growth mindset, receiving feedback, self-assessment, and building resilience for personal development.',
-      icon: Brain,
-      color: 'text-accent-purple',
-      status: 'active',
-      completion: 87,
-      chapters: 24,
-      students: 342
-    },
-    {
-      id: '2',
-      title: 'Mental Toughness',
-      description: 'Build psychological resilience through stress management, pressure handling, confidence building, and maintaining focus under challenging conditions.',
-      icon: Shield,
-      color: 'text-accent-green',
-      status: 'active',
-      completion: 92,
-      chapters: 18,
-      students: 287
-    },
-    {
-      id: '3',
-      title: 'Grit',
-      description: 'Develop passion and perseverance for long-term goals through persistence training, goal-setting strategies, and overcoming obstacles with determination.',
-      icon: Flame,
-      color: 'text-accent-orange',
-      status: 'draft',
-      completion: 78,
-      chapters: 15,
-      students: 156
+  // Fetch real interactive data from database
+  useEffect(() => {
+    const fetchInteractives = async () => {
+      try {
+        const response = await fetch('/api/interactives')
+        if (response.ok) {
+          const data = await response.json()
+          const concepts = data.map((interactive: any) => ({
+            id: interactive.id, // This will be the real UUID
+            title: interactive.title,
+            description: interactive.description || 'Interactive learning module',
+            icon: Brain, // Default icon for now
+            color: 'text-accent-purple',
+            status: interactive.status || 'draft',
+            completion: Math.floor(Math.random() * 30) + 70, // Random completion for demo
+            chapters: Math.floor(Math.random() * 20) + 10, // Random chapters for demo
+            students: Math.floor(Math.random() * 200) + 100 // Random students for demo
+          }))
+          setLearningConcepts(concepts)
+        }
+      } catch (error) {
+        console.error('Error fetching interactives:', error)
+        // Fallback to sample data if API fails
+        setLearningConcepts([
+          {
+            id: 'sample-1',
+            title: 'Coachability',
+            description: 'Interactive modules focusing on growth mindset, receiving feedback, self-assessment, and building resilience for personal development.',
+            icon: Brain,
+            color: 'text-accent-purple',
+            status: 'active',
+            completion: 87,
+            chapters: 24,
+            students: 342
+          }
+        ])
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ]
+
+    fetchInteractives()
+  }, [])
 
   const recentActivity: Activity[] = [
     {
@@ -116,6 +133,55 @@ export default function ConceptsHub() {
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed)
+  }
+
+  const handleCreateConcept = async () => {
+    if (!newConcept.title.trim()) return
+    
+    setIsCreating(true)
+    try {
+      const response = await fetch('/api/interactives', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: newConcept.title.trim(),
+          description: newConcept.description.trim(),
+          category: newConcept.category
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        // Close modal and refresh concepts
+        setIsCreateModalOpen(false)
+        setNewConcept({ title: '', description: '', category: 'Personal Development' })
+        // Refresh the concepts list
+        const refreshResponse = await fetch('/api/interactives')
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json()
+          const concepts = data.map((interactive: any) => ({
+            id: interactive.id,
+            title: interactive.title,
+            description: interactive.description || 'Interactive learning module',
+            icon: Brain,
+            color: 'text-accent-purple',
+            status: interactive.status || 'draft',
+            completion: Math.floor(Math.random() * 30) + 70,
+            chapters: Math.floor(Math.random() * 20) + 10,
+            students: Math.floor(Math.random() * 200) + 100
+          }))
+          setLearningConcepts(concepts)
+        }
+      } else {
+        console.error('Failed to create concept')
+      }
+    } catch (error) {
+      console.error('Error creating concept:', error)
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   // Animation variants
@@ -218,6 +284,7 @@ export default function ConceptsHub() {
                 <p className="text-gray-300 text-lg">Explore and manage your interactive learning modules.</p>
               </motion.div>
               <motion.button 
+                onClick={() => setIsCreateModalOpen(true)}
                 className="glass-button flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-accent-purple/20 to-slate-800/40 hover:from-accent-purple/30 hover:to-slate-800/60 border-accent-purple/30 glow-effect"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -246,8 +313,8 @@ export default function ConceptsHub() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Total Concepts</p>
-                  <p className="text-3xl font-bold text-white">3</p>
-                  <p className="text-accent-green text-sm">+3 this week</p>
+                  <p className="text-3xl font-bold text-white">{learningConcepts.length}</p>
+                  <p className="text-accent-green text-sm">+{learningConcepts.length} this week</p>
                 </div>
                 <motion.div 
                   className="p-3 rounded-xl glass-dark text-accent-purple"
@@ -347,7 +414,16 @@ export default function ConceptsHub() {
                 </div>
                 
                 <div className="space-y-4">
-                  {learningConcepts.map((concept, index) => (
+                  {isLoading ? (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400">Loading concepts...</div>
+                    </div>
+                  ) : learningConcepts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400">No concepts found</div>
+                    </div>
+                  ) : (
+                    learningConcepts.map((concept, index) => (
                     <motion.div
                       key={concept.id}
                       className="glass-card p-4 cursor-pointer transition-all duration-300"
@@ -387,7 +463,8 @@ export default function ConceptsHub() {
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                  ))
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -404,6 +481,7 @@ export default function ConceptsHub() {
                 <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
                 <div className="space-y-3">
                   <motion.button 
+                    onClick={() => setIsCreateModalOpen(true)}
                     className="w-full glass-button flex items-center space-x-2 py-3"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -474,6 +552,97 @@ export default function ConceptsHub() {
               </motion.div>
             </div>
           </div>
+
+          {/* Create Concept Modal */}
+          {isCreateModalOpen && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="glass-panel w-full max-w-md p-6"
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-white">Create New Concept</h2>
+                  <button
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="glass-hover p-2 rounded-lg"
+                  >
+                    <span className="text-gray-400 hover:text-white">✕</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Concept Title
+                    </label>
+                    <input
+                      type="text"
+                      value={newConcept.title}
+                      onChange={(e) => setNewConcept({ ...newConcept, title: e.target.value })}
+                      placeholder="Enter concept title..."
+                      className="w-full glass-input p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-purple/50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={newConcept.description}
+                      onChange={(e) => setNewConcept({ ...newConcept, description: e.target.value })}
+                      placeholder="Describe your concept..."
+                      rows={3}
+                      className="w-full glass-input p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-purple/50 resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={newConcept.category}
+                      onChange={(e) => setNewConcept({ ...newConcept, category: e.target.value })}
+                      className="w-full glass-input p-3 text-white focus:outline-none focus:ring-2 focus:ring-accent-purple/50"
+                    >
+                      <option value="Personal Development">Personal Development</option>
+                      <option value="Communication">Communication</option>
+                      <option value="Leadership">Leadership</option>
+                      <option value="Innovation">Innovation</option>
+                    </select>
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      onClick={() => setIsCreateModalOpen(false)}
+                      className="flex-1 glass-button bg-gray-600/20 border-gray-600/30 text-gray-300 hover:bg-gray-600/30 py-3"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCreateConcept}
+                      disabled={!newConcept.title.trim() || isCreating}
+                      className={`flex-1 glass-button py-3 ${
+                        !newConcept.title.trim() || isCreating
+                          ? 'bg-gray-500/20 border-gray-500/30 text-gray-400 cursor-not-allowed'
+                          : 'bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30'
+                      }`}
+                    >
+                      {isCreating ? 'Creating...' : 'Create Concept'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
 
         </div>
       </div>

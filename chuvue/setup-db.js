@@ -87,6 +87,40 @@ async function setupDatabase() {
         UNIQUE(interactive_id, order_index)
       )
     `
+
+    // Create chapters table
+    await sql`
+      CREATE TABLE IF NOT EXISTS chapters (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        interactive_id UUID REFERENCES interactives(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        duration VARCHAR(100),
+        difficulty VARCHAR(50) DEFAULT 'Beginner' CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
+        status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+        order_index INTEGER NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE(interactive_id, order_index)
+      )
+    `
+
+    // Create touchpoints table
+    await sql`
+      CREATE TABLE IF NOT EXISTS touchpoints (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        chapter_id UUID REFERENCES chapters(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        duration VARCHAR(100),
+        type VARCHAR(50) NOT NULL CHECK (type IN ('Video', 'Interactive', 'Content')),
+        video_url VARCHAR(500),
+        order_index INTEGER NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE(chapter_id, order_index)
+      )
+    `
     
     // Create user_progress table
     await sql`
@@ -118,6 +152,74 @@ async function setupDatabase() {
     
     console.log('✅ Database schema created successfully')
     
+    // Create triggers for updated_at columns
+    console.log('🔧 Creating database triggers...')
+    
+    // Create updated_at trigger function
+    await sql`
+      CREATE OR REPLACE FUNCTION update_updated_at_column()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        NEW.updated_at = NOW();
+        RETURN NEW;
+      END;
+      $$ language 'plpgsql'
+    `
+    
+    // Apply updated_at trigger to tables
+    await sql`
+      DROP TRIGGER IF EXISTS update_interactives_updated_at ON interactives
+    `
+    await sql`
+      CREATE TRIGGER update_interactives_updated_at BEFORE UPDATE ON interactives
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+    `
+    
+    await sql`
+      DROP TRIGGER IF EXISTS update_screens_updated_at ON screens
+    `
+    await sql`
+      CREATE TRIGGER update_screens_updated_at BEFORE UPDATE ON screens
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+    `
+    
+    await sql`
+      DROP TRIGGER IF EXISTS update_chapters_updated_at ON chapters
+    `
+    await sql`
+      CREATE TRIGGER update_chapters_updated_at BEFORE UPDATE ON chapters
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+    `
+    
+    await sql`
+      DROP TRIGGER IF EXISTS update_touchpoints_updated_at ON touchpoints
+    `
+    await sql`
+      CREATE TRIGGER update_touchpoints_updated_at BEFORE UPDATE ON touchpoints
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+    `
+    
+    console.log('✅ Database triggers created successfully')
+    
+    // Create indexes for better performance
+    console.log('📊 Creating database indexes...')
+    
+    await sql`CREATE INDEX IF NOT EXISTS idx_interactives_category ON interactives(category_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_interactives_status ON interactives(status)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_interactives_created_by ON interactives(created_by)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_screens_interactive ON screens(interactive_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_screens_order ON screens(interactive_id, order_index)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_chapters_interactive ON chapters(interactive_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_chapters_order ON chapters(interactive_id, order_index)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_touchpoints_chapter ON touchpoints(chapter_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_touchpoints_order ON touchpoints(chapter_id, order_index)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_progress_user ON user_progress(user_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_progress_interactive ON user_progress(interactive_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_screen_interactions_user ON screen_interactions(user_id)`
+    await sql`CREATE INDEX IF NOT EXISTS idx_screen_interactions_screen ON screen_interactions(screen_id)`
+    
+    console.log('✅ Database indexes created successfully')
+    
     // Insert default categories
     console.log('📝 Inserting default categories...')
     await sql`
@@ -129,100 +231,12 @@ async function setupDatabase() {
       ON CONFLICT (name) DO NOTHING
     `
     
-    // Insert sample data
-    console.log('📝 Inserting sample data...')
-    
-    // Create a default user
-    const defaultUser = await sql`
-      INSERT INTO users (id, email, name, role) 
-      VALUES (
-        '00000000-0000-0000-0000-000000000001',
-        'admin@chuvue.com',
-        'ChuVue Admin',
-        'admin'
-      )
-      ON CONFLICT (id) DO NOTHING
-      RETURNING id
-    `
-    
-    // Get the default user ID
-    const userId = defaultUser[0]?.id || '00000000-0000-0000-0000-000000000001'
-    
-    // Get the Personal Development category
-    const category = await sql`
-      SELECT id FROM categories WHERE name = 'Personal Development' LIMIT 1
-    `
-    
-    if (category.length > 0) {
-      // Create a sample interactive
-      const interactive = await sql`
-        INSERT INTO interactives (title, description, category_id, status, created_by)
-        VALUES (
-          'Master Coachability',
-          'Develop your ability to receive feedback, adapt, and grow through interactive learning experiences designed for teens and young adults.',
-          ${category[0].id},
-          'published',
-          ${userId}
-        )
-        RETURNING id
-      `
-      
-      if (interactive.length > 0) {
-        const interactiveId = interactive[0].id
-        
-        // Create sample screens
-        const screens = [
-          {
-            type: 'start',
-            title: 'Master Coachability',
-            content: 'Develop your ability to receive feedback, adapt, and grow through interactive learning experiences designed for teens and young adults.',
-            order_index: 1
-          },
-          {
-            type: 'intro',
-            title: 'Welcome to Your Learning Journey',
-            content: 'In this module, you\'ll discover the key principles of coachability and how they can transform your personal and professional growth. Get ready to explore active listening, growth mindset, and practical strategies for receiving feedback effectively.',
-            order_index: 2
-          },
-          {
-            type: 'video',
-            title: 'Understanding Coachability',
-            content: 'Watch this short video to learn the fundamentals of coachability and why it\'s essential for success.',
-            video_url: '',
-            order_index: 3
-          },
-          {
-            type: 'content',
-            title: 'Key Principles',
-            content: 'Coachability is built on three core principles: openness to feedback, willingness to change, and commitment to growth. These principles work together to create a mindset that embraces learning and development.',
-            order_index: 4
-          },
-          {
-            type: 'completion',
-            title: 'Congratulations!',
-            content: 'You\'ve successfully completed the Master Coachability module. You now have the foundation to become more coachable and open to growth opportunities.',
-            quote: 'The only way to grow is to be coachable.',
-            author: 'John Maxwell',
-            order_index: 5
-          }
-        ]
-        
-        for (const screen of screens) {
-          await sql`
-            INSERT INTO screens (interactive_id, type, title, content, video_url, quote, author, order_index)
-            VALUES (${interactiveId}, ${screen.type}, ${screen.title}, ${screen.content}, ${screen.video_url}, ${screen.quote}, ${screen.author}, ${screen.order_index})
-          `
-        }
-        
-        console.log('✅ Sample interactive "Master Coachability" created with 5 screens')
-      }
-    }
-    
+    // Database setup completed - no sample data
     console.log('🎉 Database setup completed successfully!')
     console.log('📊 You can now:')
     console.log('   - View the dashboard at http://localhost:3000')
-    console.log('   - Edit the sample interactive at http://localhost:3000/editor/[id]')
-    console.log('   - View the mobile experience at http://localhost:3000/interactive/[id]')
+    console.log('   - Create your own concepts from scratch')
+    console.log('   - Build custom learning experiences')
     
   } catch (error) {
     console.error('❌ Database setup failed:', error)

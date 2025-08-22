@@ -51,6 +51,36 @@ CREATE TABLE IF NOT EXISTS screens (
   UNIQUE(interactive_id, order_index)
 );
 
+-- Chapters table for organizing content within interactives
+CREATE TABLE IF NOT EXISTS chapters (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  interactive_id UUID REFERENCES interactives(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  duration VARCHAR(100),
+  difficulty VARCHAR(50) DEFAULT 'Beginner' CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
+  status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+  order_index INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(interactive_id, order_index)
+);
+
+-- Touchpoints table for individual learning elements within chapters
+CREATE TABLE IF NOT EXISTS touchpoints (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  chapter_id UUID REFERENCES chapters(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  duration VARCHAR(100),
+  type VARCHAR(50) NOT NULL CHECK (type IN ('Video', 'Interactive', 'Content')),
+  video_url VARCHAR(500),
+  order_index INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(chapter_id, order_index)
+);
+
 -- User progress tracking
 CREATE TABLE IF NOT EXISTS user_progress (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -89,6 +119,10 @@ CREATE INDEX IF NOT EXISTS idx_interactives_status ON interactives(status);
 CREATE INDEX IF NOT EXISTS idx_interactives_created_by ON interactives(created_by);
 CREATE INDEX IF NOT EXISTS idx_screens_interactive ON screens(interactive_id);
 CREATE INDEX IF NOT EXISTS idx_screens_order ON screens(interactive_id, order_index);
+CREATE INDEX IF NOT EXISTS idx_chapters_interactive ON chapters(interactive_id);
+CREATE INDEX IF NOT EXISTS idx_chapters_order ON chapters(interactive_id, order_index);
+CREATE INDEX IF NOT EXISTS idx_touchpoints_chapter ON touchpoints(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_touchpoints_order ON touchpoints(chapter_id, order_index);
 CREATE INDEX IF NOT EXISTS idx_user_progress_user ON user_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_progress_interactive ON user_progress(interactive_id);
 CREATE INDEX IF NOT EXISTS idx_screen_interactions_user ON screen_interactions(user_id);
@@ -108,4 +142,10 @@ CREATE TRIGGER update_interactives_updated_at BEFORE UPDATE ON interactives
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_screens_updated_at BEFORE UPDATE ON screens
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_chapters_updated_at BEFORE UPDATE ON chapters
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_touchpoints_updated_at BEFORE UPDATE ON touchpoints
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

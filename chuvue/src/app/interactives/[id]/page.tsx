@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Sidebar from '../../../components/Sidebar'
 import { 
@@ -21,18 +21,21 @@ import {
   TrendingUp,
   BookOpen,
   Target,
-  Zap
+  Zap,
+  Trash2
 } from 'lucide-react'
 
 interface Chapter {
   id: string
   title: string
   description: string
-  views: number
-  status: 'Active' | 'Draft' | 'New'
+  status: string
   duration: string
   difficulty: string
-  lastUpdated: string
+  order_index: number
+  created_at: string
+  updated_at: string
+  touchpoint_count: number
 }
 
 interface ModuleStats {
@@ -46,117 +49,82 @@ interface ModuleStats {
 
 export default function ModuleDetailPage({ params }: { params: { id: string } }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [chapters, setChapters] = useState<Chapter[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Sample data - in real app this would come from API
-  const moduleStats: ModuleStats = {
-    totalInteractives: 24,
-    activeStudents: 1247,
-    completionRate: 87,
-    avgScore: 8.4,
-    totalChapters: 9,
-    totalDuration: '12.5 hours'
+  // Module stats - will be updated with real data
+  const [moduleStats, setModuleStats] = useState<ModuleStats>({
+    totalInteractives: 0,
+    activeStudents: 0,
+    completionRate: 0,
+    avgScore: 0,
+    totalChapters: 0,
+    totalDuration: '0 hours'
+  })
+
+  // Fetch chapters for this interactive
+  const fetchChapters = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await fetch(`/api/chapters?interactiveId=${params.id}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch chapters')
+      }
+      const data = await response.json()
+      if (data.success) {
+        setChapters(data.chapters)
+        // Update module stats with real data
+        setModuleStats(prev => ({
+          ...prev,
+          totalChapters: data.chapters.length
+        }))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch chapters')
+      console.error('Error fetching chapters:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const chapters: Chapter[] = [
-    {
-      id: '1',
-      title: 'Growth vs Fixed Mindset',
-      description: 'Interactive scenarios exploring mindset development and cognitive flexibility',
-      views: 342,
-      status: 'Active',
-      duration: '45 min',
-      difficulty: 'Beginner',
-      lastUpdated: '2 days ago'
-    },
-    {
-      id: '2',
-      title: 'Receiving Feedback',
-      description: 'Role-playing exercises for feedback acceptance and processing skills',
-      views: 289,
-      status: 'Active',
-      duration: '60 min',
-      difficulty: 'Intermediate',
-      lastUpdated: '1 week ago'
-    },
-    {
-      id: '3',
-      title: 'Self-Assessment Tools',
-      description: 'Interactive questionnaires and reflection exercises for personal growth',
-      views: 456,
-      status: 'Draft',
-      duration: '30 min',
-      difficulty: 'Beginner',
-      lastUpdated: '3 days ago'
-    },
-    {
-      id: '4',
-      title: 'Learning from Mistakes',
-      description: 'Scenarios about turning failures into growth opportunities',
-      views: 198,
-      status: 'Active',
-      duration: '50 min',
-      difficulty: 'Intermediate',
-      lastUpdated: '5 days ago'
-    },
-    {
-      id: '5',
-      title: 'Asking for Help',
-      description: 'Building confidence to seek guidance and support from others',
-      views: 267,
-      status: 'Active',
-      duration: '40 min',
-      difficulty: 'Beginner',
-      lastUpdated: '1 week ago'
-    },
-    {
-      id: '6',
-      title: 'Goal Setting Skills',
-      description: 'Interactive tools for setting and achieving personal and academic goals',
-      views: 124,
-      status: 'Draft',
-      duration: '55 min',
-      difficulty: 'Intermediate',
-      lastUpdated: '4 days ago'
-    },
-    {
-      id: '7',
-      title: 'Peer Collaboration',
-      description: 'Working effectively with others and understanding team dynamics',
-      views: 89,
-      status: 'New',
-      duration: '75 min',
-      difficulty: 'Advanced',
-      lastUpdated: '1 day ago'
-    },
-    {
-      id: '8',
-      title: 'Resilience Building',
-      description: 'Developing mental toughness and bounce-back skills for challenges',
-      views: 156,
-      status: 'Active',
-      duration: '65 min',
-      difficulty: 'Intermediate',
-      lastUpdated: '6 days ago'
-    },
-    {
-      id: '9',
-      title: 'Communication Skills',
-      description: 'Effective communication strategies for teens in various situations',
-      views: 203,
-      status: 'Active',
-      duration: '55 min',
-      difficulty: 'Intermediate',
-      lastUpdated: '3 days ago'
+  useEffect(() => {
+    if (params.id) {
+      fetchChapters()
     }
-  ]
+  }, [params.id])
+
+  // Refresh chapters when page becomes visible (e.g., returning from create page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && params.id) {
+        fetchChapters()
+      }
+    }
+
+    const handleFocus = () => {
+      if (params.id) {
+        fetchChapters()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [params.id])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
+      case 'published':
         return 'bg-green-500/20 text-green-400 border-green-500/30'
-      case 'Draft':
+      case 'draft':
         return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-      case 'New':
+      case 'archived':
         return 'bg-slate-600/20 text-slate-300 border-slate-600/30'
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
@@ -383,8 +351,52 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                 </div>
 
                 {/* Chapters Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {chapters.map((chapter, index) => (
+                {isLoading ? (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 mb-6">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-purple mx-auto mb-6"></div>
+                      <h3 className="text-2xl font-bold text-white mb-3">Loading Chapters...</h3>
+                      <p className="text-lg text-gray-300">Fetching your learning content</p>
+                    </div>
+                  </div>
+                ) : error ? (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 mb-6">
+                      <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="text-red-400 text-2xl">!</span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-3">Error Loading Chapters</h3>
+                      <p className="text-lg text-gray-300 mb-6">{error}</p>
+                      <motion.button
+                        onClick={() => window.location.reload()}
+                        className="glass-button bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30 px-8 py-3 flex items-center space-x-3 mx-auto"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span className="font-semibold">Retry</span>
+                      </motion.button>
+                    </div>
+                  </div>
+                ) : chapters.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 mb-6">
+                      <BookOpen className="w-24 h-24 mx-auto mb-6 opacity-50" />
+                      <h3 className="text-2xl font-bold text-white mb-3">No Chapters Yet</h3>
+                      <p className="text-lg text-gray-300 mb-6">Start building your interactive learning experience by creating your first chapter</p>
+                      <motion.button
+                        onClick={() => window.location.href = `/interactives/${params.id}/create`}
+                        className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 px-8 py-3 flex items-center space-x-3 mx-auto"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-5 h-5" />
+                        <span className="font-semibold">Create Your First Chapter</span>
+                      </motion.button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {chapters.map((chapter, index) => (
                     <motion.div
                       key={chapter.id}
                       className="glass-card p-4 cursor-pointer transition-all duration-300"
@@ -403,7 +415,9 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                           </motion.div>
                         </div>
                         <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status)}`}>
-                          {chapter.status}
+                          {chapter.status === 'published' ? 'Published' : 
+                           chapter.status === 'draft' ? 'Draft' : 
+                           chapter.status === 'archived' ? 'Archived' : chapter.status}
                         </div>
                       </div>
 
@@ -412,12 +426,12 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
 
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                         <div className="flex items-center space-x-2">
-                          <Eye className="w-3 h-3" />
-                          <span>{chapter.views}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
                           <Clock className="w-3 h-3" />
                           <span>{chapter.duration}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Target className="w-3 h-3" />
+                          <span>{chapter.touchpoint_count} touchpoints</span>
                         </div>
                       </div>
 
@@ -425,28 +439,48 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(chapter.difficulty)}`}>
                           {chapter.difficulty}
                         </span>
-                        <span className="text-xs text-gray-500">{chapter.lastUpdated}</span>
+                        <span className="text-xs text-gray-500">{new Date(chapter.updated_at).toLocaleDateString()}</span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <motion.button 
+                          onClick={() => window.location.href = `/interactives/${params.id}/edit/${chapter.id}`}
                           className="glass-hover p-2 rounded-lg"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
+                          title="Edit Chapter"
                         >
                           <Edit className="w-4 h-4 text-gray-400" />
                         </motion.button>
                         <motion.button 
-                          className="glass-hover p-2 rounded-lg"
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete "${chapter.title}"? This action cannot be undone.`)) {
+                              fetch(`/api/chapters/${chapter.id}`, { method: 'DELETE' })
+                                .then(response => response.json())
+                                .then(data => {
+                                  if (data.success) {
+                                    // Refresh chapters list
+                                    fetchChapters()
+                                  }
+                                })
+                                .catch(error => {
+                                  console.error('Error deleting chapter:', error)
+                                  alert('Failed to delete chapter. Please try again.')
+                                })
+                            }
+                          }}
+                          className="glass-hover p-2 rounded-lg text-red-400 hover:text-red-300"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
+                          title="Delete Chapter"
                         >
-                          <List className="w-4 h-4 text-gray-400" />
+                          <Trash2 className="w-4 h-4" />
                         </motion.button>
                         <motion.button 
                           className="glass-hover p-2 rounded-lg"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
+                          title="Share Chapter"
                         >
                           <Share className="w-4 h-4 text-gray-400" />
                         </motion.button>
@@ -454,6 +488,7 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                     </motion.div>
                   ))}
                 </div>
+                )}
               </motion.div>
             </div>
 
@@ -473,6 +508,7 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                     className="glass-button w-full p-4 flex items-center space-x-3"
                     whileHover={{ x: 5, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={() => window.location.href = `/interactives/${params.id}/create`}
                   >
                     <Plus className="w-5 h-5 text-accent-purple" />
                     <div className="text-left">
@@ -528,69 +564,12 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                 transition={{ delay: 0.5 }}
               >
                 <h3 className="text-xl font-bold text-white mb-4">Recent Activity</h3>
-                <div className="space-y-4">
-                  <motion.div 
-                    className="flex items-center space-x-3"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">A</span>
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-900"></div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white text-sm">
-                        <span className="font-medium">Alex</span> completed{' '}
-                        <span className="text-accent-purple">'Growth vs Fixed Mindset'</span>
-                      </p>
-                      <p className="text-gray-400 text-xs">2 minutes ago</p>
-                    </div>
-                  </motion.div>
-
-                  <motion.div 
-                    className="flex items-center space-x-3"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 }}
-                  >
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">S</span>
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-gray-900"></div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white text-sm">
-                        <span className="font-medium">Sarah</span> started{' '}
-                        <span className="text-accent-purple">'Receiving Feedback'</span>
-                      </p>
-                      <p className="text-gray-400 text-xs">8 minutes ago</p>
-                    </div>
-                  </motion.div>
-
-                  <motion.div 
-                    className="flex items-center space-x-3"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 }}
-                  >
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">M</span>
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-gray-900"></div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white text-sm">
-                        <span className="font-medium">Mike</span> updated{' '}
-                        <span className="text-accent-purple">'Self-Assessment Tools'</span>
-                      </p>
-                      <p className="text-gray-400 text-xs">15 minutes ago</p>
-                    </div>
-                  </motion.div>
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium text-white mb-2">No Activity Yet</p>
+                    <p className="text-sm">Activity will appear here as students engage with your content</p>
+                  </div>
                 </div>
               </motion.div>
             </div>

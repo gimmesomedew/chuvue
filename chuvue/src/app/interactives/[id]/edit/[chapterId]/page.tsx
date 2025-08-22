@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import Sidebar from '../../../../components/Sidebar'
+import Sidebar from '../../../../../components/Sidebar'
 import { 
   ArrowLeft,
   GraduationCap,
@@ -32,24 +32,103 @@ interface Touchpoint {
   videoUrl?: string
 }
 
-export default function CreateChapterPage({ params }: { params: { id: string } }) {
+export default function EditChapterPage({ 
+  params 
+}: { 
+  params: { id: string; chapterId: string } 
+}) {
   const router = useRouter()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const [chapterTitle, setChapterTitle] = useState('')
   const [chapterDescription, setChapterDescription] = useState('')
   const [duration, setDuration] = useState('')
   const [difficulty, setDifficulty] = useState('Beginner')
-
   const [touchpoints, setTouchpoints] = useState<Touchpoint[]>([])
   const [editingTouchpoint, setEditingTouchpoint] = useState<Touchpoint | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
-  const [chapterId, setChapterId] = useState<string | null>(null)
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed)
+  }
+
+  // Fetch existing chapter data
+  useEffect(() => {
+    const fetchChapter = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch(`/api/chapters/${params.chapterId}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch chapter')
+        }
+        const data = await response.json()
+        if (data.success) {
+          setChapterTitle(data.chapter.title)
+          setChapterDescription(data.chapter.description)
+          setDuration(data.chapter.duration)
+          setDifficulty(data.chapter.difficulty)
+          
+          // Convert API touchpoints to local format
+          const localTouchpoints: Touchpoint[] = (data.touchpoints || []).map((tp: any, index: number) => ({
+            id: tp.id || `tp-${index}`,
+            number: index + 1,
+            title: tp.title,
+            description: tp.description,
+            duration: tp.duration,
+            type: tp.type,
+            typeIcon: getTypeIcon(tp.type),
+            typeColor: getTypeColor(tp.type),
+            videoUrl: tp.video_url || ''
+          }))
+          setTouchpoints(localTouchpoints)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch chapter')
+        console.error('Error fetching chapter:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (params.chapterId) {
+      fetchChapter()
+    }
+  }, [params.chapterId])
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'Video': return Video
+      case 'Interactive': return Activity
+      case 'Content': return BookOpen
+      default: return BookOpen
+    }
+  }
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'Video': return 'text-blue-400'
+      case 'Interactive': return 'text-green-400'
+      case 'Content': return 'text-orange-400'
+      default: return 'text-orange-400'
+    }
+  }
+
+  const getNumberColor = (number: number) => {
+    const colors = [
+      'bg-gradient-to-br from-blue-500 to-blue-600',
+      'bg-gradient-to-br from-green-500 to-green-600',
+      'bg-gradient-to-br from-purple-500 to-purple-600',
+      'bg-gradient-to-br from-orange-500 to-orange-600',
+      'bg-gradient-to-br from-red-500 to-red-600',
+      'bg-gradient-to-br from-indigo-500 to-indigo-600',
+      'bg-gradient-to-br from-pink-500 to-pink-600',
+      'bg-gradient-to-br from-yellow-500 to-yellow-600'
+    ]
+    return colors[(number - 1) % colors.length]
   }
 
   const addTouchpoint = () => {
@@ -69,6 +148,8 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
 
   const deleteTouchpoint = (id: string) => {
     setTouchpoints(touchpoints.filter(tp => tp.id !== id))
+    // Renumber remaining touchpoints
+    setTouchpoints(prev => prev.map((tp, index) => ({ ...tp, number: index + 1 })))
   }
 
   const editTouchpoint = (touchpoint: Touchpoint) => {
@@ -91,7 +172,7 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
     setIsEditModalOpen(false)
   }
 
-  const saveDraft = async () => {
+  const saveChanges = async () => {
     if (!chapterTitle.trim()) {
       setSaveMessage('Chapter title is required')
       return
@@ -101,99 +182,81 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
     setSaveMessage('')
 
     try {
-      const chapterData = {
-        interactiveId: params.id,
-        title: chapterTitle.trim(),
-        description: chapterDescription.trim(),
-        duration: duration.trim(),
-        difficulty,
-        touchpoints: touchpoints.map((tp, index) => ({
-          title: tp.title,
-          description: tp.description,
-          duration: tp.duration,
-          type: tp.type,
-          videoUrl: tp.videoUrl || ''
-        }))
-      }
+      // Convert local touchpoints to API format
+      const apiTouchpoints = touchpoints.map(tp => ({
+        title: tp.title,
+        description: tp.description,
+        duration: tp.duration,
+        type: tp.type,
+        videoUrl: tp.videoUrl || ''
+      }))
 
-      const url = chapterId ? `/api/chapters/${chapterId}` : '/api/chapters'
-      const method = chapterId ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`/api/chapters/${params.chapterId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(chapterData)
+        body: JSON.stringify({
+          title: chapterTitle,
+          description: chapterDescription,
+          duration: duration,
+          difficulty: difficulty,
+          touchpoints: apiTouchpoints
+        })
       })
 
-      const result = await response.json()
-
-      if (result.success) {
-        if (!chapterId) {
-          setChapterId(result.chapterId)
-        }
-        setSaveMessage('Draft saved successfully!')
-        setTimeout(() => setSaveMessage(''), 3000)
-      } else {
-        setSaveMessage(`Error: ${result.error}`)
+      if (!response.ok) {
+        throw new Error('Failed to update chapter')
       }
-    } catch (error) {
-      console.error('Error saving draft:', error)
-      setSaveMessage('Failed to save draft. Please try again.')
+
+      const data = await response.json()
+      if (data.success) {
+        setSaveMessage('Chapter updated successfully!')
+        setTimeout(() => {
+          router.push(`/interactives/${params.id}`)
+        }, 1500)
+      }
+    } catch (err) {
+      setSaveMessage(`Error: ${err instanceof Error ? err.message : 'Failed to save chapter'}`)
+      console.error('Error saving chapter:', err)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'Video':
-        return Video
-      case 'Interactive':
-        return Activity
-      case 'Content':
-        return BookOpen
-      default:
-        return BookOpen
-    }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-purple mx-auto mb-4"></div>
+            <p className="text-white text-lg">Loading chapter...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Video':
-        return 'text-green-400'
-      case 'Interactive':
-        return 'text-blue-400'
-      case 'Content':
-        return 'text-orange-400'
-      default:
-        return 'text-gray-400'
-    }
-  }
-
-  const getNumberColor = (number: number) => {
-    const colors = [
-      'bg-green-500',
-      'bg-blue-500', 
-      'bg-purple-500',
-      'bg-orange-500',
-      'bg-red-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-teal-500'
-    ]
-    return colors[(number - 1) % colors.length]
-  }
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-red-400 text-2xl">!</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-4">Error Loading Chapter</h2>
+            <p className="text-gray-300 mb-6">{error}</p>
+            <button
+              onClick={() => router.back()}
+              className="glass-button bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30 px-6 py-2"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const itemVariants = {
@@ -250,10 +313,10 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
                   <GraduationCap className="w-6 h-6 text-accent-purple" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">{chapterTitle || 'New Chapter'}</h1>
+                  <h1 className="text-xl font-bold text-white">{chapterTitle || 'Edit Chapter'}</h1>
                   <p className="text-gray-400 text-sm">
-                    {chapterId ? 'Editing Chapter' : 'Chapter Creation'}
-                    {chapterId && <span className="ml-2 text-accent-purple">(Draft Saved)</span>}
+                    Editing Chapter
+                    <span className="ml-2 text-accent-purple">(Existing Chapter)</span>
                   </p>
                 </div>
               </div>
@@ -262,7 +325,7 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
             {/* Right Side - Action Buttons and User Avatar */}
             <div className="flex items-center space-x-4">
               <motion.button
-                onClick={saveDraft}
+                onClick={saveChanges}
                 disabled={isSaving}
                 className={`glass-button px-4 py-2 flex items-center space-x-2 ${
                   isSaving 
@@ -273,16 +336,17 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
                 whileTap={isSaving ? {} : { scale: 0.95 }}
               >
                 <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
-                <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
+                <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
               </motion.button>
               
               <motion.button
+                onClick={() => router.back()}
                 className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 px-4 py-2 flex items-center space-x-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Rocket className="w-4 h-4" />
-                <span>Publish</span>
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Module</span>
               </motion.button>
 
               <motion.div 
@@ -401,79 +465,69 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
                       <motion.div
                         key={touchpoint.id}
                         className="glass-card p-4"
-                        variants={itemVariants}
-                        initial="hidden"
-                        animate="visible"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
                         whileHover={{ y: -2, scale: 1.01 }}
                       >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 ${getNumberColor(touchpoint.number)} rounded-full flex items-center justify-center text-white font-bold text-sm`}>
-                            {touchpoint.number}
-                          </div>
-                          
-                          <div className="flex-1">
-                            <h4 className="text-white font-medium mb-1">{touchpoint.title}</h4>
-                            <p className="text-gray-400 text-sm mb-2">{touchpoint.description}</p>
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <span className="flex items-center space-x-1">
-                                <Clock className="w-3 h-3" />
-                                <span>{touchpoint.duration}</span>
-                              </span>
-                              <span className={`flex items-center space-x-1 ${getTypeColor(touchpoint.type)}`}>
-                                <touchpoint.typeIcon className="w-3 h-3" />
-                                <span>{touchpoint.type}</span>
-                              </span>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 ${getNumberColor(touchpoint.number)} rounded-full flex items-center justify-center text-white font-bold text-sm`}>
+                              {touchpoint.number}
                             </div>
-                            
-                            {/* Video URL input for Video type touchpoints */}
-                            {touchpoint.type === 'Video' && (
-                              <div className="mt-3">
-                                <input
-                                  type="url"
-                                  value={touchpoint.videoUrl || ''}
-                                  onChange={(e) => {
-                                    const updatedTouchpoints = touchpoints.map(tp => 
-                                      tp.id === touchpoint.id 
-                                        ? { ...tp, videoUrl: e.target.value }
-                                        : tp
-                                    )
-                                    setTouchpoints(updatedTouchpoints)
-                                  }}
-                                  className="glass-input w-full p-2 text-white placeholder-gray-400 text-sm"
-                                  placeholder="Paste YouTube URL here..."
-                                />
-                                <p className="text-gray-500 text-xs mt-1">Enter video URL for this touchpoint</p>
-                              </div>
-                            )}
+                            <h3 className="text-white font-semibold">{touchpoint.title}</h3>
                           </div>
-
                           <div className="flex items-center space-x-2">
                             <motion.button
                               onClick={() => editTouchpoint(touchpoint)}
-                              className="glass-hover p-2 rounded-lg"
+                              className="glass-hover p-2 rounded-lg text-blue-400 hover:text-blue-300"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                             >
-                              <Edit className="w-4 h-4 text-gray-400" />
+                              <Edit className="w-4 h-4" />
                             </motion.button>
                             <motion.button
                               onClick={() => deleteTouchpoint(touchpoint.id)}
-                              className="glass-hover p-2 rounded-lg"
+                              className="glass-hover p-2 rounded-lg text-red-400 hover:text-red-300"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                             >
-                              <Trash2 className="w-4 h-4 text-red-400" />
+                              <Trash2 className="w-4 h-4" />
                             </motion.button>
                           </div>
                         </div>
+
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className={`flex items-center space-x-2 ${touchpoint.typeColor}`}>
+                            <touchpoint.typeIcon className="w-4 h-4" />
+                            <span className="text-sm font-medium">{touchpoint.type}</span>
+                          </div>
+                          <div className="flex items-center space-x-2 text-gray-400">
+                            <Clock className="w-3 h-3" />
+                            <span className="text-sm">{touchpoint.duration}</span>
+                          </div>
+                        </div>
+
+                        <p className="text-gray-300 text-sm">{touchpoint.description}</p>
                       </motion.div>
                     ))}
+
+                    {touchpoints.length === 0 && (
+                      <motion.div 
+                        className="text-center py-8 text-gray-400"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <Target className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium text-white mb-2">No Touchpoints Yet</p>
+                        <p className="text-sm">Add touchpoints to see a live preview of your chapter</p>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </motion.div>
             </div>
 
-            {/* Right Panel - Live Preview */}
+            {/* Right Panel - Chapter Preview */}
             <div className="lg:col-span-5">
               <motion.div 
                 className="glass-panel p-6"
@@ -483,23 +537,42 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
                 transition={{ delay: 0.2 }}
               >
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-white mb-2">Live Preview</h2>
-                  <p className="text-gray-400">See how your chapter will look to students.</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">Chapter Preview</h2>
+                  <p className="text-gray-400">See how your chapter will look to learners.</p>
                 </div>
 
-                                <div className="space-y-6">
+                {/* Chapter Header Preview */}
+                <div className="glass-card p-4 mb-6">
+                  <h3 className="text-xl font-bold text-white mb-2">{chapterTitle || 'Chapter Title'}</h3>
+                  <p className="text-gray-300 mb-4">{chapterDescription || 'Chapter description will appear here...'}</p>
+                  
+                  <div className="flex items-center space-x-4 text-sm">
+                    <div className="flex items-center space-x-2 text-gray-400">
+                      <Clock className="w-4 h-4" />
+                      <span>{duration || 'Duration not set'}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-400">
+                      <Target className="w-4 h-4" />
+                      <span>{difficulty}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-400">
+                      <BookOpen className="w-4 h-4" />
+                      <span>{touchpoints.length} touchpoints</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Touchpoints Preview */}
+                <div className="space-y-4">
                   {touchpoints.length === 0 ? (
-                    <motion.div
-                      className="glass-card p-8 text-center"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
+                    <motion.div 
+                      className="text-center py-8 text-gray-400"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                     >
-                      <div className="text-gray-400 mb-4">
-                        <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium text-white mb-2">No Touchpoints Yet</p>
-                        <p className="text-sm">Add touchpoints to see a live preview of your chapter</p>
-                      </div>
+                      <Target className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium text-white mb-2">No Touchpoints Yet</p>
+                      <p className="text-sm">Add touchpoints to see a live preview of your chapter</p>
                     </motion.div>
                   ) : (
                     touchpoints.map((touchpoint, index) => (
@@ -575,7 +648,7 @@ export default function CreateChapterPage({ params }: { params: { id: string } }
 
                         {touchpoint.type === 'Content' && (
                           <div className="text-white text-sm">
-                            Welcome to exploring mindsets! Let's discover how our beliefs about abilities can shape our success.
+                            {touchpoint.description || "Content description will appear here..."}
                           </div>
                         )}
                       </motion.div>
