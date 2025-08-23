@@ -25,6 +25,68 @@ interface TouchpointDisplayProps {
   totalTouchpoints: number
   isAnimationComplete: boolean
   onAnimationComplete: () => void
+  isLoading?: boolean
+}
+
+// Skeleton Loading Component
+function SkeletonLoader() {
+  return (
+    <div className="space-y-6">
+      <div className="glass-card p-6 text-center">
+        <div className="mb-6">
+          {/* Touchpoint Counter Skeleton */}
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-700/50 mb-4">
+            <div className="w-24 h-4 bg-gray-600 rounded animate-pulse"></div>
+          </div>
+          
+          {/* Animation Effect Badge Skeleton */}
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-700/50 mb-4">
+            <div className="w-20 h-3 bg-gray-600 rounded animate-pulse"></div>
+          </div>
+          
+          {/* Title Skeleton */}
+          <div className="mb-4">
+            <div className="w-64 h-8 bg-gray-600 rounded animate-pulse mx-auto"></div>
+          </div>
+          
+          {/* Content Area Skeleton */}
+          <div className="min-h-[8rem] flex items-center justify-center mb-4 p-4 border border-gray-700/30 rounded-lg bg-gray-800/20">
+            <div className="space-y-3 w-full max-w-2xl">
+              <div className="w-full h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-3/4 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-5/6 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-2/3 h-4 bg-gray-600 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Type Badge Skeleton */}
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-700/50 mb-4">
+          <div className="w-16 h-4 bg-gray-600 rounded animate-pulse"></div>
+        </div>
+
+        {/* Duration Skeleton */}
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <div className="w-4 h-4 bg-gray-600 rounded animate-pulse"></div>
+          <div className="w-20 h-4 bg-gray-600 rounded animate-pulse"></div>
+        </div>
+
+        {/* Video Preview Skeleton */}
+        <div className="mb-4">
+          <div className="w-full">
+            <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden shadow-xl">
+              <div className="w-full h-full bg-gray-700 animate-pulse flex items-center justify-center">
+                <div className="w-16 h-16 bg-gray-600 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <div className="mt-2 text-center">
+              <div className="w-48 h-3 bg-gray-600 rounded animate-pulse mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // Helper function to extract YouTube video ID from various URL formats
@@ -50,8 +112,14 @@ export default function TouchpointDisplay({
   currentTouchpointIndex,
   totalTouchpoints,
   isAnimationComplete,
-  onAnimationComplete
+  onAnimationComplete,
+  isLoading = false
 }: TouchpointDisplayProps) {
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <SkeletonLoader />
+  }
+
   return (
     <div className="space-y-6">
       {/* Touchpoint Display */}
