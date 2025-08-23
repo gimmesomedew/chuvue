@@ -1,15 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { 
   Edit, 
   Play, 
-  Share, 
+  Share2, 
   Trash2, 
   Clock, 
   List,
   Eye
 } from 'lucide-react'
+import ShareLink from './ShareLink'
 
 interface Chapter {
   id: string
@@ -22,6 +24,7 @@ interface Chapter {
   created_at: string
   updated_at: string
   touchpoint_count: number
+  views: number
 }
 
 interface ChapterCardProps {
@@ -39,74 +42,118 @@ export default function ChapterCard({
   getStatusColor, 
   getDifficultyColor 
 }: ChapterCardProps) {
-  return (
-    <motion.div
-      className="glass-card p-6 hover:scale-105 transition-transform duration-300"
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {/* Top Section - Image Placeholder with Play Button */}
-      <div className="relative mb-4">
-        <div className="w-full h-32 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center">
-          <motion.button
-            onClick={() => onPreview(chapter)}
-            className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 p-3 rounded-full"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Play className="w-6 h-6" />
-          </motion.button>
-        </div>
-      </div>
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [viewCount, setViewCount] = useState(chapter.views || 0)
 
-      {/* Content Section */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white line-clamp-2">{chapter.title}</h3>
-        <p className="text-gray-400 text-sm line-clamp-2">{chapter.description}</p>
-        
-        {/* Views Count */}
-        <div className="flex items-center space-x-1 text-sm text-gray-400">
-          <Eye className="w-4 h-4" />
-          <span>{Math.floor(Math.random() * 500) + 100} views</span>
+  return (
+    <>
+      <motion.div
+        className="glass-card p-5 hover:scale-105 transition-transform duration-300 h-full flex flex-col overflow-hidden"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        {/* Top Section - Image Placeholder with Play Button */}
+        <div className="relative mb-4">
+          <div className="w-full h-32 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center">
+            <motion.button
+              onClick={async () => {
+                // Track the view when preview is opened
+                try {
+                  const response = await fetch(`/api/chapters/${chapter.id}/view`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                  })
+                  
+                  if (response.ok) {
+                    const data = await response.json()
+                    setViewCount(data.views)
+                  }
+                } catch (error) {
+                  console.error('Failed to track view:', error)
+                }
+                
+                onPreview(chapter)
+              }}
+              className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 p-3 rounded-full"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Play className="w-6 h-6" />
+            </motion.button>
+          </div>
         </div>
-        
-        {/* Status Badge */}
-        <div className="flex items-center justify-between">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(chapter.status)}`}>
-            {chapter.status === 'published' ? 'Active' : chapter.status}
-          </span>
-        </div>
-      </div>
-      
-      {/* Bottom Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-700/50 mt-4">
-        <div className="flex space-x-2">
-          <motion.button
-            onClick={() => window.location.href = `/interactives/${interactiveId}/edit/${chapter.id}`}
-            className="glass-button p-2 text-gray-400 hover:text-white"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Edit className="w-4 h-4" />
-          </motion.button>
+
+        {/* Content Section */}
+        <div className="flex-1 space-y-3">
+          <h3 className="text-lg font-semibold text-white line-clamp-2">{chapter.title}</h3>
+          <p className="text-gray-400 text-sm line-clamp-2 leading-relaxed">{chapter.description}</p>
           
-          <motion.button
-            className="glass-button p-2 text-gray-400 hover:text-white"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <List className="w-4 h-4" />
-          </motion.button>
+          {/* Views Count */}
+          <div className="flex items-center space-x-1 text-sm text-gray-400">
+            <Eye className="w-4 h-4" />
+            <span>{viewCount} views</span>
+          </div>
+
+          {/* Duration and Touchpoints Info */}
+          <div className="flex items-center space-x-4 text-xs text-gray-400">
+            <span className="flex items-center space-x-1">
+              <Clock className="w-3 h-3" />
+              <span>{chapter.duration || '3 mins'}</span>
+            </span>
+            <span>{chapter.touchpoint_count || 4} touchpoints</span>
+          </div>
+          
+          {/* Status Badge */}
+          <div className="flex items-center justify-start">
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(chapter.status)}`}>
+              {chapter.status === 'published' ? 'Active' : chapter.status}
+            </span>
+          </div>
         </div>
         
-        <motion.button
-          className="glass-button p-2 text-gray-400 hover:text-white"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Share className="w-4 h-4" />
-        </motion.button>
-      </div>
-    </motion.div>
+        {/* Bottom Section - Action Buttons */}
+        <div className="pt-3 border-t border-gray-700/50 mt-auto">
+          <div className="flex items-center space-x-1">
+            <motion.button
+              className="glass-button p-2 text-gray-400 hover:text-accent-purple"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              title="Edit Chapter"
+            >
+              <Edit className="w-4 h-4" />
+            </motion.button>
+            
+            <motion.button
+              onClick={() => setShowShareModal(true)}
+              className="glass-button p-2 text-gray-400 hover:text-accent-purple"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              title="Share Chapter"
+            >
+              <Share2 className="w-4 h-4" />
+            </motion.button>
+            
+            <motion.button
+              className="glass-button p-2 text-gray-400 hover:text-accent-purple"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              title="View Touchpoints"
+            >
+              <List className="w-4 h-4" />
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Share Modal */}
+      <ShareLink
+        chapter={chapter}
+        interactiveId={interactiveId}
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+      />
+    </>
   )
 }

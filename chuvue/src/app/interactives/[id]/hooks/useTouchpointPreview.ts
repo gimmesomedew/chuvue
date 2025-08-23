@@ -26,6 +26,7 @@ interface Chapter {
   created_at: string
   updated_at: string
   touchpoint_count: number
+  views: number
 }
 
 export function useTouchpointPreview(chapter: Chapter | null, isOpen: boolean) {
@@ -34,6 +35,7 @@ export function useTouchpointPreview(chapter: Chapter | null, isOpen: boolean) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [viewedTouchpoints, setViewedTouchpoints] = useState<Set<number>>(new Set())
+  const [showIntro, setShowIntro] = useState(true)
 
   const fetchTouchpoints = async () => {
     if (!chapter) return
@@ -41,15 +43,18 @@ export function useTouchpointPreview(chapter: Chapter | null, isOpen: boolean) {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await fetch(`/api/chapters/${chapter.id}`)
+      const response = await fetch(`/api/chapters/${chapter.id}/touchpoints`)
       if (!response.ok) {
         throw new Error('Failed to fetch touchpoints')
       }
       const data = await response.json()
+      console.log('Touchpoints API response:', data)
       if (data.success) {
-        setTouchpoints(data.chapter.touchpoints || [])
+        console.log('Setting touchpoints:', data.touchpoints)
+        setTouchpoints(data.touchpoints || [])
         setCurrentTouchpointIndex(0)
         setViewedTouchpoints(new Set())
+        setShowIntro(true) // Always start with intro
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch touchpoints')
@@ -65,6 +70,11 @@ export function useTouchpointPreview(chapter: Chapter | null, isOpen: boolean) {
       fetchTouchpoints()
     }
   }, [isOpen, chapter])
+
+  const startChapter = () => {
+    setShowIntro(false)
+    setCurrentTouchpointIndex(0)
+  }
 
   const nextTouchpoint = () => {
     if (currentTouchpointIndex < touchpoints.length - 1) {
@@ -113,9 +123,11 @@ export function useTouchpointPreview(chapter: Chapter | null, isOpen: boolean) {
     isLoading,
     error,
     viewedTouchpoints,
+    showIntro,
     
     // Actions
     fetchTouchpoints,
+    startChapter,
     nextTouchpoint,
     previousTouchpoint,
     goToTouchpoint,

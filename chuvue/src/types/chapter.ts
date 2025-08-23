@@ -9,6 +9,7 @@ export interface Chapter {
   created_at: string
   updated_at: string
   touchpoint_count: number
+  views: number
 }
 
 export interface ModuleStats {

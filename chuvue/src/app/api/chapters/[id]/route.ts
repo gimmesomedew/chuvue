@@ -1,6 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const chapterId = params.id
+    
+    // Get chapter data including views
+    const result = await sql`
+      SELECT 
+        c.id,
+        c.title,
+        c.description,
+        c.duration,
+        c.difficulty,
+        c.status,
+        c.order_index,
+        c.created_at,
+        c.updated_at,
+        COALESCE(c.views, 0) as views,
+        COUNT(t.id) as touchpoint_count
+      FROM chapters c
+      LEFT JOIN touchpoints t ON c.id = t.chapter_id
+      WHERE c.id = ${chapterId}
+      GROUP BY c.id, c.title, c.description, c.duration, c.difficulty, c.status, c.order_index, c.created_at, c.updated_at, c.views
+    `
+    
+    if (result.length === 0) {
+      return NextResponse.json(
+        { error: 'Chapter not found' },
+        { status: 404 }
+      )
+    }
+    
+    const chapter = result[0]
+    
+    return NextResponse.json({
+      success: true,
+      chapter: chapter
+    })
+    
+  } catch (error) {
+    console.error('Error fetching chapter:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch chapter' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -112,45 +162,4 @@ export async function DELETE(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const chapterId = params.id
 
-    // Get chapter details
-    const chapterResult = await sql`
-      SELECT * FROM chapters WHERE id = ${chapterId}
-    `
-
-    if (chapterResult.length === 0) {
-      return NextResponse.json(
-        { error: 'Chapter not found' },
-        { status: 404 }
-      )
-    }
-
-    const chapter = chapterResult[0]
-
-    // Get touchpoints for this chapter
-    const touchpointsResult = await sql`
-      SELECT * FROM touchpoints WHERE chapter_id = ${chapterId} ORDER BY order_index
-    `
-
-    return NextResponse.json({
-      success: true,
-      chapter: {
-        ...chapter,
-        touchpoints: touchpointsResult
-      }
-    })
-
-  } catch (error) {
-    console.error('Error fetching chapter:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch chapter' },
-      { status: 500 }
-    )
-  }
-}

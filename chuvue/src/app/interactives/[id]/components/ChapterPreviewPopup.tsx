@@ -5,20 +5,23 @@ import PreviewHeader from './PreviewHeader'
 import TouchpointDisplay from './TouchpointDisplay'
 import TouchpointNavigation from './TouchpointNavigation'
 import AnimationControls from './AnimationControls'
+import Intro from './Intro'
 import { LoadingState, ErrorState, EmptyState } from './PreviewStates'
 import { useTouchpointPreview } from '../hooks/useTouchpointPreview'
-import type { Chapter } from '../../../types/chapter'
+import type { Chapter } from '../../../../types/chapter'
 
 interface ChapterPreviewPopupProps {
   chapter: Chapter | null
   isOpen: boolean
   onClose: () => void
+  interactiveId: string
 }
 
 export default function ChapterPreviewPopup({ 
   chapter, 
   isOpen, 
-  onClose 
+  onClose,
+  interactiveId
 }: ChapterPreviewPopupProps) {
   const {
     currentTouchpoint,
@@ -27,7 +30,9 @@ export default function ChapterPreviewPopup({
     isLoading,
     error,
     isAnimationComplete,
+    showIntro,
     fetchTouchpoints,
+    startChapter,
     nextTouchpoint,
     previousTouchpoint,
     goToTouchpoint,
@@ -55,7 +60,7 @@ export default function ChapterPreviewPopup({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <PreviewHeader title={chapter.title} onClose={onClose} />
+          <PreviewHeader title={chapter.title} chapter={chapter} onClose={onClose} interactiveId={interactiveId} />
 
           {/* Content */}
           <div className="p-6" onClick={(e) => e.stopPropagation()}>
@@ -63,6 +68,8 @@ export default function ChapterPreviewPopup({
               <LoadingState />
             ) : error ? (
               <ErrorState error={error} onRetry={fetchTouchpoints} />
+            ) : showIntro ? (
+              <Intro chapter={chapter} onStart={startChapter} />
             ) : totalTouchpoints === 0 ? (
               <EmptyState />
             ) : (
@@ -85,6 +92,7 @@ export default function ChapterPreviewPopup({
                     onPrevious={previousTouchpoint}
                     onNext={nextTouchpoint}
                     onGoTo={goToTouchpoint}
+                    onBackToIntro={startChapter}
                   />
                 </div>
 

@@ -9,6 +9,7 @@ interface TouchpointNavigationProps {
   onPrevious: () => void
   onNext: () => void
   onGoTo: (index: number) => void
+  onBackToIntro: () => void
 }
 
 export default function TouchpointNavigation({
@@ -16,7 +17,8 @@ export default function TouchpointNavigation({
   totalTouchpoints,
   onPrevious,
   onNext,
-  onGoTo
+  onGoTo,
+  onBackToIntro
 }: TouchpointNavigationProps) {
   const canGoPrevious = currentIndex > 0
   const canGoNext = currentIndex < totalTouchpoints - 1
@@ -64,11 +66,18 @@ export default function TouchpointNavigation({
         ))}
       </div>
 
-      {/* Touchpoint Counter */}
-      <div className="text-center">
+      {/* Touchpoint Counter and Back to Intro */}
+      <div className="text-center space-y-3">
         <p className="text-sm text-gray-400">
           {currentIndex + 1} of {totalTouchpoints} touchpoints
         </p>
+        <motion.button
+          onClick={onBackToIntro}
+          className="text-accent-purple hover:text-accent-purple/80 text-sm font-medium transition-colors"
+          whileHover={{ scale: 1.05 }}
+        >
+          ← Back to Intro
+        </motion.button>
       </div>
     </div>
   )

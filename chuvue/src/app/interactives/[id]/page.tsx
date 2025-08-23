@@ -30,7 +30,8 @@ import {
   Play as PlayIcon,
   Pause,
   SkipBack,
-  SkipForward
+  SkipForward,
+  Share2
 } from 'lucide-react'
 
 // Import extracted components
@@ -252,6 +253,36 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
                   </motion.button>
 
                   <motion.button
+                    onClick={() => {
+                      const moduleUrl = `${window.location.origin}/interactives/${params.id}`
+                      const shareText = `Check out this interactive learning module: ${moduleUrl}`
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'Interactive Learning Module',
+                          text: shareText,
+                          url: moduleUrl
+                        })
+                      } else {
+                        navigator.clipboard.writeText(moduleUrl)
+                        // You could add a toast notification here
+                      }
+                    }}
+                    className="w-full p-4 rounded-xl glass-light hover:glass-hover transition-all duration-300 text-left"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded-lg bg-accent-purple/20 text-accent-purple">
+                        <Share2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">Share Module</p>
+                        <p className="text-gray-400 text-sm">Share this learning module</p>
+                      </div>
+                    </div>
+                  </motion.button>
+
+                  <motion.button
                     className="w-full p-4 rounded-xl glass-light hover:glass-hover transition-all duration-300 text-left"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -312,6 +343,7 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
             chapter={previewChapter}
             isOpen={isPreviewOpen}
             onClose={closePreview}
+            interactiveId={params.id}
           />
         )}
       </AnimatePresence>

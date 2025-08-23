@@ -90,11 +90,12 @@ export async function GET(request: NextRequest) {
         c.order_index,
         c.created_at,
         c.updated_at,
+        COALESCE(c.views, 0) as views,
         COUNT(t.id) as touchpoint_count
       FROM chapters c
       LEFT JOIN touchpoints t ON c.id = t.chapter_id
       WHERE c.interactive_id = ${interactiveId}
-      GROUP BY c.id, c.title, c.description, c.duration, c.difficulty, c.status, c.order_index, c.created_at, c.updated_at
+      GROUP BY c.id, c.title, c.description, c.duration, c.difficulty, c.status, c.order_index, c.created_at, c.updated_at, c.views
       ORDER BY c.order_index
     `
 
