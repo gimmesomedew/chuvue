@@ -125,6 +125,8 @@ export default function ChapterPreviewPage() {
         return 'animate-zoom'
       case 'stagger':
         return 'animate-stagger'
+      case 'smoothReveal':
+        return 'animate-smoothReveal'
       default:
         return 'animate-fadeIn'
     }
@@ -273,15 +275,6 @@ export default function ChapterPreviewPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
         </div>
         
-        {/* Floating Elements */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/10 rounded-full blur-3xl animate-float-fast"></div>
-          <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/10 rounded-full blur-2xl animate-float-slow" style={{animationDelay: '2s'}}></div>
-          <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-slate-600/15 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
-          <div className="absolute top-1/2 left-1/4 w-20 h-20 bg-accent-purple/8 rounded-full blur-xl animate-float-fast" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-20 right-20 w-16 h-16 bg-accent-green/8 rounded-full blur-lg animate-float-slow" style={{animationDelay: '3s'}}></div>
-        </div>
-
         {/* Header */}
         <div className="relative z-10 p-4">
           <div className="flex items-center justify-between">
@@ -319,7 +312,7 @@ export default function ChapterPreviewPage() {
               </div>
 
               {/* Touchpoint Content */}
-              <div className="glass-card p-6">
+              <div className="glass-card p-6 min-h-[200px]">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-semibold text-white">
                     {currentTouchpoint.title}
@@ -331,10 +324,10 @@ export default function ChapterPreviewPage() {
 
                 <div 
                   key={`content-${animationKey}`}
-                  className={`mb-4 leading-relaxed ${getAnimationClass(currentTouchpoint)}`}
+                  className={`mb-4 leading-relaxed min-h-[150px] flex items-start ${getAnimationClass(currentTouchpoint)}`}
                   style={getAnimationStyle(currentTouchpoint)}
                 >
-                  <p className="text-gray-300">{currentTouchpoint.description}</p>
+                  <p className="text-gray-300 w-full">{currentTouchpoint.description}</p>
                 </div>
 
                 {currentTouchpoint.video_url && (
@@ -421,15 +414,6 @@ export default function ChapterPreviewPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_60%,rgba(245,158,11,0.04)_0%,transparent_50%)]"></div>
       </div>
       
-      {/* Floating Elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-accent-purple/10 rounded-full blur-3xl animate-float-fast"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-accent-green/10 rounded-full blur-2xl animate-float-slow" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-32 left-1/3 w-28 h-28 bg-slate-600/15 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
-        <div className="absolute top-1/2 left-1/4 w-20 h-20 bg-accent-purple/8 rounded-full blur-xl animate-float-fast" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-20 right-20 w-16 h-16 bg-accent-green/8 rounded-full blur-lg animate-float-slow" style={{animationDelay: '3s'}}></div>
-      </div>
-
       {/* Header */}
       <div className="relative z-10 p-4">
         <div className="flex items-center justify-between">
