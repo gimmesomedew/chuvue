@@ -83,10 +83,10 @@ export default function TouchpointDisplay({
             {currentTouchpoint.title}
           </motion.h3>
           
-          {/* Touchpoint Description with Animation */}
-          <div className="min-h-[4rem] flex items-center justify-center mb-4">
+          {/* Touchpoint Description with Animation - Fixed Height Container */}
+          <div className="min-h-[8rem] flex items-center justify-center mb-4 p-4 border border-gray-700/30 rounded-lg bg-gray-800/20">
             {isAnimationComplete ? (
-              <span className="text-gray-300 text-base leading-relaxed">
+              <span className="text-gray-300 text-base leading-relaxed max-w-2xl">
                 {currentTouchpoint.description}
               </span>
             ) : (
