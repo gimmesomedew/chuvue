@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Clock } from 'lucide-react'
+import { Clock, Edit3, Save, X } from 'lucide-react'
+import { useState } from 'react'
 import AnimatedText from './AnimatedText'
 
 interface Touchpoint {
@@ -26,6 +27,7 @@ interface TouchpointDisplayProps {
   isAnimationComplete: boolean
   onAnimationComplete: () => void
   isLoading?: boolean
+  onUpdateTouchpoint?: (updates: Partial<Touchpoint>) => void
 }
 
 // Skeleton Loading Component
@@ -113,11 +115,33 @@ export default function TouchpointDisplay({
   totalTouchpoints,
   isAnimationComplete,
   onAnimationComplete,
-  isLoading = false
+  isLoading = false,
+  onUpdateTouchpoint
 }: TouchpointDisplayProps) {
   // Show skeleton loader while loading
   if (isLoading) {
     return <SkeletonLoader />
+  }
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedTitle, setEditedTitle] = useState(currentTouchpoint.title)
+  const [editedDescription, setEditedDescription] = useState(currentTouchpoint.description)
+
+  const handleSave = () => {
+    if (onUpdateTouchpoint) {
+      onUpdateTouchpoint({
+        id: currentTouchpoint.id,
+        title: editedTitle,
+        description: editedDescription,
+      })
+    }
+    setIsEditing(false)
+  }
+
+  const handleCancel = () => {
+    setEditedTitle(currentTouchpoint.title)
+    setEditedDescription(currentTouchpoint.description)
+    setIsEditing(false)
   }
 
   return (
@@ -148,12 +172,30 @@ export default function TouchpointDisplay({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            {currentTouchpoint.title}
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                className="bg-transparent border-b border-gray-600 focus:outline-none text-white text-2xl font-bold text-center w-full"
+                placeholder="Enter title..."
+              />
+            ) : (
+              currentTouchpoint.title
+            )}
           </motion.h3>
           
           {/* Touchpoint Description with Animation - Fixed Height Container */}
           <div className="min-h-[8rem] flex items-center justify-center mb-4 p-4 border border-gray-700/30 rounded-lg bg-gray-800/20">
-            {isAnimationComplete ? (
+            {isEditing ? (
+              <textarea
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                className="bg-transparent border border-gray-600 rounded focus:outline-none focus:border-accent-purple text-gray-300 text-base leading-relaxed w-full max-w-2xl resize-none"
+                rows={4}
+                placeholder="Enter description..."
+              />
+            ) : isAnimationComplete ? (
               <span className="text-gray-300 text-base leading-relaxed max-w-2xl">
                 {currentTouchpoint.description}
               </span>
@@ -220,6 +262,33 @@ export default function TouchpointDisplay({
             </div>
           </motion.div>
         )}
+
+        {/* Edit/Save/Cancel Buttons */}
+        <div className="flex justify-center space-x-4 mt-6">
+          {isEditing ? (
+            <>
+              <button
+                onClick={handleSave}
+                className="flex items-center px-4 py-2 rounded-full bg-accent-green/20 text-accent-green text-sm font-medium hover:bg-accent-green/30 transition-colors"
+              >
+                <Save className="w-4 h-4 mr-2" /> Save
+              </button>
+              <button
+                onClick={handleCancel}
+                className="flex items-center px-4 py-2 rounded-full bg-gray-700/50 text-gray-300 text-sm font-medium hover:bg-gray-700/70 transition-colors"
+              >
+                <X className="w-4 h-4 mr-2" /> Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center px-4 py-2 rounded-full bg-accent-purple/20 text-accent-purple text-sm font-medium hover:bg-accent-purple/30 transition-colors"
+            >
+              <Edit3 className="w-4 h-4 mr-2" /> Edit
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

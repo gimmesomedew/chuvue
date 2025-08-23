@@ -76,6 +76,7 @@ export default function ChapterPreviewPopup({
                     isAnimationComplete={isAnimationComplete}
                     onAnimationComplete={markAnimationComplete}
                     isLoading={isLoading}
+                    onUpdateTouchpoint={updateTouchpoint}
                   />
                   
                   <TouchpointNavigation
