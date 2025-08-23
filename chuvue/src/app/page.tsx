@@ -78,7 +78,7 @@ export default function Dashboard() {
 
   const recentInteractives: Interactive[] = [
     {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       title: 'Growth vs Fixed Mindset',
       students: 342,
       completion: 89,
@@ -88,7 +88,7 @@ export default function Dashboard() {
       color: 'text-accent-purple'
     },
     {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440001',
       title: 'Receiving Feedback',
       students: 187,
       completion: 91,
@@ -98,7 +98,7 @@ export default function Dashboard() {
       color: 'text-accent-green'
     },
     {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440002',
       title: 'Self-Assessment Tools',
       students: 124,
       completion: 76,
@@ -111,7 +111,7 @@ export default function Dashboard() {
 
   const recentActivity = [
     {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440003',
       name: 'Alex',
       action: 'completed',
       module: 'Growth vs Fixed Mindset',
@@ -121,7 +121,7 @@ export default function Dashboard() {
       color: 'bg-accent-green'
     },
     {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440004',
       name: 'Sarah',
       action: 'started',
       module: 'Receiving Feedback',
@@ -130,7 +130,7 @@ export default function Dashboard() {
       color: 'bg-slate-600'
     },
     {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440005',
       name: 'Mike',
       action: 'submitted feedback on',
       module: 'Learning from Mistakes',
@@ -139,7 +139,7 @@ export default function Dashboard() {
       color: 'bg-accent-purple'
     },
     {
-      id: '4',
+      id: '550e8400-e29b-41d4-a716-446655440006',
       name: 'Emma',
       action: 'achieved 100% on',
       module: 'Asking for Help',

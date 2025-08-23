@@ -19,19 +19,24 @@ import {
   BarChart3,
   UserCheck,
   Clock,
-  CheckCircle
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react'
 
-interface LearningConcept {
+interface Interactive {
   id: string
   title: string
   description: string
-  icon: any
-  color: string
-  status: 'active' | 'draft'
-  completion: number
-  chapters: number
-  students: number
+  status: string
+  created_at: string
+  updated_at: string
+  view_count: number
+  completion_count: number
+  category_name: string | null
+  category_color: string | null
+  category_icon: string | null
+  chapter_count: number
+  student_count: number
 }
 
 interface Activity {
@@ -41,69 +46,82 @@ interface Activity {
   module: string
   time: string
   score?: string
-  status: 'completed' | 'started' | 'achieved'
+  status: 'completed' | 'started' | 'achieved' | 'feedback' | 'perfect'
   color: string
 }
 
 export default function ConceptsHub() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [learningConcepts, setLearningConcepts] = useState<LearningConcept[]>([])
+  const [interactives, setInteractives] = useState<Interactive[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [newConcept, setNewConcept] = useState({
-    title: '',
-    description: '',
-    category: 'Personal Development'
-  })
-  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Fetch real interactive data from database
-  useEffect(() => {
-    const fetchInteractives = async () => {
-      try {
-        const response = await fetch('/api/interactives')
-        if (response.ok) {
-          const data = await response.json()
-          const concepts = data.map((interactive: any) => ({
-            id: interactive.id, // This will be the real UUID
-            title: interactive.title,
-            description: interactive.description || 'Interactive learning module',
-            icon: Brain, // Default icon for now
-            color: 'text-accent-purple',
-            status: interactive.status || 'draft',
-            completion: Math.floor(Math.random() * 30) + 70, // Random completion for demo
-            chapters: Math.floor(Math.random() * 20) + 10, // Random chapters for demo
-            students: Math.floor(Math.random() * 200) + 100 // Random students for demo
-          }))
-          setLearningConcepts(concepts)
-        }
-      } catch (error) {
-        console.error('Error fetching interactives:', error)
-        // Fallback to sample data if API fails
-        setLearningConcepts([
-          {
-            id: 'sample-1',
-            title: 'Coachability',
-            description: 'Interactive modules focusing on growth mindset, receiving feedback, self-assessment, and building resilience for personal development.',
-            icon: Brain,
-            color: 'text-accent-purple',
-            status: 'active',
-            completion: 87,
-            chapters: 24,
-            students: 342
-          }
-        ])
-      } finally {
-        setIsLoading(false)
+  // Fetch interactives from database
+  const fetchInteractives = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const response = await fetch('/api/interactives')
+      if (!response.ok) {
+        throw new Error('Failed to fetch interactives')
       }
+      const data = await response.json()
+      if (data.success) {
+        setInteractives(data.interactives)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch interactives')
+      console.error('Error fetching interactives:', err)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchInteractives()
   }, [])
 
+  // Get icon component based on category icon name
+  const getIconComponent = (iconName: string | null) => {
+    switch (iconName) {
+      case 'brain':
+        return Brain
+      case 'users':
+        return Users
+      case 'target':
+        return Shield
+      case 'lightbulb':
+        return Flame
+      default:
+        return Puzzle
+    }
+  }
+
+  // Get color class based on category color
+  const getColorClass = (color: string | null) => {
+    switch (color) {
+      case '#8b5cf6':
+        return 'text-accent-purple'
+      case '#3b82f6':
+        return 'text-accent-blue'
+      case '#10b981':
+        return 'text-accent-green'
+      case '#f59e0b':
+        return 'text-accent-orange'
+      default:
+        return 'text-accent-purple'
+    }
+  }
+
+  // Calculate completion percentage
+  const getCompletionPercentage = (studentCount: number, completionCount: number) => {
+    if (studentCount === 0) return 0
+    return Math.round((completionCount / studentCount) * 100)
+  }
+
   const recentActivity: Activity[] = [
     {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440007',
       name: 'Alex',
       action: 'completed',
       module: 'Coachability Module 3',
@@ -112,22 +130,32 @@ export default function ConceptsHub() {
       color: 'bg-accent-green'
     },
     {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440008',
       name: 'Sarah',
       action: 'started',
       module: 'Mental Toughness',
-      time: '8 minutes ago',
+      time: '15 minutes ago',
       status: 'started',
-      color: 'bg-accent-blue'
+      color: 'bg-slate-600'
     },
     {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440009',
       name: 'Mike',
-      action: 'achieved 95% in',
-      module: 'Grit Assessment',
-      time: '15 minutes ago',
-      status: 'achieved',
-      color: 'bg-accent-orange'
+      action: 'submitted feedback on',
+      module: 'Learning from Mistakes',
+      time: '1 hour ago',
+      status: 'feedback',
+      color: 'bg-accent-purple'
+    },
+    {
+      id: '550e8400-e29b-41d4-a716-446655440010',
+      name: 'Emma',
+      action: 'achieved 100% on',
+      module: 'Asking for Help',
+      time: '3 hours ago',
+      score: 'Perfect score!',
+      status: 'perfect',
+      color: 'bg-yellow-400'
     }
   ]
 
@@ -135,93 +163,50 @@ export default function ConceptsHub() {
     setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
-  const handleCreateConcept = async () => {
-    if (!newConcept.title.trim()) return
-    
-    setIsCreating(true)
-    try {
-      const response = await fetch('/api/interactives', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: newConcept.title.trim(),
-          description: newConcept.description.trim(),
-          category: newConcept.category
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        // Close modal and refresh concepts
-        setIsCreateModalOpen(false)
-        setNewConcept({ title: '', description: '', category: 'Personal Development' })
-        // Refresh the concepts list
-        const refreshResponse = await fetch('/api/interactives')
-        if (refreshResponse.ok) {
-          const data = await refreshResponse.json()
-          const concepts = data.map((interactive: any) => ({
-            id: interactive.id,
-            title: interactive.title,
-            description: interactive.description || 'Interactive learning module',
-            icon: Brain,
-            color: 'text-accent-purple',
-            status: interactive.status || 'draft',
-            completion: Math.floor(Math.random() * 30) + 70,
-            chapters: Math.floor(Math.random() * 20) + 10,
-            students: Math.floor(Math.random() * 200) + 100
-          }))
-          setLearningConcepts(concepts)
-        }
-      } else {
-        console.error('Failed to create concept')
-      }
-    } catch (error) {
-      console.error('Error creating concept:', error)
-    } finally {
-      setIsCreating(false)
-    }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
+        <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
+        <div className={`transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? 'ml-20' : 'ml-64'
+        }`}>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-purple mx-auto mb-6"></div>
+              <h3 className="text-2xl font-bold text-white mb-3">Loading Concepts...</h3>
+              <p className="text-lg text-gray-300">Fetching your learning modules</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut" as const
-      }
-    }
-  }
-
-  const cardHoverVariants = {
-    hover: {
-      y: -8,
-      scale: 1.02,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut" as const
-      }
-    }
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
+        <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
+        <div className={`transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? 'ml-20' : 'ml-64'
+        }`}>
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="text-red-400 mb-6">
+                <AlertCircle className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">Error Loading Concepts</h3>
+              <p className="text-lg text-gray-300 mb-6">{error}</p>
+              <button 
+                onClick={fetchInteractives}
+                className="glass-button px-6 py-3"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -267,7 +252,7 @@ export default function ConceptsHub() {
             </motion.div>
           </motion.div>
 
-          {/* Header Section */}
+          {/* Welcome Section */}
           <motion.div 
             className="px-6 mb-8"
             initial={{ opacity: 0, y: 30 }}
@@ -280,20 +265,20 @@ export default function ConceptsHub() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <h1 className="text-4xl font-bold text-white mb-2">Interactive Learning Concepts Hub</h1>
-                <p className="text-gray-300 text-lg">Explore and manage your interactive learning modules.</p>
+                <h1 className="text-4xl font-bold text-white mb-2">Concept Hub</h1>
+                <p className="text-gray-300 text-lg">Explore and manage your interactive learning modules</p>
               </motion.div>
               <motion.button 
-                onClick={() => setIsCreateModalOpen(true)}
                 className="glass-button flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-accent-purple/20 to-slate-800/40 hover:from-accent-purple/30 hover:to-slate-800/60 border-accent-purple/30 glow-effect"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => window.location.href = '/interactives/create'}
               >
                 <Plus className="w-5 h-5" />
-                <span className="font-semibold">+ New Concept</span>
+                <span className="font-semibold">Create Interactive</span>
               </motion.button>
             </div>
           </motion.div>
@@ -301,45 +286,24 @@ export default function ConceptsHub() {
           {/* Key Metrics Section */}
           <motion.div 
             className="px-6 mb-8 grid grid-cols-1 lg:grid-cols-4 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
             <motion.div 
               className="glass-card p-6"
-              variants={itemVariants}
-              whileHover="hover"
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Total Concepts</p>
-                  <p className="text-3xl font-bold text-white">{learningConcepts.length}</p>
-                  <p className="text-accent-green text-sm">+{learningConcepts.length} this week</p>
+                  <p className="text-gray-400 text-sm">Total Interactives</p>
+                  <p className="text-3xl font-bold text-white">{interactives.length}</p>
+                  <p className="text-accent-green text-sm">Active modules</p>
                 </div>
                 <motion.div 
                   className="p-3 rounded-xl glass-dark text-accent-purple"
                   whileHover={{ rotate: 5, scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Puzzle className="w-6 h-6" />
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="glass-card p-6"
-              variants={itemVariants}
-              whileHover="hover"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Total Modules</p>
-                  <p className="text-3xl font-bold text-white">72</p>
-                  <p className="text-accent-green text-sm">+8 this month</p>
-                </div>
-                <motion.div 
-                  className="p-3 rounded-xl glass-dark text-accent-green"
-                  whileHover={{ rotate: -5, scale: 1.1 }}
                   transition={{ duration: 0.2 }}
                 >
                   <BookOpen className="w-6 h-6" />
@@ -349,14 +313,35 @@ export default function ConceptsHub() {
 
             <motion.div 
               className="glass-card p-6"
-              variants={itemVariants}
-              whileHover="hover"
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Total Chapters</p>
+                  <p className="text-3xl font-bold text-white">{interactives.reduce((sum, i) => sum + i.chapter_count, 0)}</p>
+                  <p className="text-accent-green text-sm">Learning content</p>
+                </div>
+                <motion.div 
+                  className="p-3 rounded-xl glass-dark text-accent-green"
+                  whileHover={{ rotate: -5, scale: 1.1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Puzzle className="w-6 h-6" />
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="glass-card p-6"
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Active Students</p>
-                  <p className="text-3xl font-bold text-white">1,247</p>
-                  <p className="text-accent-green text-sm">+124 this month</p>
+                  <p className="text-3xl font-bold text-white">{interactives.reduce((sum, i) => sum + i.student_count, 0)}</p>
+                  <p className="text-accent-green text-sm">Engaged learners</p>
                 </div>
                 <motion.div 
                   className="p-3 rounded-xl glass-dark text-accent-purple"
@@ -370,14 +355,14 @@ export default function ConceptsHub() {
 
             <motion.div 
               className="glass-card p-6"
-              variants={itemVariants}
-              whileHover="hover"
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm">Completion Rate</p>
-                  <p className="text-3xl font-bold text-white">87%</p>
-                  <p className="text-accent-green text-sm">+5% from last month</p>
+                  <p className="text-gray-400 text-sm">Published</p>
+                  <p className="text-3xl font-bold text-white">{interactives.filter(i => i.status === 'published').length}</p>
+                  <p className="text-accent-green text-sm">Live modules</p>
                 </div>
                 <motion.div 
                   className="p-3 rounded-xl glass-dark text-accent-orange"
@@ -391,81 +376,107 @@ export default function ConceptsHub() {
           </motion.div>
 
           {/* Main Content Grid */}
-          <div className="px-6 grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="px-6 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             
             {/* Learning Concepts - Left Column */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
               <motion.div 
                 className="glass-panel p-6 floating-element"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
               >
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-white">Learning Concepts</h2>
                   <div className="flex items-center space-x-3">
-                    <button className="p-2 rounded-xl glass-light hover:glass-hover transition-all duration-300">
-                      <Search className="w-4 h-4 text-gray-400" />
-                    </button>
-                    <button className="p-2 rounded-xl glass-light hover:glass-hover transition-all duration-300">
-                      <Filter className="w-4 h-4 text-gray-400" />
+                    <div className="glass-input flex items-center px-3 py-2 rounded-lg">
+                      <Search className="w-4 h-4 text-gray-400 mr-2" />
+                      <input 
+                        type="text" 
+                        placeholder="Search concepts..." 
+                        className="bg-transparent text-white placeholder-gray-400 outline-none flex-1"
+                      />
+                    </div>
+                    <button className="glass-hover p-2 rounded-lg">
+                      <Filter className="w-5 h-5 text-gray-400" />
                     </button>
                   </div>
                 </div>
                 
-                <div className="space-y-4">
-                  {isLoading ? (
-                    <div className="text-center py-8">
-                      <div className="text-gray-400">Loading concepts...</div>
+                {interactives.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="text-gray-400 mb-6">
+                      <Puzzle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-2xl font-bold text-white mb-3">No Concepts Yet</h3>
+                      <p className="text-lg text-gray-300">Create your first interactive learning module to get started</p>
                     </div>
-                  ) : learningConcepts.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="text-gray-400">No concepts found</div>
-                    </div>
-                  ) : (
-                    learningConcepts.map((concept, index) => (
-                    <motion.div
-                      key={concept.id}
-                      className="glass-card p-4 cursor-pointer transition-all duration-300"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.8 + index * 0.1 }}
-                      whileHover={{ x: 5, scale: 1.01 }}
-                      onClick={() => window.location.href = `/interactives/${concept.id}`}
+                    <button 
+                      onClick={() => window.location.href = '/interactives/create'}
+                      className="glass-button px-6 py-3"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className={`p-3 rounded-xl glass-dark ${concept.color}`}>
-                            <concept.icon className="w-6 h-6" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-white font-semibold text-lg mb-1">{concept.title}</h3>
-                            <p className="text-gray-400 text-sm mb-2">{concept.description}</p>
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <span>{concept.chapters} Chapters</span>
-                              <span>•</span>
-                              <span>{concept.students} Students</span>
+                      Create Your First Concept
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {interactives.map((interactive, index) => {
+                      const IconComponent = getIconComponent(interactive.category_icon)
+                      const colorClass = getColorClass(interactive.category_color)
+                      const completionPercentage = getCompletionPercentage(interactive.student_count, interactive.completion_count)
+                      
+                      return (
+                        <motion.div
+                          key={interactive.id}
+                          className="glass-card p-4 cursor-pointer transition-all duration-300"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + index * 0.1 }}
+                          whileHover={{ x: 5, scale: 1.01 }}
+                          onClick={() => window.location.href = `/interactives/${interactive.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <div className={`p-3 rounded-xl glass-dark ${colorClass}`}>
+                                <IconComponent className="w-6 h-6" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="text-white font-semibold text-lg mb-1">{interactive.title}</h3>
+                                <p className="text-gray-400 text-sm mb-2">{interactive.description}</p>
+                                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                  <span>{interactive.chapter_count} Chapters</span>
+                                  <span>•</span>
+                                  <span>{interactive.student_count} Students</span>
+                                  {interactive.category_name && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{interactive.category_name}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <div className="text-right">
+                                <div className={`text-xs px-2 py-1 rounded-full ${
+                                  interactive.status === 'published' 
+                                    ? 'bg-accent-green/20 text-accent-green' 
+                                    : interactive.status === 'draft'
+                                    ? 'bg-orange-500/20 text-orange-400'
+                                    : 'bg-slate-600/20 text-slate-300'
+                                }`}>
+                                  {interactive.status === 'published' ? 'Published' : 
+                                   interactive.status === 'draft' ? 'Draft' : 'Archived'}
+                                </div>
+                                <p className="text-accent-green text-sm font-medium mt-1">{completionPercentage}% completion</p>
+                              </div>
+                              <ArrowRight className="w-5 h-5 text-gray-400" />
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <div className="text-right">
-                            <div className={`text-xs px-2 py-1 rounded-full ${
-                              concept.status === 'active' 
-                                ? 'bg-accent-green/20 text-accent-green' 
-                                : 'bg-accent-blue/20 text-accent-blue'
-                            }`}>
-                              {concept.status === 'active' ? 'Active' : 'Draft'}
-                            </div>
-                            <p className="text-accent-green text-sm font-medium mt-1">{concept.completion}% completion</p>
-                          </div>
-                          <ArrowRight className="w-5 h-5 text-gray-400" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                  )}
-                </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                )}
               </motion.div>
             </div>
 
@@ -481,10 +492,10 @@ export default function ConceptsHub() {
                 <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
                 <div className="space-y-3">
                   <motion.button 
-                    onClick={() => setIsCreateModalOpen(true)}
                     className="w-full glass-button flex items-center space-x-2 py-3"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={() => window.location.href = '/interactives/create'}
                   >
                     <Plus className="w-4 h-4" />
                     <span className="font-medium">+ Create Concept</span>
@@ -527,122 +538,28 @@ export default function ConceptsHub() {
                 transition={{ duration: 0.6, delay: 1.1 }}
               >
                 <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
-                <div className="space-y-3">
-                  {recentActivity.map((activity, index) => (
-                    <motion.div
-                      key={activity.id}
-                      className="flex items-center space-x-3 p-2 rounded-xl glass-light"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.2 + index * 0.1 }}
-                    >
-                      <div className="w-6 h-6 bg-gradient-to-br from-accent-green to-primary-500 rounded-full flex items-center justify-center">
+                <div className="space-y-4">
+                  {recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex items-center space-x-3 p-3 rounded-xl glass-light hover:glass-hover transition-all duration-300">
+                      <div className="w-8 h-8 bg-gradient-to-br from-accent-green to-slate-700 rounded-full flex items-center justify-center glass-hover">
                         <span className="text-white font-bold text-xs">{activity.name.charAt(0)}</span>
                       </div>
                       <div className="flex-1">
-                        <p className="text-white text-xs">
+                        <p className="text-white text-sm">
                           <span className="font-medium">{activity.name}</span> {activity.action} {activity.module}
                         </p>
                         <p className="text-gray-400 text-xs">{activity.time}</p>
+                        {activity.score && (
+                          <p className="text-accent-green text-xs font-medium">{activity.score}</p>
+                        )}
                       </div>
-                      <div className={`w-2 h-2 rounded-full ${activity.color}`}></div>
-                    </motion.div>
+                      <div className={`w-3 h-3 rounded-full ${activity.color}`}></div>
+                    </div>
                   ))}
                 </div>
               </motion.div>
             </div>
           </div>
-
-          {/* Create Concept Modal */}
-          {isCreateModalOpen && (
-            <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="glass-panel w-full max-w-md p-6"
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white">Create New Concept</h2>
-                  <button
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="glass-hover p-2 rounded-lg"
-                  >
-                    <span className="text-gray-400 hover:text-white">✕</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Concept Title
-                    </label>
-                    <input
-                      type="text"
-                      value={newConcept.title}
-                      onChange={(e) => setNewConcept({ ...newConcept, title: e.target.value })}
-                      placeholder="Enter concept title..."
-                      className="w-full glass-input p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-purple/50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={newConcept.description}
-                      onChange={(e) => setNewConcept({ ...newConcept, description: e.target.value })}
-                      placeholder="Describe your concept..."
-                      rows={3}
-                      className="w-full glass-input p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-purple/50 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Category
-                    </label>
-                    <select
-                      value={newConcept.category}
-                      onChange={(e) => setNewConcept({ ...newConcept, category: e.target.value })}
-                      className="w-full glass-input p-3 text-white focus:outline-none focus:ring-2 focus:ring-accent-purple/50"
-                    >
-                      <option value="Personal Development">Personal Development</option>
-                      <option value="Communication">Communication</option>
-                      <option value="Leadership">Leadership</option>
-                      <option value="Innovation">Innovation</option>
-                    </select>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <button
-                      onClick={() => setIsCreateModalOpen(false)}
-                      className="flex-1 glass-button bg-gray-600/20 border-gray-600/30 text-gray-300 hover:bg-gray-600/30 py-3"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleCreateConcept}
-                      disabled={!newConcept.title.trim() || isCreating}
-                      className={`flex-1 glass-button py-3 ${
-                        !newConcept.title.trim() || isCreating
-                          ? 'bg-gray-500/20 border-gray-500/30 text-gray-400 cursor-not-allowed'
-                          : 'bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30'
-                      }`}
-                    >
-                      {isCreating ? 'Creating...' : 'Create Concept'}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
 
         </div>
       </div>

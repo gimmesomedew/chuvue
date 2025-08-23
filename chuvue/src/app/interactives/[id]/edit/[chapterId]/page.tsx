@@ -1,36 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Sidebar from '../../../../../components/Sidebar'
-import { 
-  ArrowLeft,
-  GraduationCap,
-  Save,
-  Rocket,
-  Plus,
-  Edit,
-  Trash2,
-  Play,
-  Video,
-  Activity,
-  BookOpen,
-  Clock,
-  Target
-} from 'lucide-react'
+import { ArrowLeft, GraduationCap, Save, Clock, Play, Target, BookOpen } from 'lucide-react'
+import React from 'react'
 
-interface Touchpoint {
-  id: string
-  number: number
-  title: string
-  description: string
-  duration: string
-  type: 'Video' | 'Interactive' | 'Content'
-  typeIcon: any
-  typeColor: string
-  videoUrl?: string
-}
+// Import our new components
+import ChapterForm from './components/ChapterForm'
+import TouchpointList from './components/TouchpointList'
+import TouchpointEditModal from './components/TouchpointEditModal'
+
+// Import our custom hooks
+import { useChapterEdit } from '../../../../../hooks/useChapterEdit'
+import { useEditModal } from '../../../../../hooks/useEditModal'
 
 export default function EditChapterPage({ 
   params 
@@ -38,190 +21,57 @@ export default function EditChapterPage({
   params: { id: string; chapterId: string } 
 }) {
   const router = useRouter()
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   
-  const [chapterTitle, setChapterTitle] = useState('')
-  const [chapterDescription, setChapterDescription] = useState('')
-  const [duration, setDuration] = useState('')
-  const [difficulty, setDifficulty] = useState('Beginner')
-  const [touchpoints, setTouchpoints] = useState<Touchpoint[]>([])
-  const [editingTouchpoint, setEditingTouchpoint] = useState<Touchpoint | null>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [saveMessage, setSaveMessage] = useState('')
+  // Use our custom hooks
+  const {
+    isLoading,
+    isSaving,
+    error,
+    saveMessage,
+    chapterTitle,
+    chapterDescription,
+    duration,
+    difficulty,
+    touchpoints,
+    fetchChapter,
+    addTouchpoint,
+    deleteTouchpoint,
+    updateTouchpoint,
+    saveChanges,
+    setChapterTitle,
+    setChapterDescription,
+    setDuration,
+    setDifficulty
+  } = useChapterEdit(params.chapterId)
 
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed)
-  }
+  const {
+    editingTouchpoint,
+    isEditModalOpen,
+    openEditModal,
+    closeEditModal,
+    updateEditingTouchpoint
+  } = useEditModal()
 
-  // Fetch existing chapter data
-  useEffect(() => {
-    const fetchChapter = async () => {
-      try {
-        setIsLoading(true)
-        const response = await fetch(`/api/chapters/${params.chapterId}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch chapter')
-        }
-        const data = await response.json()
-        if (data.success) {
-          setChapterTitle(data.chapter.title)
-          setChapterDescription(data.chapter.description)
-          setDuration(data.chapter.duration)
-          setDifficulty(data.chapter.difficulty)
-          
-          // Convert API touchpoints to local format
-          const localTouchpoints: Touchpoint[] = (data.touchpoints || []).map((tp: any, index: number) => ({
-            id: tp.id || `tp-${index}`,
-            number: index + 1,
-            title: tp.title,
-            description: tp.description,
-            duration: tp.duration,
-            type: tp.type,
-            typeIcon: getTypeIcon(tp.type),
-            typeColor: getTypeColor(tp.type),
-            videoUrl: tp.video_url || ''
-          }))
-          setTouchpoints(localTouchpoints)
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch chapter')
-        console.error('Error fetching chapter:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
+  // Fetch chapter data on mount
+  React.useEffect(() => {
     if (params.chapterId) {
       fetchChapter()
     }
-  }, [params.chapterId])
+  }, [params.chapterId, fetchChapter])
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'Video': return Video
-      case 'Interactive': return Activity
-      case 'Content': return BookOpen
-      default: return BookOpen
+  const handleSaveChanges = async () => {
+    await saveChanges()
+    // Check if save was successful by looking at the message
+    if (saveMessage && !saveMessage.includes('Error') && !saveMessage.includes('required')) {
+      setTimeout(() => {
+        router.push(`/interactives/${params.id}`)
+      }, 1500)
     }
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Video': return 'text-blue-400'
-      case 'Interactive': return 'text-green-400'
-      case 'Content': return 'text-orange-400'
-      default: return 'text-orange-400'
-    }
-  }
-
-  const getNumberColor = (number: number) => {
-    const colors = [
-      'bg-gradient-to-br from-blue-500 to-blue-600',
-      'bg-gradient-to-br from-green-500 to-green-600',
-      'bg-gradient-to-br from-purple-500 to-purple-600',
-      'bg-gradient-to-br from-orange-500 to-orange-600',
-      'bg-gradient-to-br from-red-500 to-red-600',
-      'bg-gradient-to-br from-indigo-500 to-indigo-600',
-      'bg-gradient-to-br from-pink-500 to-pink-600',
-      'bg-gradient-to-br from-yellow-500 to-yellow-600'
-    ]
-    return colors[(number - 1) % colors.length]
-  }
-
-  const addTouchpoint = () => {
-    const newTouchpoint: Touchpoint = {
-      id: Date.now().toString(),
-      number: touchpoints.length + 1,
-      title: 'New Touchpoint',
-      description: 'Add description for this touchpoint.',
-      duration: '2 mins',
-      type: 'Content',
-      typeIcon: BookOpen,
-      typeColor: 'text-orange-400',
-      videoUrl: ''
-    }
-    setTouchpoints([...touchpoints, newTouchpoint])
-  }
-
-  const deleteTouchpoint = (id: string) => {
-    setTouchpoints(touchpoints.filter(tp => tp.id !== id))
-    // Renumber remaining touchpoints
-    setTouchpoints(prev => prev.map((tp, index) => ({ ...tp, number: index + 1 })))
-  }
-
-  const editTouchpoint = (touchpoint: Touchpoint) => {
-    setEditingTouchpoint({ ...touchpoint })
-    setIsEditModalOpen(true)
-  }
-
-  const saveTouchpoint = () => {
-    if (editingTouchpoint) {
-      setTouchpoints(touchpoints.map(tp => 
-        tp.id === editingTouchpoint.id ? editingTouchpoint : tp
-      ))
-      setEditingTouchpoint(null)
-      setIsEditModalOpen(false)
-    }
-  }
-
-  const cancelEdit = () => {
-    setEditingTouchpoint(null)
-    setIsEditModalOpen(false)
-  }
-
-  const saveChanges = async () => {
-    if (!chapterTitle.trim()) {
-      setSaveMessage('Chapter title is required')
-      return
-    }
-
-    setIsSaving(true)
-    setSaveMessage('')
-
-    try {
-      // Convert local touchpoints to API format
-      const apiTouchpoints = touchpoints.map(tp => ({
-        title: tp.title,
-        description: tp.description,
-        duration: tp.duration,
-        type: tp.type,
-        videoUrl: tp.videoUrl || ''
-      }))
-
-      const response = await fetch(`/api/chapters/${params.chapterId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: chapterTitle,
-          description: chapterDescription,
-          duration: duration,
-          difficulty: difficulty,
-          touchpoints: apiTouchpoints
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update chapter')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        setSaveMessage('Chapter updated successfully!')
-        setTimeout(() => {
-          router.push(`/interactives/${params.id}`)
-        }, 1500)
-      }
-    } catch (err) {
-      setSaveMessage(`Error: ${err instanceof Error ? err.message : 'Failed to save chapter'}`)
-      console.error('Error saving chapter:', err)
-    } finally {
-      setIsSaving(false)
-    }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
   }
 
   if (isLoading) {
@@ -259,11 +109,6 @@ export default function EditChapterPage({
     )
   }
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-black">
       {/* Enhanced Background Pattern with Glass Morphism - Darker Theme */}
@@ -282,12 +127,10 @@ export default function EditChapterPage({
       </div>
 
       {/* Sidebar */}
-      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
+      <Sidebar isCollapsed={false} onToggle={() => {}} />
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ease-in-out ${
-        isSidebarCollapsed ? 'ml-20' : 'ml-64'
-      }`}>
+      <div className="ml-64">
         <div className="relative z-10">
           
           {/* Top Header Bar */}
@@ -322,10 +165,10 @@ export default function EditChapterPage({
               </div>
             </div>
 
-            {/* Right Side - Action Buttons and User Avatar */}
+            {/* Right Side - Action Buttons */}
             <div className="flex items-center space-x-4">
               <motion.button
-                onClick={saveChanges}
+                onClick={handleSaveChanges}
                 disabled={isSaving}
                 className={`glass-button px-4 py-2 flex items-center space-x-2 ${
                   isSaving 
@@ -348,15 +191,6 @@ export default function EditChapterPage({
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Module</span>
               </motion.button>
-
-              <motion.div 
-                className="w-10 h-10 bg-gradient-to-br from-accent-green to-slate-700 rounded-full flex items-center justify-center glass-hover"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-              >
-                <span className="text-white font-bold text-sm">S</span>
-              </motion.div>
             </div>
           </motion.div>
 
@@ -390,140 +224,24 @@ export default function EditChapterPage({
                 initial="hidden"
                 animate="visible"
               >
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-white mb-2">Chapter Details</h2>
-                  <p className="text-gray-400">Configure your interactive learning touchpoints.</p>
-                </div>
-
-                {/* Chapter Title */}
-                <div className="mb-4">
-                  <label className="block text-white font-medium mb-2">Chapter Title</label>
-                  <input
-                    type="text"
-                    value={chapterTitle}
-                    onChange={(e) => setChapterTitle(e.target.value)}
-                    className="glass-input w-full p-3 text-white placeholder-gray-400"
-                    placeholder="Enter chapter title"
-                  />
-                </div>
-
-                {/* Chapter Description */}
-                <div className="mb-4">
-                  <label className="block text-white font-medium mb-2">Description</label>
-                  <textarea
-                    value={chapterDescription}
-                    onChange={(e) => setChapterDescription(e.target.value)}
-                    rows={3}
-                    className="glass-input w-full p-3 text-white placeholder-gray-400 resize-none"
-                    placeholder="Enter chapter description"
-                  />
-                </div>
-
-                {/* Duration & Difficulty */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label className="block text-white font-medium mb-2">Duration</label>
-                    <input
-                      type="text"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      className="glass-input w-full p-3 text-white placeholder-gray-400"
-                      placeholder="e.g., 15-20 mins."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white font-medium mb-2">Difficulty</label>
-                    <select
-                      value={difficulty}
-                      onChange={(e) => setDifficulty(e.target.value)}
-                      className="glass-input w-full p-3 text-white"
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Touchpoints Section */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Touchpoints</h3>
-                    <motion.button
-                      onClick={addTouchpoint}
-                      className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 px-4 py-2 flex items-center space-x-2"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add Touchpoint</span>
-                    </motion.button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {touchpoints.map((touchpoint) => (
-                      <motion.div
-                        key={touchpoint.id}
-                        className="glass-card p-4"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        whileHover={{ y: -2, scale: 1.01 }}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <div className={`w-8 h-8 ${getNumberColor(touchpoint.number)} rounded-full flex items-center justify-center text-white font-bold text-sm`}>
-                              {touchpoint.number}
-                            </div>
-                            <h3 className="text-white font-semibold">{touchpoint.title}</h3>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <motion.button
-                              onClick={() => editTouchpoint(touchpoint)}
-                              className="glass-hover p-2 rounded-lg text-blue-400 hover:text-blue-300"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </motion.button>
-                            <motion.button
-                              onClick={() => deleteTouchpoint(touchpoint.id)}
-                              className="glass-hover p-2 rounded-lg text-red-400 hover:text-red-300"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </motion.button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-3 mb-3">
-                          <div className={`flex items-center space-x-2 ${touchpoint.typeColor}`}>
-                            <touchpoint.typeIcon className="w-4 h-4" />
-                            <span className="text-sm font-medium">{touchpoint.type}</span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-gray-400">
-                            <Clock className="w-3 h-3" />
-                            <span className="text-sm">{touchpoint.duration}</span>
-                          </div>
-                        </div>
-
-                        <p className="text-gray-300 text-sm">{touchpoint.description}</p>
-                      </motion.div>
-                    ))}
-
-                    {touchpoints.length === 0 && (
-                      <motion.div 
-                        className="text-center py-8 text-gray-400"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
-                        <Target className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium text-white mb-2">No Touchpoints Yet</p>
-                        <p className="text-sm">Add touchpoints to see a live preview of your chapter</p>
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
+                <ChapterForm
+                  chapterTitle={chapterTitle}
+                  chapterDescription={chapterDescription}
+                  duration={duration}
+                  difficulty={difficulty}
+                  onTitleChange={setChapterTitle}
+                  onDescriptionChange={setChapterDescription}
+                  onDurationChange={setDuration}
+                  onDifficultyChange={setDifficulty}
+                />
+                
+                <TouchpointList
+                  touchpoints={touchpoints}
+                  onAddTouchpoint={addTouchpoint}
+                  onEditTouchpoint={openEditModal}
+                  onDeleteTouchpoint={deleteTouchpoint}
+                  getNumberColor={getNumberColor}
+                />
               </motion.div>
             </div>
 
@@ -662,126 +380,46 @@ export default function EditChapterPage({
       </div>
 
       {/* Edit Touchpoint Modal */}
-      <AnimatePresence>
-        {isEditModalOpen && editingTouchpoint && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div
-            className="glass-panel w-full max-w-md p-6"
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Edit Touchpoint</h3>
-              <motion.button
-                onClick={cancelEdit}
-                className="glass-hover p-2 rounded-lg"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <span className="text-gray-400 text-xl">×</span>
-              </motion.button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-white font-medium mb-2">Title</label>
-                <input
-                  type="text"
-                  value={editingTouchpoint.title}
-                  onChange={(e) => setEditingTouchpoint({ ...editingTouchpoint, title: e.target.value })}
-                  className="glass-input w-full p-3 text-white placeholder-gray-400"
-                  placeholder="Enter touchpoint title"
-                />
-              </div>
-
-              <div>
-                <label className="block text-white font-medium mb-2">Description</label>
-                <textarea
-                  value={editingTouchpoint.description}
-                  onChange={(e) => setEditingTouchpoint({ ...editingTouchpoint, description: e.target.value })}
-                  rows={3}
-                  className="glass-input w-full p-3 text-white placeholder-gray-400 resize-none"
-                  placeholder="Enter touchpoint description"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-white font-medium mb-2">Duration</label>
-                  <input
-                    type="text"
-                    value={editingTouchpoint.duration}
-                    onChange={(e) => setEditingTouchpoint({ ...editingTouchpoint, duration: e.target.value })}
-                    className="glass-input w-full p-3 text-white placeholder-gray-400"
-                    placeholder="e.g., 2 mins"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white font-medium mb-2">Type</label>
-                  <select
-                    value={editingTouchpoint.type}
-                    onChange={(e) => {
-                      const newType = e.target.value as 'Video' | 'Interactive' | 'Content'
-                      setEditingTouchpoint({
-                        ...editingTouchpoint,
-                        type: newType,
-                        typeIcon: getTypeIcon(newType),
-                        typeColor: getTypeColor(newType)
-                      })
-                    }}
-                    className="glass-input w-full p-3 text-white"
-                  >
-                    <option value="Video">Video</option>
-                    <option value="Interactive">Interactive</option>
-                    <option value="Content">Content</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Video URL input - only show for Video type */}
-              {editingTouchpoint.type === 'Video' && (
-                <div>
-                  <label className="block text-white font-medium mb-2">Video URL</label>
-                  <input
-                    type="url"
-                    value={editingTouchpoint.videoUrl || ''}
-                    onChange={(e) => setEditingTouchpoint({ ...editingTouchpoint, videoUrl: e.target.value })}
-                    className="glass-input w-full p-3 text-white placeholder-gray-400"
-                    placeholder="https://www.youtube.com/watch?v=..."
-                  />
-                  <p className="text-gray-400 text-xs mt-1">Paste a YouTube URL or any video link</p>
-                </div>
-              )}
-
-              <div className="flex space-x-3 pt-4">
-                <motion.button
-                  onClick={cancelEdit}
-                  className="glass-button flex-1 p-3 text-gray-400 hover:text-white"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  onClick={saveTouchpoint}
-                  className="glass-button flex-1 p-3 bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Save Changes
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-        )}
-      </AnimatePresence>
+      <TouchpointEditModal
+        isOpen={isEditModalOpen}
+        touchpoint={editingTouchpoint}
+        onSave={(updatedTouchpoint) => {
+          updateTouchpoint(updatedTouchpoint)
+          closeEditModal()
+        }}
+        onCancel={closeEditModal}
+        getTypeIcon={(type) => {
+          switch (type) {
+            case 'Video': return 'Video'
+            case 'Interactive': return 'Activity'
+            case 'Content': return 'BookOpen'
+            default: return 'BookOpen'
+          }
+        }}
+        getTypeColor={(type) => {
+          switch (type) {
+            case 'Video': return 'text-blue-400'
+            case 'Interactive': return 'text-green-400'
+            case 'Content': return 'text-orange-400'
+            default: return 'text-orange-400'
+          }
+        }}
+      />
     </div>
   )
+}
+
+// Helper function for number colors (moved from inline)
+function getNumberColor(number: number) {
+  const colors = [
+    'bg-gradient-to-br from-blue-500 to-blue-600',
+    'bg-gradient-to-br from-green-500 to-green-600',
+    'bg-gradient-to-br from-purple-500 to-purple-600',
+    'bg-gradient-to-br from-orange-500 to-orange-600',
+    'bg-gradient-to-br from-red-500 to-red-600',
+    'bg-gradient-to-br from-indigo-500 to-indigo-600',
+    'bg-gradient-to-br from-pink-500 to-pink-600',
+    'bg-gradient-to-br from-yellow-500 to-yellow-600'
+  ]
+  return colors[(number - 1) % colors.length]
 }

@@ -1,270 +1,327 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX,
+  Plus,
+  Upload,
+  BarChart3,
+  Users,
+  Search,
+  Filter,
+  Grid3X3,
+  Edit,
+  List,
+  Share,
+  Play,
+  ChevronLeft,
+  LayoutDashboard,
+  Settings,
   Brain,
-  CheckCircle,
-  Quote
+  BookOpen,
+  TrendingUp,
+  Star
 } from 'lucide-react'
 
-interface Screen {
-  id: string
-  type: 'start' | 'intro' | 'video' | 'content' | 'completion'
-  title: string
-  content: string
-  videoUrl?: string
-  quote?: string
-  author?: string
-}
-
-interface Interactive {
+interface Chapter {
   id: string
   title: string
   description: string
-  screens: Screen[]
+  views: number
+  status: 'active' | 'draft' | 'archived'
 }
 
-export default function InteractiveViewer({ params }: { params: { id: string } }) {
-  const [currentScreenIndex, setCurrentScreenIndex] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [currentTime, setCurrentTime] = useState(0)
+interface ModuleStats {
+  totalInteractives: number
+  activeStudents: number
+  completionRate: number
+  avgScore: number
+}
 
-  // Mock data - in real app this would come from API
-  const interactive: Interactive = {
-    id: params.id,
-    title: 'Master Coachability',
-    description: 'Develop your ability to receive feedback, adapt, and grow through interactive learning experiences designed for teens and young adults.',
-    screens: [
-      {
-        id: '1',
-        type: 'start',
-        title: 'Master Coachability',
-        content: 'Develop your ability to receive feedback, adapt, and grow through interactive learning experiences designed for teens and young adults.'
-      },
-      {
-        id: '2',
-        type: 'intro',
-        title: 'Welcome to Your Learning Journey',
-        content: 'In this module, you\'ll discover the key principles of coachability and how they can transform your personal and professional growth. Get ready to explore active listening, growth mindset, and practical strategies for receiving feedback effectively.'
-      },
-      {
-        id: '3',
-        type: 'video',
-        title: 'Understanding Coachability',
-        content: 'Watch this short video to learn the fundamentals of coachability and why it\'s essential for success.',
-        videoUrl: '/sample-video.mp4'
-      },
-      {
-        id: '4',
-        type: 'content',
-        title: 'Key Principles',
-        content: 'Coachability is built on three core principles: openness to feedback, willingness to change, and commitment to growth. These principles work together to create a mindset that embraces learning and development.'
-      },
-      {
-        id: '5',
-        type: 'completion',
-        title: 'Congratulations!',
-        content: 'You\'ve successfully completed the Master Coachability module. You now have the foundation to become more coachable and open to growth opportunities.',
-        quote: 'The only way to grow is to be coachable.',
-        author: 'John Maxwell'
-      }
-    ]
-  }
+// Left Navigation Sidebar Component
+function LeftSidebar() {
+  return (
+    <div className="fixed left-0 top-0 h-full w-64 glass-panel border-r border-white/10">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-accent-purple to-slate-700 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">C</span>
+          </div>
+          <span className="text-white font-bold text-lg">ChuVue</span>
+        </div>
+        <button className="p-1 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+          <ChevronLeft className="w-4 h-4 text-white" />
+        </button>
+      </div>
 
-  const currentScreen = interactive.screens[currentScreenIndex]
-  const totalScreens = interactive.screens.length
+      <nav className="mt-6 px-3">
+        <ul className="space-y-2">
+          <li>
+            <a href="/" className="flex items-center px-3 py-3 rounded-xl transition-all duration-300 text-gray-300 hover:glass-light hover:text-white">
+              <LayoutDashboard className="w-5 h-5 mr-3" />
+              <span className="font-medium">Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="/interactives" className="flex items-center px-3 py-3 rounded-xl glass-dark border border-accent-purple/40 text-accent-purple glow-effect">
+              <Brain className="w-5 h-5 mr-3" />
+              <span className="font-medium">Concept Hub</span>
+            </a>
+          </li>
+          <li>
+            <a href="/students" className="flex items-center px-3 py-3 rounded-xl transition-all duration-300 text-gray-300 hover:glass-light hover:text-white">
+              <Users className="w-5 h-5 mr-3" />
+              <span className="font-medium">Students</span>
+            </a>
+          </li>
+          <li>
+            <a href="/analytics" className="flex items-center px-3 py-3 rounded-xl transition-all duration-300 text-gray-300 hover:glass-light hover:text-white">
+              <BarChart3 className="w-5 h-5 mr-3" />
+              <span className="font-medium">Analytics</span>
+            </a>
+          </li>
+          <li>
+            <a href="/settings" className="flex items-center px-3 py-3 rounded-xl transition-all duration-300 text-gray-300 hover:glass-light hover:text-white">
+              <Settings className="w-5 h-5 mr-3" />
+              <span className="font-medium">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-  const goToNext = () => {
-    if (currentScreenIndex < totalScreens - 1) {
-      setCurrentScreenIndex(currentScreenIndex + 1)
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-accent-green to-primary-500 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-xs">A</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-white text-sm font-medium">Admin User</p>
+            <p className="text-gray-400 text-xs">admin@chuvue.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Main Content Component
+function MainContent({ chapters, stats }: { chapters: Chapter[], stats: ModuleStats }) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-500/20 text-green-400 border-green-500/30'
+      case 'draft': return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+      case 'archived': return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
     }
   }
 
-  const goToPrevious = () => {
-    if (currentScreenIndex > 0) {
-      setCurrentScreenIndex(currentScreenIndex - 1)
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'Active'
+      case 'draft': return 'Draft'
+      case 'archived': return 'Archived'
+      default: return status
     }
   }
 
-  const renderScreen = () => {
-    switch (currentScreen.type) {
-      case 'start':
-        return (
-          <div className="text-center space-y-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-accent-purple to-primary-500 rounded-full flex items-center justify-center mx-auto">
-              <Brain className="w-12 h-12 text-white" />
+  return (
+    <div className="w-full max-w-4xl">
+      {/* Header */}
+      <header className="glass-panel p-6 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Coachability Learning Module</h1>
+            <p className="text-gray-300 text-lg">Interactive learning experience with {chapters.length} chapter{chapters.length !== 1 ? 's' : ''}.</p>
+          </div>
+          <button className="glass-button flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-accent-purple/20 to-slate-800/40 hover:from-accent-purple/30 hover:to-slate-800/60 border-accent-purple/30 glow-effect">
+            <Plus className="w-5 h-5" />
+            <span className="font-semibold">New Chapter</span>
+          </button>
+        </div>
+      </header>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm">Total Interactives</p>
+              <p className="text-3xl font-bold text-white">{stats.totalInteractives}</p>
             </div>
-            <h1 className="text-3xl font-bold text-white">{currentScreen.title}</h1>
-            <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mx-auto">
-              {currentScreen.content}
-            </p>
-            <button 
-              onClick={goToNext}
-              className="glass-button flex items-center space-x-2 mx-auto"
-            >
-              <Play className="w-5 h-5" />
-              <span>Start Learning Journey</span>
+            <div className="p-3 rounded-xl glass-dark text-accent-blue">
+              <BookOpen className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm">Active Students</p>
+              <p className="text-3xl font-bold text-white">{stats.activeStudents.toLocaleString()}</p>
+            </div>
+            <div className="p-3 rounded-xl glass-dark text-accent-green">
+              <Users className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm">Completion Rate</p>
+              <p className="text-3xl font-bold text-white">{stats.completionRate}%</p>
+            </div>
+            <div className="p-3 rounded-xl glass-dark text-accent-purple">
+              <TrendingUp className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-400 text-sm">Avg. Score</p>
+              <p className="text-3xl font-bold text-white">{stats.avgScore}</p>
+            </div>
+            <div className="p-3 rounded-xl glass-dark text-accent-orange">
+              <Star className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chapters Section */}
+      <div className="glass-panel p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-white">Coachability Chapters</h2>
+          <div className="flex items-center space-x-3">
+            <button className="p-2 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+              <Filter className="w-4 h-4 text-gray-300" />
+            </button>
+            <button className="p-2 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+              <Search className="w-4 h-4 text-gray-300" />
+            </button>
+            <button className="p-2 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+              <Grid3X3 className="w-4 h-4 text-gray-300" />
             </button>
           </div>
-        )
+        </div>
 
-      case 'intro':
-        return (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-white text-center">{currentScreen.title}</h1>
-            <div className="glass-card p-6">
-              <p className="text-gray-300 text-lg leading-relaxed">
-                {currentScreen.content}
-              </p>
-            </div>
-            <div className="text-center">
-              <button 
-                onClick={goToNext}
-                className="glass-button flex items-center space-x-2 mx-auto"
-              >
-                <span>Continue</span>
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )
-
-      case 'video':
-        return (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-white text-center">{currentScreen.title}</h1>
-            <div className="glass-card p-6">
-              <p className="text-gray-300 text-sm mb-4">{currentScreen.content}</p>
-              
-              {/* Video Player Placeholder */}
-              <div className="relative bg-black rounded-xl overflow-hidden aspect-video">
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Play className="w-10 h-10 text-white" />
-                    </div>
-                    <p className="text-white text-sm">Video Player</p>
-                    <p className="text-gray-400 text-xs">2:00 duration</p>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {chapters.map((chapter) => (
+            <div key={chapter.id} className="glass-card p-4 hover:glass-hover transition-all duration-300">
+              <div className="relative bg-gray-800 rounded-lg aspect-video mb-4 flex items-center justify-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <Play className="w-8 h-8 text-white" />
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-white">{chapter.title}</h3>
+                <p className="text-gray-300 text-sm leading-relaxed">{chapter.description}</p>
                 
-                {/* Video Controls */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                  <div className="flex items-center space-x-4">
-                    <button 
-                      onClick={() => setIsPlaying(!isPlaying)}
-                      className="text-white hover:text-gray-300 transition-colors"
-                    >
-                      {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-                    </button>
-                    
-                    <div className="flex-1 bg-white/20 rounded-full h-2">
-                      <div className="bg-primary-500 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
-                    </div>
-                    
-                    <span className="text-white text-sm">{Math.floor(currentTime / 60)}:{(currentTime % 60).toString().padStart(2, '0')}</span>
-                    
-                    <button 
-                      onClick={() => setIsMuted(!isMuted)}
-                      className="text-white hover:text-gray-300 transition-colors"
-                    >
-                      {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                    </button>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-xs">{chapter.views} views</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status)}`}>
+                    {getStatusText(chapter.status)}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-3 pt-2">
+                  <button className="p-2 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+                    <Edit className="w-4 h-4 text-gray-300" />
+                  </button>
+                  <button className="p-2 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+                    <List className="w-4 h-4 text-gray-300" />
+                  </button>
+                  <button className="p-2 rounded-lg glass-light hover:glass-hover transition-all duration-300">
+                    <Share className="w-4 h-4 text-gray-300" />
+                  </button>
                 </div>
               </div>
             </div>
-            
-            <div className="text-center">
-              <button 
-                onClick={goToNext}
-                className="glass-button flex items-center space-x-2 mx-auto"
-              >
-                <span>Continue</span>
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
-      case 'content':
-        return (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-white text-center">{currentScreen.title}</h1>
-            <div className="glass-card p-6">
-              <p className="text-gray-300 text-lg leading-relaxed">
-                {currentScreen.content}
-              </p>
+// Right Sidebar Component
+function RightSidebar() {
+  return (
+    <div className="w-80 flex-shrink-0">
+      <div className="glass-panel p-6 h-fit sticky top-4">
+        <h2 className="text-xl font-semibold text-white mb-6">Quick Actions</h2>
+        
+        <div className="space-y-4">
+          <button className="w-full glass-button flex items-center justify-center space-x-2 bg-gradient-to-r from-accent-purple/20 to-slate-800/40 hover:from-accent-purple/30 hover:to-slate-800/60 border-accent-purple/30 py-3 glow-effect">
+            <Plus className="w-5 h-5" />
+            <div className="text-left">
+              <span className="font-semibold block">Create Chapter</span>
+              <span className="text-sm opacity-80">Start a new interactive</span>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <button 
-                onClick={goToPrevious}
-                className="glass-button flex items-center space-x-2"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                <span>Previous</span>
-              </button>
-              
-              <button 
-                onClick={goToNext}
-                className="glass-button flex items-center space-x-2"
-              >
-                <span>Next</span>
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )
+          </button>
 
-      case 'completion':
-        return (
-          <div className="text-center space-y-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-accent-green to-primary-500 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-12 h-12 text-white" />
+          <button className="w-full p-4 rounded-xl glass-light hover:glass-hover transition-all duration-300 text-left">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-accent-green/20 text-accent-green">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-white font-medium">Import Content</p>
+                <p className="text-gray-400 text-sm">Upload existing materials</p>
+              </div>
             </div>
-            
-            <h1 className="text-3xl font-bold text-white">{currentScreen.title}</h1>
-            
-            <div className="glass-card p-6">
-              <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                {currentScreen.content}
-              </p>
-              
-              {currentScreen.quote && (
-                <div className="border-l-4 border-accent-purple pl-4">
-                  <Quote className="w-8 h-8 text-accent-purple mb-2" />
-                  <blockquote className="text-white text-lg italic">
-                    "{currentScreen.quote}"
-                  </blockquote>
-                  {currentScreen.author && (
-                    <cite className="text-accent-purple text-sm">— {currentScreen.author}</cite>
-                  )}
-                </div>
-              )}
-            </div>
-            
-            <button 
-              onClick={() => setCurrentScreenIndex(0)}
-              className="glass-button flex items-center space-x-2 mx-auto"
-            >
-              <span>Start Over</span>
-            </button>
-          </div>
-        )
+          </button>
 
-      default:
-        return null
+          <button className="w-full p-4 rounded-xl glass-light hover:glass-hover transition-all duration-300 text-left">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-accent-blue/20 text-accent-blue">
+                <BarChart3 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-white font-medium">View Analytics</p>
+                <p className="text-gray-400 text-sm">Check performance data</p>
+              </div>
+            </div>
+          </button>
+
+          <button className="w-full p-4 rounded-xl glass-light hover:glass-hover transition-all duration-300 text-left">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-accent-orange/20 text-accent-orange">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-white font-medium">Manage Students</p>
+                <p className="text-gray-400 text-sm">View student progress</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Main Page Component
+export default function CoachabilityModule({ params }: { params: { id: string } }) {
+  const [chapters] = useState<Chapter[]>([
+    {
+      id: '1',
+      title: 'Intro',
+      description: 'Coachability is one of the most misunderstood traits in sports—and in life.',
+      views: 189,
+      status: 'draft'
     }
-  }
+  ])
+
+  const [stats] = useState<ModuleStats>({
+    totalInteractives: 1,
+    activeStudents: 1247,
+    completionRate: 87,
+    avgScore: 8.4
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
@@ -276,85 +333,21 @@ export default function InteractiveViewer({ params }: { params: { id: string } }
       </div>
 
       <div className="relative z-10">
-        {/* Header */}
-        <header className="glass-panel mx-4 mt-4 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white">LearnFlow</h1>
-                <p className="text-gray-300 text-sm">{interactive.title}</p>
-              </div>
+        {/* Left Sidebar */}
+        <LeftSidebar />
+        
+        {/* Main Content Area */}
+        <div className="ml-64 p-6">
+          <div className="flex gap-6">
+            {/* Main Content - 70% */}
+            <div className="flex-1">
+              <MainContent chapters={chapters} stats={stats} />
             </div>
             
-            {/* Progress Indicator */}
-            <div className="text-center">
-              <div className="text-white text-sm font-medium">
-                {currentScreenIndex + 1} of {totalScreens}
-              </div>
-              <div className="flex space-x-1 mt-1">
-                {interactive.screens.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      index <= currentScreenIndex ? 'bg-primary-500' : 'bg-white/20'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+            {/* Right Sidebar - 30% */}
+            <RightSidebar />
           </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="mx-4 mt-4 p-6">
-          <div className="glass-panel p-6 min-h-[60vh] flex items-center justify-center">
-            {renderScreen()}
-          </div>
-        </main>
-
-        {/* Navigation Footer */}
-        {currentScreen.type !== 'start' && currentScreen.type !== 'completion' && (
-          <footer className="fixed bottom-0 left-0 right-0 p-4">
-            <div className="glass-panel p-4">
-              <div className="flex justify-between items-center">
-                <button 
-                  onClick={goToPrevious}
-                  disabled={currentScreenIndex === 0}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                    currentScreenIndex === 0 
-                      ? 'text-gray-500 cursor-not-allowed' 
-                      : 'text-white hover:bg-glass-light'
-                  }`}
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                  <span>Previous</span>
-                </button>
-                
-                <div className="text-center">
-                  <div className="text-white text-sm">
-                    Screen {currentScreenIndex + 1} of {totalScreens}
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={goToNext}
-                  disabled={currentScreenIndex === totalScreens - 1}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                    currentScreenIndex === totalScreens - 1 
-                      ? 'text-gray-500 cursor-not-allowed' 
-                      : 'text-white hover:bg-glass-light'
-                  }`}
-                >
-                  <span>Next</span>
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </footer>
-        )}
+        </div>
       </div>
     </div>
   )

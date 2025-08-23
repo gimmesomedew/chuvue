@@ -1,21 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { sql } from '@/lib/db'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const interactives = await sql`
       SELECT 
-        id,
-        title,
-        description,
-        status,
-        created_at,
-        updated_at
-      FROM interactives
-      ORDER BY created_at DESC
+        i.id,
+        i.title,
+        i.description,
+        i.status,
+        i.created_at,
+        i.updated_at,
+        i.view_count,
+        i.completion_count,
+        c.name as category_name,
+        c.color as category_color,
+        c.icon as category_icon,
+        COUNT(ch.id) as chapter_count,
+        COALESCE(COUNT(up.id), 0) as student_count
+      FROM interactives i
+      LEFT JOIN categories c ON i.category_id = c.id
+      LEFT JOIN chapters ch ON i.id = ch.interactive_id
+      LEFT JOIN user_progress up ON i.id = up.interactive_id
+      GROUP BY i.id, i.title, i.description, i.status, i.created_at, i.updated_at, i.view_count, i.completion_count, c.name, c.color, c.icon
+      ORDER BY i.created_at DESC
     `
 
-    return NextResponse.json(interactives)
+    return NextResponse.json({
+      success: true,
+      interactives: interactives
+    })
+
   } catch (error) {
     console.error('Error fetching interactives:', error)
     return NextResponse.json(
