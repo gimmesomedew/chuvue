@@ -58,7 +58,7 @@ export default function ChapterPreviewPopup({
           <PreviewHeader title={chapter.title} onClose={onClose} />
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-6" onClick={(e) => e.stopPropagation()}>
             {isLoading ? (
               <LoadingState />
             ) : error ? (

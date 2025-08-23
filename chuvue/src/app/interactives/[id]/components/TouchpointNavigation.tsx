@@ -22,7 +22,7 @@ export default function TouchpointNavigation({
   const canGoNext = currentIndex < totalTouchpoints - 1
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       {/* Navigation Controls */}
       <div className="flex items-center justify-center space-x-4">
         <motion.button

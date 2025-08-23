@@ -121,7 +121,7 @@ export default function TouchpointDisplay({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       {/* Touchpoint Display */}
       <div className="glass-card p-6 text-center">
         <div className="mb-6">

@@ -78,7 +78,7 @@ export default function AnimationControls({
   }
 
   return (
-    <div className="glass-card p-6">
+    <div className="glass-card p-6" onClick={(e) => e.stopPropagation()}>
       <h4 className="text-lg font-medium text-white mb-6 text-center">Animation Settings</h4>
       
       {/* Effect Dropdown */}
