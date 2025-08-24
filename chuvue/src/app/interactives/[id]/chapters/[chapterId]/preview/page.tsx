@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
+import AnimatedText from './components/AnimatedText'
 
 interface Chapter {
   id: string
@@ -37,6 +38,7 @@ export default function ChapterPreviewPage() {
   const [showLearningExperience, setShowLearningExperience] = useState(false)
   const [currentTouchpointIndex, setCurrentTouchpointIndex] = useState(0)
   const [animationKey, setAnimationKey] = useState(0) // Add animation key for re-triggering animations
+  const [viewedTouchpoints, setViewedTouchpoints] = useState<Set<number>>(new Set())
 
   // Memoize the fetchData function to prevent dependency array issues
   const fetchData = useCallback(async () => {
@@ -89,6 +91,12 @@ export default function ChapterPreviewPage() {
     if (currentTouchpointIndex < touchpoints.length - 1) {
       setCurrentTouchpointIndex(currentTouchpointIndex + 1)
       setAnimationKey(prev => prev + 1) // Re-trigger animations
+      // Reset animation state for new touchpoint
+      setViewedTouchpoints(prev => {
+        const newSet = new Set(Array.from(prev))
+        newSet.delete(currentTouchpointIndex + 1)
+        return newSet
+      })
     }
   }
 
@@ -96,41 +104,28 @@ export default function ChapterPreviewPage() {
     if (currentTouchpointIndex > 0) {
       setCurrentTouchpointIndex(currentTouchpointIndex - 1)
       setAnimationKey(prev => prev + 1) // Re-trigger animations
+      // Reset animation state for new touchpoint
+      setViewedTouchpoints(prev => {
+        const newSet = new Set(Array.from(prev))
+        newSet.delete(currentTouchpointIndex - 1)
+        return newSet
+      })
     }
   }
 
-  // Animation utility functions
-  const getAnimationStyle = (touchpoint: Touchpoint) => {
-    if (!touchpoint.animation_effect) return {}
-    
-    const baseStyle: React.CSSProperties = {
-      animation: `${touchpoint.animation_effect} ${(touchpoint.animation_duration || 3000) / 1000}s ${touchpoint.animation_easing || 'easeOut'} both`,
-      animationDelay: `${(touchpoint.animation_delay || 0) / 1000}s`
-    }
-    
-    return baseStyle
+  const markAnimationComplete = () => {
+    setViewedTouchpoints(prev => new Set(Array.from(prev).concat(currentTouchpointIndex)))
   }
 
-  const getAnimationClass = (touchpoint: Touchpoint) => {
-    if (!touchpoint.animation_effect) return ''
-    
-    switch (touchpoint.animation_effect) {
-      case 'typewriter':
-        return 'animate-typewriter'
-      case 'fadeIn':
-        return 'animate-fadeIn'
-      case 'slideUp':
-        return 'animate-slideUp'
-      case 'zoom':
-        return 'animate-zoom'
-      case 'stagger':
-        return 'animate-stagger'
-      case 'smoothReveal':
-        return 'animate-smoothReveal'
-      default:
-        return 'animate-fadeIn'
-    }
+  const isAnimationComplete = viewedTouchpoints.has(currentTouchpointIndex)
+
+  const resetAllAnimations = () => {
+    setViewedTouchpoints(new Set())
+    setCurrentTouchpointIndex(0)
+    setAnimationKey(prev => prev + 1)
   }
+
+
 
   // Utility function to detect YouTube URLs and convert to embed
   const isYouTubeUrl = (url: string): boolean => {
@@ -253,12 +248,15 @@ export default function ChapterPreviewPage() {
             <div className="glass-panel rounded-2xl p-8 text-center">
               <h1 className="text-2xl font-bold text-white mb-4">No Content Available</h1>
               <p className="text-gray-300 mb-6">This chapter doesn't have any touchpoints yet.</p>
-              <button
-                onClick={() => setShowLearningExperience(false)}
-                className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 px-6 py-3"
-              >
-                Back to Preview
-              </button>
+                          <button
+              onClick={() => {
+                resetAllAnimations()
+                setShowLearningExperience(false)
+              }}
+              className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 px-6 py-3"
+            >
+              Back to Preview
+            </button>
             </div>
           </div>
         </div>
@@ -285,7 +283,10 @@ export default function ChapterPreviewPage() {
               <span className="text-white font-semibold text-lg">ChuVue</span>
             </div>
             <button
-              onClick={() => setShowLearningExperience(false)}
+              onClick={() => {
+                resetAllAnimations()
+                setShowLearningExperience(false)
+              }}
               className="text-gray-400 hover:text-white"
             >
               ← Back to Preview
@@ -324,17 +325,27 @@ export default function ChapterPreviewPage() {
 
                 <div 
                   key={`content-${animationKey}`}
-                  className={`mb-4 leading-relaxed min-h-[150px] flex items-start ${getAnimationClass(currentTouchpoint)}`}
-                  style={getAnimationStyle(currentTouchpoint)}
+                  className="mb-4 leading-relaxed min-h-[150px] flex items-start"
                 >
-                  <p className="text-gray-300 w-full">{currentTouchpoint.description}</p>
+                  {isAnimationComplete ? (
+                    <p className="text-gray-300 w-full">{currentTouchpoint.description}</p>
+                  ) : (
+                    <AnimatedText 
+                      text={currentTouchpoint.description}
+                      effect={currentTouchpoint.animation_effect || 'typewriter'}
+                      speed={currentTouchpoint.animation_speed || 90}
+                      delay={currentTouchpoint.animation_delay || 1400}
+                      easing={currentTouchpoint.animation_easing || 'easeOut'}
+                      duration={currentTouchpoint.animation_duration || 3000}
+                      onComplete={markAnimationComplete}
+                    />
+                  )}
                 </div>
 
                 {currentTouchpoint.video_url && (
                   <div 
                     key={`video-${animationKey}`}
-                    className={`mb-4 ${getAnimationClass(currentTouchpoint)}`}
-                    style={getAnimationStyle(currentTouchpoint)}
+                    className="mb-4"
                   >
                     {isYouTubeUrl(currentTouchpoint.video_url) ? (
                       <iframe
@@ -445,7 +456,10 @@ export default function ChapterPreviewPage() {
             {chapter.description}
           </p>
           <button
-            onClick={() => setShowLearningExperience(true)}
+            onClick={() => {
+              resetAllAnimations()
+              setShowLearningExperience(true)
+            }}
             className="glass-button bg-accent-purple/20 border-accent-purple/30 text-accent-purple hover:bg-accent-purple/30 px-8 py-4 text-lg font-semibold"
           >
             View Chapter
@@ -480,7 +494,10 @@ export default function ChapterPreviewPage() {
             Take the first step toward developing essential {chapter.title.toLowerCase()} skills.
           </p>
           <button
-            onClick={() => setShowLearningExperience(true)}
+            onClick={() => {
+              resetAllAnimations()
+              setShowLearningExperience(true)
+            }}
             className="glass-button bg-accent-green/20 border-accent-green/30 text-accent-green hover:bg-accent-green/30 px-8 py-4 text-lg font-semibold mb-4"
           >
             View Chapter
