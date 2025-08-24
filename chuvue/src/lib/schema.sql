@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS chapters (
   difficulty VARCHAR(50) DEFAULT 'Beginner' CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
   status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
   order_index INTEGER NOT NULL,
+  views INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(interactive_id, order_index)
@@ -76,6 +77,11 @@ CREATE TABLE IF NOT EXISTS touchpoints (
   type VARCHAR(50) NOT NULL CHECK (type IN ('Video', 'Interactive', 'Content')),
   video_url VARCHAR(500),
   order_index INTEGER NOT NULL,
+  animation_effect VARCHAR(100),
+  animation_speed INTEGER DEFAULT 90,
+  animation_delay INTEGER DEFAULT 1400,
+  animation_easing VARCHAR(50) DEFAULT 'easeOut',
+  animation_duration INTEGER DEFAULT 3000,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(chapter_id, order_index)
