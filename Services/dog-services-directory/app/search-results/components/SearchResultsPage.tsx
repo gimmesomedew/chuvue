@@ -642,48 +642,47 @@ export function SearchResultsPage() {
                 </h1>
               </div>
 
-              {/* Location Tag - Show meaningful search info instead of generic state */}
-              {searchResults.length > 0 && (
-                <div className="flex items-center space-x-2">
-                  {generateSearchFilterTags().map((tag, index) => (
-                    <span
-                      key={index}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        tag.type === 'service' 
-                          ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                          : 'bg-green-100 text-green-800 border border-green-200'
-                      }`}
-                    >
-                      {tag.type === 'location' && (
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                      )}
-                      {tag.label}
-                      {tag.removable && (
-                        <button
-                          onClick={() => {
-                            // Handle tag removal if needed
-                            console.log('Remove tag:', tag.label);
-                          }}
-                          className="ml-2 hover:bg-opacity-80 rounded-full p-0.5 transition-colors"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              {/* Right Side: Filter Tags + Search Form */}
+              <div className="flex items-center space-x-4">
+                {/* Filter Tags */}
+                {searchResults.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    {generateSearchFilterTags().map((tag, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          tag.type === 'service' 
+                            ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                            : 'bg-green-100 text-green-800 border border-green-200'
+                        }`}
+                      >
+                        {tag.type === 'location' && (
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                           </svg>
-                        </button>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+                        )}
+                        {tag.label}
+                        {tag.removable && (
+                          <button
+                            onClick={() => {
+                              // Handle tag removal if needed
+                              console.log('Remove tag:', tag.label);
+                            }}
+                            className="ml-2 hover:bg-opacity-80 rounded-full p-0.5 transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-            {/* Search Form Section */}
-            <div className="border-t border-gray-200 pt-4">
-              <div className="max-w-4xl mx-auto">
-                <form className="flex gap-4 flex-row" onSubmit={(e) => {
+                {/* Search Form - Inline with header */}
+                <form className="flex items-center space-x-2" onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
                   const query = formData.get('query') as string;
@@ -691,9 +690,9 @@ export function SearchResultsPage() {
                     handleSearchSubmit(query);
                   }
                 }}>
-                  <div className="relative flex-1">
-                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search w-5 h-5">
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search w-4 h-4">
                         <path d="m21 21-4.34-4.34"></path>
                         <circle cx="11" cy="11" r="8"></circle>
                       </svg>
@@ -702,87 +701,30 @@ export function SearchResultsPage() {
                       type="text" 
                       name="query"
                       placeholder="Search again..." 
-                      className="w-full pl-12 pr-4 py-3 text-lg border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all duration-200" 
+                      className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all duration-200" 
                       defaultValue={searchParams.get('q') || ''} 
                     />
                   </div>
-                  <button type="submit" className="font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap py-3 px-6 bg-secondary hover:bg-pink-600 text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search w-5 h-5">
+                  <button type="submit" className="inline-flex items-center justify-center p-2 bg-secondary hover:bg-pink-600 text-white rounded-lg transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search w-4 h-4">
                       <path d="m21 21-4.34-4.34"></path>
                       <circle cx="11" cy="11" r="8"></circle>
                     </svg>
                   </button>
                 </form>
               </div>
-              
-              {/* Filter Tags */}
-              {searchResults.length > 0 && (
-                <div className="mt-4 flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Filter by:</span>
-                  
-                  {/* All Results Tag */}
-                  <button
-                    onClick={() => handleFilterChange('all')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                      selectedFilter === 'all'
-                        ? 'bg-secondary text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
+            </div>
+
+            {/* Sorting Controls - Now inline with header */}
+            {allSearchResults.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <div className="max-w-4xl mx-auto">
+                  <motion.div 
+                    className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
                   >
-                    All ({allSearchResults.length})
-                  </button>
-                  
-                  {/* Services Tag - only show if services exist */}
-                  {hasServices && (
-                    <button
-                      onClick={() => handleFilterChange('services')}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                        selectedFilter === 'services'
-                          ? 'bg-secondary text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      Services ({allSearchResults.filter(result => 
-                        'service_type' in result || 
-                        'serviceType' in result || 
-                        result.type === 'service' ||
-                        result.category === 'service'
-                      ).length})
-                    </button>
-                  )}
-                  
-                  {/* Products Tag - only show if products exist */}
-                  {hasProducts && (
-                    <button
-                      onClick={() => handleFilterChange('products')}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                        selectedFilter === 'products'
-                          ? 'bg-secondary text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      Products ({allSearchResults.filter(result => 
-                        'product_type' in result || 
-                        'productType' in result || 
-                        result.type === 'product' ||
-                        result.category === 'product' ||
-                        'price' in result ||
-                        'sku' in result
-                      ).length})
-                    </button>
-                  )}
-                </div>
-              )}
-              
-              {/* Sorting Controls */}
-              {allSearchResults.length > 0 && (
-                <motion.div 
-                  className="max-w-4xl mx-auto mt-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                     <div className="flex items-center space-x-4">
                       <span className="text-sm font-medium text-gray-700">Sort by:</span>
                       <div className="flex space-x-2">
@@ -793,7 +735,7 @@ export function SearchResultsPage() {
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                             sortMethod === 'distance'
                               ? 'bg-pink-500 text-white shadow-lg'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
                           Distance
@@ -837,44 +779,10 @@ export function SearchResultsPage() {
                       {sortMethod === 'name' && '🔤 Sorting alphabetically by name'}
                       {sortMethod === 'default' && '📋 Showing in original order'}
                     </motion.div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Meaningful Search Filter Tags */}
-              {allSearchResults.length > 0 && (
-                <div className="max-w-4xl mx-auto mt-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Search criteria:</span>
-                    {generateSearchFilterTags().map((tag, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          tag.type === 'service' 
-                            ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                            : 'bg-green-100 text-green-800 border border-green-200'
-                        }`}
-                      >
-                        {tag.label}
-                        {tag.removable && (
-                          <button
-                            onClick={() => {
-                              // Handle tag removal if needed
-                              console.log('Remove tag:', tag.label);
-                            }}
-                            className="ml-2 hover:bg-opacity-80 rounded-full p-0.5 transition-colors"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                          </button>
-                        )}
-                      </span>
-                    ))}
-                  </div>
+                  </motion.div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
