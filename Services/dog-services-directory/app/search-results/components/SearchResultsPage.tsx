@@ -6,6 +6,7 @@ import { SearchFormV2 } from '@/app/homepage-v2/components/SearchFormV2';
 import { SearchResultsDisplay } from '@/components/search/SearchResultsDisplay';
 import { getSortedStates } from '@/lib/states';
 import { useLocationResolver } from '@/hooks/useLocationResolver';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Helper function to detect proximity queries (matches backend logic)
 function isProximityQuery(query: string): boolean {
@@ -140,6 +141,10 @@ export function SearchResultsPage() {
   const [resetKey, setResetKey] = useState(0);
   const [favoritedProducts, setFavoritedProducts] = useState<number[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'services' | 'products'>('all');
+  
+  // Sorting state
+  const [sortMethod, setSortMethod] = useState<'distance' | 'name' | 'default'>('distance');
+  const [sortedResults, setSortedResults] = useState<any[]>([]);
 
   // Check if we have search parameters on page load
   useEffect(() => {
@@ -148,6 +153,52 @@ export function SearchResultsPage() {
       handleSearchSubmit(query);
     }
   }, [searchParams]);
+
+  // Sorting functions
+  const sortResultsByDistance = (results: any[]) => {
+    return [...results].sort((a, b) => {
+      // Handle cases where distance might be undefined
+      if (a.distance === undefined && b.distance === undefined) return 0;
+      if (a.distance === undefined) return 1;
+      if (b.distance === undefined) return -1;
+      
+      // Sort by distance (closest first)
+      return a.distance - b.distance;
+    });
+  };
+
+  const sortResultsByName = (results: any[]) => {
+    return [...results].sort((a, b) => {
+      if (!a.name || !b.name) return 0;
+      return a.name.localeCompare(b.name);
+    });
+  };
+
+  const sortResults = (results: any[], method: 'distance' | 'name' | 'default') => {
+    switch (method) {
+      case 'distance':
+        return sortResultsByDistance(results);
+      case 'name':
+        return sortResultsByName(results);
+      default:
+        return results; // Keep original order
+    }
+  };
+
+  // Apply sorting whenever allSearchResults or sortMethod changes
+  useEffect(() => {
+    if (allSearchResults.length > 0) {
+      const sorted = sortResults(allSearchResults, sortMethod);
+      setSortedResults(sorted);
+      
+      // Update paginated results
+      const itemsPerPage = 25;
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedResults = sorted.slice(startIndex, endIndex);
+      setSearchResults(paginatedResults);
+    }
+  }, [allSearchResults, sortMethod, currentPage]);
 
   const handleSearchSubmit = async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
@@ -236,11 +287,15 @@ export function SearchResultsPage() {
           const allResults = data.results || [];
           setAllSearchResults(allResults);
           
+          // Apply initial sorting (will trigger useEffect for sorting)
+          const initialSorted = sortResults(allResults, sortMethod);
+          setSortedResults(initialSorted);
+          
           // Client-side pagination - show first 25 results
           const itemsPerPage = 25;
           const startIndex = (currentPage - 1) * itemsPerPage;
           const endIndex = startIndex + itemsPerPage;
-          const paginatedResults = allResults.slice(startIndex, endIndex);
+          const paginatedResults = initialSorted.slice(startIndex, endIndex);
           setSearchResults(paginatedResults);
           
           // Calculate pagination based on total results
@@ -573,13 +628,38 @@ export function SearchResultsPage() {
 
             {/* Search Form Section */}
             <div className="border-t border-gray-200 pt-6">
-              <SearchFormV2
-                onSearch={handleSearchSubmit}
-                initialValue={searchParams.get('q') || ''}
-                isLoading={isSearching}
-                resetKey={resetKey}
-                isPostSearch={true}
-              />
+              <div className="max-w-4xl mx-auto transition-opacity duration-500 opacity-0">
+                <form className="flex gap-4 flex-row" onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const query = formData.get('query') as string;
+                  if (query) {
+                    handleSearchSubmit(query);
+                  }
+                }}>
+                  <div className="relative flex-1">
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-search w-5 h-5">
+                        <path d="m21 21-4.34-4.34"></path>
+                        <circle cx="11" cy="11" r="8"></circle>
+                      </svg>
+                    </div>
+                    <input 
+                      type="text" 
+                      name="query"
+                      placeholder="Search again..." 
+                      className="w-full pl-12 pr-4 py-4 text-lg border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all duration-200" 
+                      defaultValue={searchParams.get('q') || ''} 
+                    />
+                  </div>
+                  <button type="submit" className="font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap py-4 px-6 bg-secondary hover:bg-pink-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-search w-5 h-5">
+                      <path d="m21 21-4.34-4.34"></path>
+                      <circle cx="11" cy="11" r="8"></circle>
+                    </svg>
+                  </button>
+                </form>
+              </div>
               
               {/* Filter Tags */}
               {searchResults.length > 0 && (
@@ -638,6 +718,73 @@ export function SearchResultsPage() {
                     </button>
                   )}
                 </div>
+              )}
+              
+              {/* Sorting Controls */}
+              {allSearchResults.length > 0 && (
+                <motion.div 
+                  className="max-w-4xl mx-auto mt-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm font-medium text-gray-700">Sort by:</span>
+                      <div className="flex space-x-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSortMethod('distance')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            sortMethod === 'distance'
+                              ? 'bg-pink-500 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Distance
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSortMethod('name')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            sortMethod === 'name'
+                              ? 'bg-pink-500 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Name
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSortMethod('default')}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            sortMethod === 'default'
+                              ? 'bg-pink-500 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Default
+                        </motion.button>
+                      </div>
+                    </div>
+                    
+                    {/* Sort Method Indicator */}
+                    <motion.div 
+                      className="text-sm text-gray-600"
+                      key={sortMethod}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {sortMethod === 'distance' && '🔄 Sorting by distance (closest first)'}
+                      {sortMethod === 'name' && '🔤 Sorting alphabetically by name'}
+                      {sortMethod === 'default' && '📋 Showing in original order'}
+                    </motion.div>
+                  </div>
+                </motion.div>
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Service, Product } from '@/lib/types';
 import { ServiceCard } from './ServiceCard';
 import { ProductCard } from '@/components/products/ProductCard';
@@ -60,16 +60,32 @@ export function UnifiedResultsList({
             Services ({services.length})
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto w-full" style={{ maxWidth: '1400px' }}>
-            {displayServices.map((service, index) => (
-              <div key={`service-${service.id}`} className="w-full mx-auto md:max-w-[400px] max-w-[400px] px-2">
-                <ServiceCard
-                  service={service}
-                  sortByDistance={hasApiDistance || sortByDistance}
-                  userLocation={userLocation}
-                  delay={0.1 * (index % 3)}
-                />
-              </div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {displayServices.map((service, index) => (
+                <motion.div 
+                  key={`service-${service.id}`} 
+                  className="w-full mx-auto md:max-w-[400px] max-w-[400px] px-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ 
+                    delay: index * 0.05, // Staggered effect
+                    duration: 0.3,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30
+                  }}
+                  layout // Framer Motion automatically animates position changes
+                >
+                  <ServiceCard
+                    service={service}
+                    sortByDistance={hasApiDistance || sortByDistance}
+                    userLocation={userLocation}
+                    delay={0.1 * (index % 3)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       )}
@@ -81,15 +97,31 @@ export function UnifiedResultsList({
             Products ({products.length})
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mx-auto w-full" style={{ maxWidth: '1400px' }}>
-            {products.map((product, index) => (
-              <div key={`product-${product.id}`} className="w-full mx-auto md:max-w-[400px] max-w-[400px] px-2">
-                <ProductCard
-                  product={product}
-                  onFavorite={onProductFavorite}
-                  isFavorited={favoritedProducts.includes(product.id)}
-                />
-              </div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {products.map((product, index) => (
+                <motion.div 
+                  key={`product-${product.id}`} 
+                  className="w-full mx-auto md:max-w-[400px] max-w-[400px] px-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ 
+                    delay: index * 0.05, // Staggered effect
+                    duration: 0.3,
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30
+                  }}
+                  layout // Framer Motion automatically animates position changes
+                >
+                  <ProductCard
+                    product={product}
+                    onFavorite={onProductFavorite}
+                    isFavorited={favoritedProducts.includes(product.id)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       )}

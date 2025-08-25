@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { geocodeAddress } from '@/lib/geocoding';
 
 /**
  * Calculate distance between two points using Haversine formula
@@ -79,6 +80,11 @@ export async function POST(request: NextRequest) {
     const isProductQuery = isProductSearchQuery(query);
     console.log('🛍️ Is product query (legacy):', isProductQuery);
 
+    // Initialize result variables early for enhanced ZIP search
+    let servicesResult: any = { data: [], error: null };
+    let productsResult: any = { data: [], error: null };
+    let enhancedSearchPerformed = false; // Flag to track if enhanced search was used
+
     // Apply location filters based on search pattern
     if (searchPattern.locationType === 'state') {
       // State-based search (e.g., "in Indiana")
@@ -86,10 +92,252 @@ export async function POST(request: NextRequest) {
       productsQuery = productsQuery.eq('state', searchPattern.locationValue);
       console.log('🗺️ Filtering by state:', searchPattern.locationValue);
     } else if (searchPattern.locationType === 'zip_code') {
-      // Zip code-based search (e.g., "near 46240")
-      servicesQuery = servicesQuery.eq('zip_code', searchPattern.locationValue);
-      productsQuery = productsQuery.eq('zip_code', searchPattern.locationValue);
-      console.log('📮 Filtering by zip code:', searchPattern.locationValue);
+      // Enhanced ZIP code search: exact match + 25-mile radius
+      const targetZipCode = searchPattern.locationValue;
+      console.log('📮 Enhanced ZIP code search for:', targetZipCode);
+      
+      // First, get coordinates for the target ZIP code
+      let targetCoordinates: { lat: number; lng: number } | null = null;
+      
+      try {
+        // Try to get coordinates from a service in that ZIP code first
+        const { data: zipService } = await supabase
+          .from('services')
+          .select('latitude, longitude')
+          .eq('zip_code', targetZipCode)
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null)
+          .limit(1);
+        
+        if (zipService && zipService.length > 0) {
+          targetCoordinates = {
+            lat: zipService[0].latitude,
+            lng: zipService[0].longitude
+          };
+          console.log('📍 Found coordinates from existing service in ZIP:', targetZipCode, targetCoordinates);
+        } else {
+          // Fallback: geocode the ZIP code
+          const geocodeResult = await geocodeAddress(`${targetZipCode}, IN`);
+          if (geocodeResult.success && geocodeResult.latitude && geocodeResult.longitude) {
+            targetCoordinates = {
+              lat: geocodeResult.latitude,
+              lng: geocodeResult.longitude
+            };
+            console.log('📍 Geocoded ZIP coordinates:', targetZipCode, targetCoordinates);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error getting ZIP coordinates:', error);
+      }
+      
+      if (targetCoordinates) {
+        // Enhanced search: exact ZIP + 25-mile radius
+        console.log('🔍 Performing enhanced ZIP search: exact match + 25-mile radius');
+        
+        // Get exact ZIP matches first
+        const exactZipServicesQuery = supabase
+          .from('services')
+          .select('*')
+          .eq('zip_code', targetZipCode);
+        
+        // Apply service type filter if specified
+        if (searchPattern.serviceType) {
+          exactZipServicesQuery.eq('service_type', searchPattern.serviceType);
+        }
+        
+        const { data: exactZipServices, error: exactError } = await exactZipServicesQuery;
+        
+        if (exactError) {
+          console.error('❌ Exact ZIP services query error:', exactError);
+        }
+        
+        // Mark exact matches with distance 0
+        const exactServices = (exactZipServices || []).map((service: any) => ({
+          ...service,
+          distance: 0,
+          isExactMatch: true
+        }));
+        
+        console.log('📍 Exact ZIP matches found:', exactServices.length);
+        
+        // Get services within 25-mile radius using RPC function
+        const { data: radiusResults, error: radiusError } = await supabase.rpc('services_within_radius', {
+          p_lat: targetCoordinates.lat,
+          p_lon: targetCoordinates.lng,
+          p_radius_miles: 25
+        });
+        
+        if (radiusError) {
+          console.error('❌ Radius search error:', radiusError);
+        }
+        
+        // Filter radius results by service type if specified
+        let radiusServices = radiusResults || [];
+        if (searchPattern.serviceType) {
+          radiusServices = radiusServices.filter((service: any) => 
+            service.service_type === searchPattern.serviceType
+          );
+        }
+        
+        // Remove exact ZIP matches from radius results to avoid duplicates
+        radiusServices = radiusServices.filter((service: any) => 
+          service.zip_code !== targetZipCode
+        );
+        
+        // Calculate distances for radius results
+        radiusServices.forEach((service: any) => {
+          if (service.latitude && service.longitude) {
+            service.distance = calculateDistance(
+              targetCoordinates.lat,
+              targetCoordinates.lng,
+              service.latitude,
+              service.longitude
+            );
+          } else {
+            service.distance = Infinity;
+          }
+          service.isExactMatch = false;
+        });
+        
+        console.log('📍 RPC radius search found', radiusServices.length, 'services within 25 miles');
+        
+        // Combine exact matches and radius results
+        const allServices = [...exactServices, ...radiusServices];
+        
+        // Sort by: exact matches first, then by distance
+        console.log('📍 Before sorting - first 5 results:');
+        allServices.slice(0, 5).forEach((service: any, index: number) => {
+          console.log(`  ${index + 1}. ${service.name}: ${service.distance} miles (${service.zip_code})`);
+        });
+        
+        allServices.sort((a: any, b: any) => {
+          // Exact matches come first
+          if (a.isExactMatch && !b.isExactMatch) return -1;
+          if (!a.isExactMatch && b.isExactMatch) return 1;
+          
+          // If both are exact matches, sort by name
+          if (a.isExactMatch && b.isExactMatch) {
+            return a.name?.localeCompare(b.name) || 0;
+          }
+          
+          // Otherwise sort by distance (closest first)
+          if (a.distance !== Infinity && b.distance !== Infinity) {
+            const result = a.distance - b.distance;
+            console.log(`  Comparing ${a.name} (${a.distance}) vs ${b.name} (${b.distance}) = ${result}`);
+            return result;
+          }
+          
+          // Handle cases where distance is unknown
+          if (a.distance === Infinity && b.distance === Infinity) {
+            return a.name?.localeCompare(b.name) || 0;
+          }
+          return a.distance === Infinity ? 1 : -1;
+        });
+        
+        // Debug: Log the first few results after sorting
+        console.log('📍 After sorting - first 5 results:');
+        allServices.slice(0, 5).forEach((service: any, index: number) => {
+          console.log(`  ${index + 1}. ${service.name}: ${service.distance} miles (${service.zip_code})`);
+        });
+        
+        console.log('📍 Enhanced ZIP search results:', {
+          exactMatches: exactServices.length,
+          radiusResults: radiusServices.length,
+          totalServices: allServices.length
+        });
+        
+        // Set the services result to our enhanced search
+        servicesResult = { data: allServices, error: null };
+        
+        // For products, also do enhanced ZIP search
+        const exactZipProductsQuery = supabase
+          .from('products')
+          .select(`
+            *,
+            categories:product_category_mappings(
+              category:product_categories(*)
+            )
+          `)
+          .eq('zip_code', targetZipCode);
+        
+        const { data: exactZipProducts, error: exactProductsError } = await exactZipProductsQuery;
+        
+        if (exactProductsError) {
+          console.error('❌ Exact ZIP products query error:', exactProductsError);
+        }
+        
+        // Mark exact product matches
+        const exactProducts = (exactZipProducts || []).map((product: any) => ({
+          ...product,
+          distance: 0,
+          isExactMatch: true,
+          type: 'product'
+        }));
+        
+        // Get products within radius (if they have coordinates)
+        let radiusProducts: any[] = [];
+        const hasProductCategories = await checkProductCategoryMatch(query);
+        if (hasProductCategories) {
+          const { data: allProducts, error: allProductsError } = await supabase
+            .from('products')
+            .select(`
+              *,
+              categories:product_category_mappings(
+                category:product_categories(*)
+              )
+            `);
+          
+          if (!allProductsError && allProducts) {
+            radiusProducts = allProducts.filter((product: any) => {
+              if (product.latitude && product.longitude && product.zip_code !== targetZipCode) {
+                const distance = calculateDistance(
+                  targetCoordinates.lat,
+                  targetCoordinates.lng,
+                  product.latitude,
+                  product.longitude
+                );
+                if (distance <= 25) {
+                  product.distance = distance;
+                  product.isExactMatch = false;
+                  product.type = 'product';
+                  return true;
+                }
+              }
+              return false;
+            });
+          }
+        }
+        
+        // Combine and sort products
+        const allProducts = [...exactProducts, ...radiusProducts];
+        allProducts.sort((a: any, b: any) => {
+          if (a.isExactMatch && !b.isExactMatch) return -1;
+          if (!a.isExactMatch && b.isExactMatch) return 1;
+          if (a.isExactMatch && b.isExactMatch) {
+            return a.name?.localeCompare(b.name) || 0;
+          }
+          if (a.distance !== Infinity && b.distance !== Infinity) {
+            return a.distance - b.distance;
+          }
+          if (a.distance === Infinity && b.distance === Infinity) {
+            return a.name?.localeCompare(b.name) || 0;
+          }
+          return a.distance === Infinity ? 1 : -1;
+        });
+        
+        // Set the products result
+        productsResult = { data: allProducts, error: null };
+        
+        console.log('📍 Enhanced ZIP search completed for services and products');
+        enhancedSearchPerformed = true;
+        
+      } else {
+        // Fallback to original exact ZIP search if we can't get coordinates
+        console.log('⚠️ Could not get coordinates for ZIP, falling back to exact match only');
+        servicesQuery = servicesQuery.eq('zip_code', targetZipCode);
+        productsQuery = productsQuery.eq('zip_code', targetZipCode);
+      }
+      
     } else if (searchPattern.locationType === 'near_me' && userLocation) {
       // Location-based search (e.g., "near me")
       const radiusMiles = searchPattern.radius || 10;
@@ -286,10 +534,9 @@ export async function POST(request: NextRequest) {
     productsQuery = productsQuery.limit(productsLimit);
     
     // Execute queries based on limits
-    let servicesResult: any = { data: [], error: null };
-    let productsResult: any = { data: [], error: null };
-    
-    if (servicesLimit > 0) {
+    if (enhancedSearchPerformed) {
+      console.log('🔍 Enhanced search already performed, skipping regular queries');
+    } else if (servicesLimit > 0) {
       [servicesResult, productsResult] = await Promise.all([
         servicesQuery,
         productsQuery
@@ -431,7 +678,16 @@ export async function POST(request: NextRequest) {
         breakdown: {
           services: transformedServices.length,
           products: transformedProducts.length
-        }
+        },
+        // Enhanced metadata for ZIP code searches
+        enhancedSearch: enhancedSearchPerformed ? {
+          targetZipCode: searchPattern.locationValue,
+          searchRadius: 25, // 25-mile radius
+          hasExactMatches: allResults.some((result: any) => result.isExactMatch),
+          exactMatchCount: allResults.filter((result: any) => result.isExactMatch).length,
+          radiusResultsCount: allResults.filter((result: any) => !result.isExactMatch).length,
+          searchDescription: `Found ${allResults.length} results: ${allResults.filter((result: any) => result.isExactMatch).length} in ${searchPattern.locationValue} and ${allResults.filter((result: any) => !result.isExactMatch).length} within 25 miles`
+        } : undefined
       }
     });
 
@@ -614,56 +870,56 @@ function parseSearchQuery(query: string, serviceDefinitions: any[] = []) {
     result.locationType = 'near_me';
     result.radius = 25; // Default 25 mile radius
   } else {
-    // Check for state references - Comprehensive US state detection
-    // Check for full state names first (more specific), then abbreviations
-    const stateMappings = {
-      // Full state names
-      'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
-      'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
-      'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
-      'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
-      'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
-      'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
-      'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
-      'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
-      'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
-      'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY',
-      // Territories
-      'district of columbia': 'DC', 'puerto rico': 'PR', 'guam': 'GU', 'american samoa': 'AS',
-      'u.s. virgin islands': 'VI', 'northern mariana islands': 'MP'
-    };
-    
-    // Check for full state names
-    let stateFound = false;
-    for (const [stateName, stateCode] of Object.entries(stateMappings)) {
-      if (normalizedQuery.includes(stateName)) {
-        result.locationType = 'state';
-        result.locationValue = stateCode;
-        stateFound = true;
-        break;
-      }
-    }
-    
-    // If no full state name found, check for abbreviations
-    if (!stateFound) {
-      const words = normalizedQuery.split(/\s+/);
-      const stateAbbreviations = Object.values(stateMappings);
-      for (const word of words) {
-        if (stateAbbreviations.includes(word.toUpperCase())) {
+    // Check for ZIP codes FIRST (before state references)
+    const zipCodeMatch = extractZipCode(normalizedQuery);
+    if (zipCodeMatch) {
+      result.locationType = 'zip_code';
+      result.locationValue = zipCodeMatch;
+      result.radius = 25; // Default 25 mile radius for zip code searches
+      console.log('📮 ZIP code detected:', zipCodeMatch);
+    } else {
+      // Only check for state references if no ZIP code was found
+      // Check for state references - Comprehensive US state detection
+      // Check for full state names first (more specific), then abbreviations
+      const stateMappings = {
+        // Full state names
+        'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+        'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+        'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+        'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+        'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+        'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+        'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
+        'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+        'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+        'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY',
+        // Territories
+        'district of columbia': 'DC', 'puerto rico': 'PR', 'guam': 'GU', 'american samoa': 'AS',
+        'u.s. virgin islands': 'VI', 'northern mariana islands': 'MP'
+      };
+      
+      // Check for full state names
+      let stateFound = false;
+      for (const [stateName, stateCode] of Object.entries(stateMappings)) {
+        if (normalizedQuery.includes(stateName)) {
           result.locationType = 'state';
-          result.locationValue = word.toUpperCase();
+          result.locationValue = stateCode;
+          stateFound = true;
           break;
         }
       }
-    }
-    
-    // 3. Check for zip code references
-    if (!result.locationType) {
-      const zipCodeMatch = extractZipCode(normalizedQuery);
-      if (zipCodeMatch) {
-        result.locationType = 'zip_code';
-        result.locationValue = zipCodeMatch;
-        result.radius = 25; // Default 25 mile radius for zip code searches
+      
+      // If no full state name found, check for abbreviations
+      if (!stateFound) {
+        const words = normalizedQuery.split(/\s+/);
+        const stateAbbreviations = Object.values(stateMappings);
+        for (const word of words) {
+          if (stateAbbreviations.includes(word.toUpperCase())) {
+            result.locationType = 'state';
+            result.locationValue = word.toUpperCase();
+            break;
+          }
+        }
       }
     }
   }
