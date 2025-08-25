@@ -116,12 +116,36 @@ export function SearchResultsDisplay({
     return <SearchSkeleton />;
   }
 
+  const hasServices = displayResults.some(result => 'service_type' in result || 'serviceType' in result);
+  const hasProducts = displayResults.some(result => 'product_type' in result || 'productType' in result || 'price' in result || 'sku' in result);
+
   return (
     <div className="space-y-6">
       {/* FilterTagBar removed - filter tags are now in the header */}
 
-      {/* View Toggle */}
-      <div className="flex justify-end">
+      {/* Services Count and View Toggle - Now on same row */}
+      <div className="flex items-center justify-between">
+        {/* Services Count Label */}
+        <div className="text-lg font-medium text-gray-900">
+          {displayResults.length > 0 && (
+            <>
+              {hasServices && hasProducts ? 'All Results' : 
+               hasServices ? `Services (${displayResults.filter(result => 
+                 'service_type' in result || 
+                 'serviceType' in result
+               ).length})` :
+               hasProducts ? `Products (${displayResults.filter(result => 
+                 'product_type' in result || 
+                 'productType' in result ||
+                 'price' in result ||
+                 'sku' in result
+               ).length})` : 'Results'
+              }
+            </>
+          )}
+        </div>
+
+        {/* View Toggle */}
         <div className="flex gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
