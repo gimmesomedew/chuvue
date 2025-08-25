@@ -200,6 +200,55 @@ export function SearchResultsPage() {
     }
   }, [allSearchResults, sortMethod, currentPage]);
 
+  // Generate meaningful filter tags based on search query
+  const generateSearchFilterTags = () => {
+    const query = searchParams.get('q') || '';
+    const tags = [];
+    
+    // Extract service type from query
+    if (query.toLowerCase().includes('dog park') || query.toLowerCase().includes('park')) {
+      tags.push({ label: 'Dog Parks', type: 'service', removable: true });
+    } else if (query.toLowerCase().includes('groomer') || query.toLowerCase().includes('grooming')) {
+      tags.push({ label: 'Grooming', type: 'service', removable: true });
+    } else if (query.toLowerCase().includes('vet') || query.toLowerCase().includes('veterinarian')) {
+      tags.push({ label: 'Veterinarians', type: 'service', removable: true });
+    } else if (query.toLowerCase().includes('trainer') || query.toLowerCase().includes('training')) {
+      tags.push({ label: 'Training', type: 'service', removable: true });
+    } else if (query.toLowerCase().includes('boarding') || query.toLowerCase().includes('daycare')) {
+      tags.push({ label: 'Boarding & Daycare', type: 'service', removable: true });
+    }
+    
+    // Extract location information
+    const zipMatch = query.match(/\b\d{5}\b/);
+    if (zipMatch) {
+      tags.push({ 
+        label: `ZIP ${zipMatch[0]} (25 mile radius)`, 
+        type: 'location', 
+        removable: true 
+      });
+    } else if (query.toLowerCase().includes('indiana') || query.toLowerCase().includes('in ')) {
+      tags.push({ 
+        label: 'Indiana', 
+        type: 'location', 
+        removable: true 
+      });
+    } else if (query.toLowerCase().includes('illinois') || query.toLowerCase().includes('il ')) {
+      tags.push({ 
+        label: 'Illinois', 
+        type: 'location', 
+        removable: true 
+      });
+    } else if (query.toLowerCase().includes('ohio') || query.toLowerCase().includes('oh ')) {
+      tags.push({ 
+        label: 'Ohio', 
+        type: 'location', 
+        removable: true 
+      });
+    }
+    
+    return tags;
+  };
+
   const handleSearchSubmit = async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
 
@@ -571,18 +620,18 @@ export function SearchResultsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Main Container with Clean Layout */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <div className="container mx-auto px-4 py-4">
+          <div className="max-w-7xl mx-auto space-y-4">
             
             {/* Top Section: Back Link, Heading, and Location Tag */}
-            <div className="flex items-center justify-start space-x-6">
+            <div className="flex items-center justify-start space-x-4">
               {/* Back Link to Home */}
               <a
                 href="/"
                 className="inline-flex items-center text-secondary hover:text-pink-600 transition-colors duration-200 font-medium"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
               </a>
               
@@ -627,8 +676,8 @@ export function SearchResultsPage() {
             </div>
 
             {/* Search Form Section */}
-            <div className="border-t border-gray-200 pt-6">
-              <div className="max-w-4xl mx-auto transition-opacity duration-500 opacity-0">
+            <div className="border-t border-gray-200 pt-4">
+              <div className="max-w-4xl mx-auto">
                 <form className="flex gap-4 flex-row" onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
@@ -639,7 +688,7 @@ export function SearchResultsPage() {
                 }}>
                   <div className="relative flex-1">
                     <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-search w-5 h-5">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search w-5 h-5">
                         <path d="m21 21-4.34-4.34"></path>
                         <circle cx="11" cy="11" r="8"></circle>
                       </svg>
@@ -648,12 +697,12 @@ export function SearchResultsPage() {
                       type="text" 
                       name="query"
                       placeholder="Search again..." 
-                      className="w-full pl-12 pr-4 py-4 text-lg border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all duration-200" 
+                      className="w-full pl-12 pr-4 py-3 text-lg border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all duration-200" 
                       defaultValue={searchParams.get('q') || ''} 
                     />
                   </div>
-                  <button type="submit" className="font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap py-4 px-6 bg-secondary hover:bg-pink-600 text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-search w-5 h-5">
+                  <button type="submit" className="font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap py-3 px-6 bg-secondary hover:bg-pink-600 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search w-5 h-5">
                       <path d="m21 21-4.34-4.34"></path>
                       <circle cx="11" cy="11" r="8"></circle>
                     </svg>
@@ -663,7 +712,7 @@ export function SearchResultsPage() {
               
               {/* Filter Tags */}
               {searchResults.length > 0 && (
-                <div className="mt-6 flex items-center gap-3">
+                <div className="mt-4 flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700">Filter by:</span>
                   
                   {/* All Results Tag */}
@@ -723,7 +772,7 @@ export function SearchResultsPage() {
               {/* Sorting Controls */}
               {allSearchResults.length > 0 && (
                 <motion.div 
-                  className="max-w-4xl mx-auto mt-6"
+                  className="max-w-4xl mx-auto mt-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
@@ -786,6 +835,40 @@ export function SearchResultsPage() {
                   </div>
                 </motion.div>
               )}
+
+              {/* Meaningful Search Filter Tags */}
+              {allSearchResults.length > 0 && (
+                <div className="max-w-4xl mx-auto mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">Search criteria:</span>
+                    {generateSearchFilterTags().map((tag, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          tag.type === 'service' 
+                            ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                            : 'bg-green-100 text-green-800 border border-green-200'
+                        }`}
+                      >
+                        {tag.label}
+                        {tag.removable && (
+                          <button
+                            onClick={() => {
+                              // Handle tag removal if needed
+                              console.log('Remove tag:', tag.label);
+                            }}
+                            className="ml-2 hover:bg-opacity-80 rounded-full p-0.5 transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -831,21 +914,21 @@ export function SearchResultsPage() {
 
       {/* No Results State */}
       {!isSearching && searchResults.length === 0 && searchParams.get('q') && (
-        <section className="py-16">
+        <section className="py-8">
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-2xl mx-auto">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-600 mb-6">
                 We couldn't find any services matching "{searchParams.get('q')}". Try adjusting your search terms.
               </p>
               
               {/* Popular Searches */}
-              <div className="mt-8">
+              <div className="mt-6">
                 <p className="text-gray-600 mb-4 font-bold">Popular Searches:</p>
                 <div className="flex flex-wrap justify-center gap-3">
                   {[
@@ -877,12 +960,12 @@ export function SearchResultsPage() {
 
       {/* Initial State - No Search Yet */}
       {!searchParams.get('q') && searchResults.length === 0 && !isSearching && (
-        <section className="py-16">
+        <section className="py-8">
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-md mx-auto">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to search?</h3>
