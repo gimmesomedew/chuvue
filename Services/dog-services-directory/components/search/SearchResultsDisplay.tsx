@@ -6,7 +6,6 @@ import { ServicesList } from './ServicesList';
 import { UnifiedResultsList } from './UnifiedResultsList';
 import { Pagination } from './Pagination';
 import { SearchSkeleton } from './SearchSkeleton';
-import { FilterTagBar } from './FilterTagBar';
 import { ServicesMap } from '@/components/maps/ServicesMap';
 import { useState } from 'react';
 import { LayoutGrid, Map as MapIcon } from 'lucide-react';
@@ -119,26 +118,7 @@ export function SearchResultsDisplay({
 
   return (
     <div className="space-y-6">
-      <FilterTagBar
-        selectedServiceType={selectedServiceType}
-        selectedState={selectedState}
-        zipCode={zipCode}
-        latitude={latitude}
-        longitude={longitude}
-        serviceDefinitions={serviceDefinitions}
-        states={states}
-        searchResults={searchResults}
-        allSearchResults={allSearchResults}
-        isClientFiltered={isClientFiltered}
-        activeClientFilter={activeClientFilter}
-        onRemoveServiceType={onRemoveServiceType || (() => {})}
-        onRemoveState={onRemoveState || (() => {})}
-        onRemoveZipCode={onRemoveZipCode || (() => {})}
-        onClearAll={onClearAll || (() => {})}
-        onClientFilter={handleClientFilter}
-        onClearClientFilter={handleClearClientFilter}
-        onToggleSearchForm={onToggleSearchForm}
-      />
+      {/* FilterTagBar removed - filter tags are now in the header */}
 
       {/* View Toggle */}
       <div className="flex justify-end">
