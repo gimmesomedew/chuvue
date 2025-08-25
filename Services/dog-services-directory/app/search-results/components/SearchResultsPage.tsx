@@ -192,7 +192,7 @@ export function SearchResultsPage() {
       setSortedResults(sorted);
       
       // Update paginated results
-      const itemsPerPage = 25;
+      const itemsPerPage = 30;
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedResults = sorted.slice(startIndex, endIndex);
@@ -340,8 +340,8 @@ export function SearchResultsPage() {
           const initialSorted = sortResults(allResults, sortMethod);
           setSortedResults(initialSorted);
           
-          // Client-side pagination - show first 25 results
-          const itemsPerPage = 25;
+          // Client-side pagination - show first 30 results
+          const itemsPerPage = 30;
           const startIndex = (currentPage - 1) * itemsPerPage;
           const endIndex = startIndex + itemsPerPage;
           const paginatedResults = initialSorted.slice(startIndex, endIndex);
@@ -464,7 +464,7 @@ export function SearchResultsPage() {
       );
     
     // Client-side pagination - slice the results
-    const itemsPerPage = 25;
+    const itemsPerPage = 30;
     const startIndex = (newPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedResults = resultsToPaginate.slice(startIndex, endIndex);
@@ -638,7 +638,7 @@ export function SearchResultsPage() {
                 
                 {/* Results Count */}
                 <h1 className="text-2xl font-bold text-primary">
-                  {searchResults.length > 0 ? `Found ${getFilteredResults().length} result${getFilteredResults().length !== 1 ? 's' : ''}` : 'Search Results'}
+                  {allSearchResults.length > 0 ? `Found ${allSearchResults.length} result${allSearchResults.length !== 1 ? 's' : ''}` : 'Search Results'}
                 </h1>
               </div>
 
@@ -798,7 +798,7 @@ export function SearchResultsPage() {
                 isSearching={isSearching}
                 totalResults={getFilteredResults().length}
                 currentPage={currentPage}
-                totalPages={Math.ceil(getFilteredResults().length / 25)}
+                totalPages={Math.ceil(getFilteredResults().length / 30)}
                 selectedServiceType={selectedServiceType}
                 selectedState={selectedState}
                 zipCode={zipCode}
