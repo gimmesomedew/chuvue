@@ -624,55 +624,60 @@ export function SearchResultsPage() {
           <div className="max-w-7xl mx-auto space-y-4">
             
             {/* Top Section: Back Link, Heading, and Location Tag */}
-            <div className="flex items-center justify-start space-x-4">
-              {/* Back Link to Home */}
-              <a
-                href="/"
-                className="inline-flex items-center text-secondary hover:text-pink-600 transition-colors duration-200 font-medium"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-              </a>
-              
-              {/* Results Count and Location Tag */}
-              <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                {/* Back Link to Home */}
+                <a
+                  href="/"
+                  className="inline-flex items-center text-secondary hover:text-pink-600 transition-colors duration-200 font-medium"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                  </svg>
+                </a>
+                
+                {/* Results Count */}
                 <h1 className="text-2xl font-bold text-primary">
                   {searchResults.length > 0 ? `Found ${getFilteredResults().length} result${getFilteredResults().length !== 1 ? 's' : ''}` : 'Search Results'}
                 </h1>
-                
-                {/* Location Tag - show for state, zip code, or My Location */}
-                {(selectedState || zipCode || (latitude && longitude)) && (
-                  <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span>
-                      {selectedState 
-                        ? getSortedStates().find(s => s.abbreviation === selectedState)?.name || selectedState
-                        : zipCode
-                        ? `ZIP: ${zipCode}`
-                        : cityState || 'My Location'
-                      }
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedState('');
-                        setZipCode('');
-                        setLatitude(undefined);
-                        setLongitude(undefined);
-                        setCityState('');
-                      }}
-                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </span>
-                )}
               </div>
+
+              {/* Location Tag - Show meaningful search info instead of generic state */}
+              {searchResults.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  {generateSearchFilterTags().map((tag, index) => (
+                    <span
+                      key={index}
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        tag.type === 'service' 
+                          ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                          : 'bg-green-100 text-green-800 border border-green-200'
+                      }`}
+                    >
+                      {tag.type === 'location' && (
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                      )}
+                      {tag.label}
+                      {tag.removable && (
+                        <button
+                          onClick={() => {
+                            // Handle tag removal if needed
+                            console.log('Remove tag:', tag.label);
+                          }}
+                          className="ml-2 hover:bg-opacity-80 rounded-full p-0.5 transition-colors"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Search Form Section */}
